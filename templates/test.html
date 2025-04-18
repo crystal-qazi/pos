@@ -1,0 +1,50 @@
+{% extends 'partials/front_base.html' %}
+{% block front_content %}
+
+  <!-- HEADER MENU END -->
+
+        <!-- HERO BANNER START -->
+        <section class="title-banner mb-80">
+            <div class="container-fluid">
+                <h3 class="justify-content-center text-center medium-black">Person Detail</h3>
+            </div>
+        </section>
+        <!-- HERO BANNER END -->
+        <div class="float-end w-25">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                      {% if category == 'message' %}
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                         
+                      {% else %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                          
+                      {% endif %}
+                        <strong>{{category}}:</strong>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                  {% endfor %}
+                {% endif %}
+            {% endwith %}
+          </div>
+
+        <section class="mb-80">
+            <div class="container-fluid">
+                <form action="/img_upload" method="post" enctype=multipart/form-data>
+                    
+                      <div class="mb-3">
+                        <label for="formFile" class="form-label">Default file input example</label>
+                        <input class="form-control" type="file" name="file">
+                      </div>
+                      <!-- <button type="submit">submit</button> -->
+                      <input type=submit value=Upload>
+                    
+                </form>
+             
+            </div>
+        </section>
+    
+
+
+        {%endblock%}

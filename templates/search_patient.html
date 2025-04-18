@@ -1,0 +1,107 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+
+
+        <!-- partial -->
+        <div class="main-panel">
+          <div class="content-wrapper">
+      
+            <div class="row">
+              <div class="col-md-12 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <form action="/search_patient" method="GET" class="forms-sample">
+                      <p class="card-description"> Search Existing Patient</p>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Patient Name</label>
+                            <div class="col-sm-9">
+                              <input type="text" name="patient_name" class="form-control form-control-sm">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">MRN</label>
+                            <div class="col-sm-9">
+                              <input type="text" name="patient_mrn" class="form-control form-control-sm">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Mobile Number</label>
+                            <div class="col-sm-9">
+                              <input type="number" name="patient_mobile" class="form-control form-control-sm">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">CNIC</label>
+                            <div class="col-sm-9">
+                              <input type="number" name="patient_cnic" class="form-control form-control-sm">
+                            </div>                            
+                          </div>
+                        </div>                        
+                      </div>
+                      <div>
+                      <button type="submit" class="btn btn-primary me-2 float-end"> Searchs</button>                   
+                      <a class="btn btn-facebook me-2 float-end" href="/add_patient">Add New</a>
+                    </div>
+                    </form> 
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>MRN</th>
+                          <th>First Name</th>
+                          <th>Last Name</th>
+                          <th>Age</th> 
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      {%for result in patient_record%}
+                      <tbody>
+                        <tr>
+                          <td>{{result.MRN}}</td>
+                          <td>{{result.first_name}}</td>
+                          <td>{{result.last_name}}</td>
+                          <td>{{result.age}}</td>                                       
+                          {%if result.adm_status=='Admitted'%} 
+                          <td><label class="badge badge-success">Admitted</label></td>
+                          {%elif result.adm_status=='Pending'%}
+                          <td><label class="badge badge-warning">Pending</label></td>
+                          {%elif result.adm_status=='Discharge'%}
+                          <td><label class="badge badge-danger">Discharge</label></td>
+                          {%else%}
+                          {{pass}}
+                          {%endif%}
+                          <td>
+                            <a href="/create_order?mrn={{result.MRN}}">Continue</a>
+                          </td>
+                        </tr>                     
+                      </tbody>
+                      {%endfor%}
+                    </table>
+
+                  </div>
+                </div>
+               
+              </div>
+            </div>
+          </div>
+          <!-- content-wrapper ends -->
+        
+{%endblock%}

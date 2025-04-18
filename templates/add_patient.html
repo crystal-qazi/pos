@@ -1,0 +1,95 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+<style>
+  .table th, .table td {
+    
+      vertical-align: middle;
+      line-height: 2;
+      white-space: nowrap;
+      padding: 5px;
+
+  }
+</style>
+
+        <!-- partial -->
+        <div class="main-panel">
+          <div class="content-wrapper">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+              <ul class=flashes>
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+              </ul>
+            {% endif %}
+          {% endwith %}
+            <div class="row">
+              <div class="col-md-12 ">
+                <h3>Add new patient</h3>
+                <div class="card">
+                  <div class="card-body">
+                    <form action="" method="post" class="form-sample">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Patient First Name</label>
+                            <div class="col-sm-9">
+                              <input type="text" name="patient_fname" class="form-control form-control-sm">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label for="" class="col-sm-3 col-form-label">Patient Last Name</label>
+                            <div class="col-sm-9">
+                              <input type="text" name="patient_lname" id="" class="form-control form-control-sm">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Patient Age</label>
+                            <div class="col-sm-9">
+                              <input type="text" name="patient_age" class="form-control form-control-sm">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label for="" class="col-sm-3 col-form-label">Patient NIC</label>
+                            <div class="col-sm-9">
+                              <input type="text" name="patient_nic" id="" class="form-control form-control-sm">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Patient Mobile</label>
+                            <div class="col-sm-9">
+                              <input type="text" name="patient_mobile" class="form-control form-control-sm">
+                            </div>
+                          </div>
+                        </div>
+                       
+                        
+                      </div>
+                      <a href="/create_order?">
+                      <button type="submit" class="btn btn-primary float-end">Contineu to File</button>
+                    </a>
+                    </form>
+                  </div>
+                </div>
+
+                </form>
+
+              </div>
+            </div>
+          </div>
+          <!-- content-wrapper ends -->
+        
+{%endblock%}

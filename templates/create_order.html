@@ -1,0 +1,246 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+<style>
+ 
+  .table thead th {
+    
+    border-bottom-width: 0px;
+    font-weight: 500;
+    font-size: 14px;
+    
+}
+.table th, .table td {
+  vertical-align: middle;
+  line-height: 1;
+  white-space: normal;
+  padding: 5px;
+  font-size: 12px;
+}
+
+</style>
+
+<!-- partial -->
+<div class="main-panel">
+  <div class="content-wrapper">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class=flashes>
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    {%for result in patient_record%}
+
+    <div class="col-md-12 grid-margin stretch-card">
+      <div class="">
+        <div class="">
+          <!-- <p class="card-title">Patient Details</p> -->
+          <div class="d-flex flex-wrap mb-3">
+            <div class="me-5">
+              <p class="text-muted">Patient Name</p>
+              <h5 class="text-primary  font-weight-medium">{{result.first_name|capitalize}}
+                {{result.last_name|capitalize}}</h5>
+            </div>
+            <div class="me-5">
+              <p class="text-muted">MRN</p>
+              <h5 class="text-primary font-weight-medium">{{result.MRN}}</h5>
+            </div>
+            <div class="me-5">
+              <p class="text-muted">Age</p>
+              <h5 class="text-primary font-weight-medium">{{result.age}}</h5>
+            </div>
+            <div class="me-5">
+              <p class="text-muted">Mobile Number</p>
+              <h5 class="text-primary font-weight-medium">{{result.Mobile}}</h5>
+            </div>
+            <div class="me-5">
+              <p class="text-muted">Visit Number</p>              
+              {%if visit_number%}
+              {{visitnumber}}              
+              <h5 class="text-primary font-weight-medium">{{visit_number}}</h5>        
+              {%else%}
+              <h5 class="text-primary font-weight-medium">Not Generated yet</h5>
+              {%endif%}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    {%endfor%}
+
+
+    
+    <div class="row">
+      <div class="col-md-4">
+        <div class="bg-white" style="height: 80vh;">
+          <div class="">
+            <form action="/create_order" method="POST">
+              <input type="hidden" name="mrn" value="{{patient_record[0]['MRN']}}">
+              <input type="hidden" name="visitnumber" value="{{visit_number}}">
+            <table id="cartTable" class="table table-bordered table-sm table-responsive-sm">
+            </table>
+          
+              
+        
+          </div>
+         
+        </div>
+        <button onclick="clearCart()" class="btn btn-primary">x Clear Cart</button>
+        <!-- <button onclick="SaveCart()" class="btn btn-primary">x Save Cart</button> -->
+        <button type="submit" class="btn btn-primary">save</button>
+      </form>
+      </div>
+      <div class="col-md-8">
+        <div class="">
+          <!-- <form action="" method="GET">
+                    <input type="text" name="search-item" class="form-control">
+                  </form> -->
+
+          <input class="form-control" type="text" id="searchInput" placeholder="🔍 Search by name or code"
+            onkeyup="searchItem()">
+          <!-- <div id="searchResults"></div> -->
+
+          <div class="row pt-5">
+            <div class="col-12">
+              <div>
+                <div id="searchResults" class="d-flex"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- content-wrapper ends -->
+  </div>
+
+  <script>
+    /** 🔵 Search Item (FEFO) */
+    function searchItem() {
+      let query = document.getElementById("searchInput").value;
+      if (query.length < 2) return;
+      console.log(query)
+      fetch(`/cart_item_search?query=${query}`)
+      
+        .then(response => response.json())
+        .then(data => {
+          let resultsDiv = document.getElementById("searchResults");
+          resultsDiv.innerHTML = "";
+          data.forEach(item => {
+            // Format the expiry date to a shorter format (e.g., DD/MM/YYYY)
+                const expiryDate = new Date(item.expiry_date);
+                const formattedExpiryDate = `${expiryDate.getDate()}/${expiryDate.getMonth() + 1}/${expiryDate.getFullYear()}`;
+            resultsDiv.innerHTML += `
+                        <div class="card w-25 mx-2">
+                          <div class="card-header">
+                            ${item.item_code}
+                          </div>                          
+                          <div class="card-body" >
+                            <h5 class="card-title">${item.item_name}</h5>
+                            <p>Batch: ${item.batch_no}</p>
+                            <p>Stock: ${item.stock_quantity}</p>
+                            <p>Expiry: ${formattedExpiryDate}</p>
+                            
+                          </div>
+                          
+                          <button onclick="addToCart('${item.item_code}', '${item.item_name}', '${item.batch_no}', '${item.expiry_date}', ${item.selling_price})">🛒 Add to Cart</button>
+                        </div>                     
+                       
+                        `;
+                        
+          });
+          
+        });
+    }
+
+
+    /** 🟡 Add to Cart */
+    function addToCart(item_code, item_name, batch_no, expiry_date, price) {
+      fetch("/add_to_cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_code, item_name, batch_no, expiry_date, price })
+      })
+        .then(response => response.json())
+        .then(data => updateCartUI());
+    }
+
+    /** 🟣 Update Cart UI */
+    function updateCartUI() {
+      fetch("/cart")
+        .then(response => response.json())
+        .then(cart => {
+          let cartTable = document.getElementById("cartTable");
+          cartTable.innerHTML = `
+          <thead>
+            <tr>
+                <th scope="col">Item Code</th>
+                <th scope="col">Description</th>
+                <!-- <th>Batch</th>
+                <th>Expiry</th> -->
+                <th scope="col">Price</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Total</th>
+                <th scope="col">Action</th>
+            </tr>
+          </thead>
+        `;
+          cart.forEach(item => {
+            cartTable.innerHTML += `
+            <tbody>
+                <tr>
+                    <td scope="row">${item.item_code}</td>
+                    <td>${item.description}</td>
+                    <!-- <td>${item.batch_number}</td>
+                    <td>${item.expiry_date}</td> -->
+                    <td>${item.price}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.total}</td>
+                    <td><a  onclick="removeFromCart('${item.item_code}', '${item.batch_number}')"> <i class="fa fa-dribbble"></i></a></td>
+                    <!-- <td><button onclick="removeFromCart('${item.item_code}', '${item.batch_number}')">x </button></td> -->
+                </tr>
+              </tbody>
+            `;
+          });
+        });
+    }
+
+    /** 🟤 Remove from Cart */
+    function removeFromCart(item_code, batch_number) {
+      fetch("/remove_from_cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_code, batch_number })
+      })
+        .then(response => response.json())
+        .then(data => updateCartUI());
+    }
+
+    /** 🟤 Save Cart */
+    function SaveCart(item_code, batch_number) {
+      fetch("/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ "status": "save" })
+      })
+        .then(response => response.json())
+       
+    }
+
+    /** ⚫ Clear Cart */
+    function clearCart() {
+      fetch("/clear_cart", { method: "POST" })
+        .then(response => response.json())
+        .then(data => updateCartUI());
+    }
+
+    // 🔵 Load cart on page load
+    updateCartUI();
+  </script>
+
+  {%endblock%}

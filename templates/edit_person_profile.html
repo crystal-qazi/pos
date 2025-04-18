@@ -1,0 +1,411 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+
+
+
+
+        <!-- partial -->
+        <div class="main-panel">
+          
+          <div class="content-wrapper">
+
+            <!-- msg -->
+            <div class="float-end w-25">
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'message' %}
+                          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                           
+                        {% else %}
+                          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            
+                        {% endif %}
+                          <strong>{{category}}:</strong>{{ message }}
+                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                  {% endif %}
+              {% endwith %}
+            </div>
+            <!-- msg -->
+            <div class="row">              
+              <div class="col-md-12 grid-margin">
+                <div class="row">
+                  <div class="col-12 col-xl-8 mb-4 mb-xl-0">
+                    <h3 class="font-weight-bold">Welcome John</h3>
+                    <h6 class="font-weight-normal mb-0">All systems are running smoothly! You have <span class="text-primary">3 unread alerts!</span></h6>
+                  </div>
+                  <div class="col-12 col-xl-4">
+                    <div class="justify-content-end d-flex">
+                      <div class="dropdown flex-md-grow-1 flex-xl-grow-0">
+                        <button class="btn btn-sm btn-light bg-white dropdown-toggle" type="button" id="dropdownMenuDate2" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                          <i class="mdi mdi-calendar"></i> Today (10 Jan 2021) </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuDate2">
+                          <a class="dropdown-item" href="#">January - March</a>
+                          <a class="dropdown-item" href="#">March - June</a>
+                          <a class="dropdown-item" href="#">June - August</a>
+                          <a class="dropdown-item" href="#">August - November</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            
+
+            {%for data in data%}
+          
+            <form action="/edit_person_detail?person_id={{data.person_id}}&type=1" method="post" enctype="multipart/form-data">
+            <div class="col-12 grid-margin">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Person Basic Detail</h4>
+                  <form class="form-sample">
+                    <p class="card-description"> Personal info </p>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">First Name</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" name="first_name" {%if data %}value="{{data.first_name}}" {%endif%}/>
+                          </div>
+                        </div>
+                      </div>                      
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label" >Last Name</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" name="last_name" {%if data %}value="{{data.last_name}}" {%endif%}/>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Pre Fix</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" name="prefix" {%if data %}value="{{data.prefix}}" {%endif%}/>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Suffix</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" name="suffix" {%if data %}value="{{data.suffix}}" {%endif%}/>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Gender</label>
+                          <div class="col-sm-9">
+                            <select class="form-select" name="gender">
+                              {%if data %}<option selected>{{data.gender}}</option> {%endif%}
+                              <option>Male</option>
+                              <option>Female</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Date of Birth</label>                          
+                          <div class="col-sm-9">
+                            <input type="date" class="form-control" name="date_of_birth" placeholder="dd/mm/yyyy" {%if data %}value="{{data.birth_date}}" {%endif%} />
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Date of Death</label>                          
+                          <div class="col-sm-9">
+                            <input type="date" class="form-control" name="date_of_death" placeholder="dd/mm/yyyy" {%if data %}value="{{data.death_date}}" {%endif%} />
+                          </div>
+                        </div>
+                        
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Live / Passed way</label>
+                          <div class="col-sm-4">
+                            {%if data%}
+                           
+                            <div class="form-check">                              
+                              <label class="form-check-label">
+                                <input type="radio" class="form-check-input" name="passed" id="membershipRadios1" value="0" {%if data.passed|string() == '0'%}checked {%endif%}> Live </label>
+                            </div>
+                          </div>
+                          <div class="col-sm-5">
+                            <div class="form-check">
+                              <label class="form-check-label">
+                                <input type="radio" class="form-check-input" name="passed" id="membershipRadios2" value="1"{%if data.passed|string() != '0'%}checked {%endif%}> Passed Away </label>
+                            </div>
+                          </div>
+                          {%endif%}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <!-- <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Category</label>
+                          <div class="col-sm-9">
+                            <select class="form-select">
+                              <option>Category1</option>
+                              <option>Category2</option>
+                              <option>Category3</option>
+                              <option>Category4</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div> -->
+                      
+                    </div>
+                    <p class="card-description"> Address  </p>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Place of Birht</label>
+                          <div class="col-sm-9">
+                            <input type="text" id="city" class="form-control" name="placeofbirth" {%if data %}value="{{data.PlaceOfBirth}}" {%endif%}/>
+                          </div>
+                        </div>
+                      </div>    
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Place Of Death</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" placeholder="State, Country" name="placeofdeath" {%if data %}value="{{data.PlaceOfDeath}}" {%endif%}/>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Short Description</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" name="notes" {%if data %}value="{{data.Notes}}" {%endif%} />
+                          </div>
+                        </div>
+                      </div>
+                     
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Profile Picture</label>
+                          <div class="col-sm-9 col-9">
+                            <input type="file" class="form-control" name="profile_pic" {%if data %} value="{{data.media_path}}" {%endif%} />
+                          </div>
+                          
+                        </div>
+                       
+                      </div>
+                      <div class="col-6">
+                        <img class="br-8 col-6" src="{{url_for('static', filename=('data.media_path'))}}" alt="">
+                    </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">submit</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </form>
+            {%endfor%}
+
+            {%for data in data%}
+            
+            <form action="/edit_person_detail?person_id={{data.person_id}}&type=2" method="post" enctype="multipart/form-data">
+              
+              <input type="hidden"  name="pdid" {%if data %}value="{{data.pdid}}" {%endif%}/>
+              <div class="col-12 grid-margin">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="card-title">Person Facts Details</h4>
+                    <form class="form-sample">
+                      <p class="card-description"> Facts info info </p>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">About</label>
+                            <div class="col-sm-9">
+                              <input type="textarea" class="form-control" name="about" {%if data %}value="{{data.about}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>                      
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label" >Also Known As</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="also_known_as" {%if data %}value="{{data.also_known_as}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                        </div>
+                        <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Nationality</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="nationality" {%if data %}value="{{data.nationality}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Weight (KG)</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="weight" {%if data %}value="{{data.weight}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Height (KG)</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="height" {%if data %}value="{{data.height}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Email</label>
+                            <div class="col-sm-9">
+                              <input type="email" class="form-control" name="email" {%if data %}value="{{data.email}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Phone</label>
+                            <div class="col-sm-9">
+                              <input type="number" class="form-control" name="phone" {%if data %}value="{{data.phone}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Elected</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="elected" {%if data %}value="{{data.elected}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Origin</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="origin" {%if data %}value="{{data.origin}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Residence</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="residence" {%if data %}value="{{data.residence}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Education</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="education" {%if data %}value="{{data.education}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Occupation</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="occupation" {%if data %}value="{{data.occupation}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Employment</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="employment" {%if data %}value="{{data.employment}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Mission</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="mission" {%if data %}value="{{data.mission}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Cause of Death</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="cause_of_death" {%if data %}value="{{data.cause_of_death}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Funeral</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="funeral" {%if data %}value="{{data.funeral}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">will</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="will" {%if data %}value="{{data.will}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Religion</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" name="religion" {%if data %}value="{{data.religion}}" {%endif%}/>
+                            </div>
+                          </div>
+                        </div>
+                        
+                       
+                      </div>
+                     
+                      <button type="submit" class="btn btn-primary mb-2">submit</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </form>
+            {%endfor%}
+          </div>
+          <!-- content-wrapper ends -->
+        
+{%endblock%}

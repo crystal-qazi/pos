@@ -1,0 +1,134 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+<link rel="stylesheet" href="{{url_for('static', filename=('assets/css/custom.css'))}}">
+
+
+
+<style>
+  .table td img {
+      width: 16px;
+      height: 16px;
+      border-radius: 0px;
+    }
+</style>
+
+        <!-- partial -->
+        <div class="main-panel">
+          
+          <div class="content-wrapper">
+
+            <!-- msg -->
+            <div class="float-end w-25">
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'message' %}
+                          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                           
+                        {% else %}
+                          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            
+                        {% endif %}
+                          <strong>{{category}}:</strong>{{ message }}
+                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                  {% endif %}
+              {% endwith %}
+            </div>
+            <!-- msg -->
+            <div class="row">              
+              <div class="col-md-12 grid-margin">
+                <div class="row">
+                  <div class="col-12 col-xl-8 mb-4 mb-xl-0">
+                    <h3 class="font-weight-bold">Search Memebers</h3>
+                  </div>
+                  
+                </div>
+              </div>
+            </div>
+            
+            
+
+            <form class="form-sample" method="POST" action="/find_member">
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group row">
+                    <label class="col-sm-3 col-form-label" >First Name</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control"  name="pfname" />aa
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group row">
+                    <label class="col-sm-3 col-form-label ">Last Name</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" name="plname" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group row">
+                    <label class="col-sm-3 col-form-label " style="font-size: small;">Father First Name</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" name="ffname" />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group row">
+                    <label class="col-sm-3 col-form-label " >Father Last Name</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" name="flname"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary me-2 float-end">Search</button>
+            
+            </form>
+      
+            <div>
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Person id</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Father Name</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {%for result in result%}
+                  <tr>
+                    
+                    <td>{{result.person_id}}</td>
+                    <td>{{result.first_name}}</td>
+                    <td> {{result.last_name}} </td>
+                    <td>{{result.parent_first_name}}  {{result.parent_last_name}}</label></td>
+                    <!-- <td><label class="badge badge-danger">Pending</label></td> -->
+                    <td>
+                      <a href="/edit_person_detail?person_id={{result['person_id']}}"><img src="{{url_for('static', filename='assets/media/user.png')}}" ></a>
+                      <a href="/edit_profile_detail?bio_person={{result['person_id']}}"><img src="{{url_for('static', filename='assets/media/biography.png')}}" ></a>
+                    </td>
+                    <!-- <td><a href="/edit_person_detail?person_id={{result['person_id']}}">Edit Bio</a></td> -->
+                    
+                  </tr>
+                  {%endfor%}
+               
+                </tbody>
+              </table>
+            </div>
+
+
+            {{result |safe}}
+          </div>
+          <!-- content-wrapper ends -->
+        
+{%endblock%}

@@ -1,0 +1,9 @@
+---
+
+
+ database:
+    db_name: 'pharma'
+    db_user: "root"
+    db_password: 'root'
+
+

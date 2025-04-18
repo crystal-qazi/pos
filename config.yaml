@@ -1,0 +1,37 @@
+---
+ meta-data:
+   site-name: "HMS"
+   app-name: "Hospital Managment System"
+   description : "Knowledge Base System (KBS) is the process of identifying, organizing, storing and disseminating information within an organization.
+
+                  A Knowledge Base System (KBS) harnesses the collective knowledge of the organization, leading to better operational efficiencies. These systems are supported by the use of a knowledge base.
+
+                   "
+   Developed-by: "Crystal Solutions"
+   Button1:
+      name: "Showcase (HIS)"
+      url: http://showcase.lnh.org/
+   index_route: '\\pc-1643\E$/Shared_folder/files/index.md'
+   page_route: '\\pc-1643\E$/Shared_folder/files/'
+  # index_route: '//lnh-ustore/IT Departmental Data/DEO Folder/M Azeem/Documentation/files/index.md'
+  # page_route: '//lnh-ustore/IT Departmental Data/DEO Folder/M Azeem/Documentation/files/'
+
+
+ server-local:
+    debug: True
+    host: "127.0.0.1"
+    port: 4245
+    ssl_context: ('SSL\Qazi.crt','SSL\Qazi.key')
+
+ server-intra:
+    debug: True
+    host: "0.0.0.0"
+    port: 4245
+    ssl_context: ('SSL\Qazi.crt','SSL\Qazi.key')
+  
+
+ url:
+    url1: http://172.30.14.123:4242/Servers
+
+ test:
+
