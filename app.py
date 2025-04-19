@@ -23,6 +23,12 @@ def login():
             return redirect('/dashboard')
     return render_template('login.html')
 
+@app.route('/dashboard')
+def dashboard():
+
+    return render_template('index.html')
+
+
 @app.route('/session2', methods=['get','post'])
 def session2():
     cart = session.get("cart", [])
@@ -47,13 +53,7 @@ def get_cookie():
    
     
     return username
-
-    
-@app.route('/dashboard')
-def dashboard():
-
-    return render_template('index.html')
-
+ 
 
 @app.route('/all_patient')
 def all_patient():
@@ -411,18 +411,27 @@ def order_detail():
     sql = "select * from patients where MRN = %s"
     cur.execute(sql,(mrn,))
     result = cur.fetchall()
-    visitnumber = VisitNumber() 
+    
    
 
     conn = connect()
     cur = conn.cursor(dictionary=True)
     sql = "SELECT * FROM order_detail \
             inner JOIN orders ON orders.order_id = order_detail.order_id \
+            INNER JOIN patient_visit pv ON orders.visit_id = pv.visit_id \
             WHERE order_number = %s "
     cur.execute(sql,(OrderNumber,))
     order_detail = cur.fetchall()
     conn.close()
+    visitnumber = order_detail[0]['visit_number'] 
     # print(order_detail)
+
+
+    #calculation
+    
+    for o in order_detail:
+        p = {o['selling_price']} + {o['selling_price']}
+        print(f"total price {p}")
 
    
 
@@ -468,7 +477,7 @@ def order_detail():
 
 
     # return render_template('create_order.html', patient_record=result, visit_number = visitnumber)
-    return render_template('/order_detail.html',patient_record=result, visit_number = visitnumber,OrderNumber=OrderNumber)
+    return render_template('/order_detail.html',patient_record=result, visit_number = visitnumber,OrderNumber=OrderNumber,order_detail=order_detail)
 
 
 @app.route("/cancel_order", methods=['GET','POST'])
