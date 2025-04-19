@@ -105,32 +105,66 @@
       </form>
       </div>
       <div class="col-md-5">
-        <div class="">          
-          <div class="row pt-5">
-            <div class="col-12">
-              <div>
-                <div id="payment" class="d-flex">
-                  <div>
-                    test
-                  </div>
-                </div>
+        <div class="grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Receipts</h4>
+              <p class="card-description">
+                Order Number <code>{{OrderNumber}}</code>
+              </p>
+              <div class="table-responsive">
+                <table class="table">
+                  
+                  <thead>
+                    <tr>
+                      <th>Receipt #</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                      <th>Print</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    
+                    {%for Slip in Slip_detail %}
+                  
+                    <tr>
+                      <td>{{Slip.invoice_number}}</td>
+                      <td>{{Slip.transection_type}}</td>                     
+                      <td>{{Slip.total_amount}}</td>                     
+                      <td>{{Slip.transaction_date}}</td>                     
+                                         
+                      
+                      <td><label class="badge bg-danger">{{Slip_detail.status}}</label></td>
+                    </tr>
+                   {%endfor%}
+                   
+                  </tbody>
+                </table>
+                
               </div>
             </div>
           </div>
         </div>
+
+      
+
+                
+              
+      
+
+              
       </div>
       <div class="col-md-3 col-lg-3 col-xl-3">
         
-        {%for order in order_detail%}
-        {{order['selling_price']}}
-        {%endfor%}
+        
       
         
           <div class="p-3 bg-body-tertiary">
             <span class="fw-bold">Order Recap</span>
             <span class="float-end">{{order_detail[0]['order_status']}}</span>
             <div class="d-flex justify-content-between mt-2">
-              <span>Total Price</span> <span>186.86</span>
+              <span>Total Price</span> <span>{{total}}</span>
             </div>
             <div class="d-flex justify-content-between mt-2">
               <span>SST </span> <span>0</span>
@@ -161,19 +195,90 @@
               <span>Insurance Responsibility </span> <span>$71.76</span>
             </div> -->
             <div class="d-flex justify-content-between mt-2">
-              <span>Round Off </span> <span>0.14</span>
+              <span>Round Off </span> <span>{{round_def}}</span>
             </div>
             <hr />
             <div class="d-flex justify-content-between mt-2">
-              <span>Final Amount </span> <span class="text-success">187</span>
+              <span>Final Amount </span> <span class="text-success" id="totalAmount" >{{round_amount}}</span>
             </div>
           </div>
-     
-{{order_detail}}
 
-{%for order in order_detail%}
-{{order.selling_price}}
-{%endfor%}
+          <br>
+
+          {%if order_detail[0]['order_status'] == 'Complete'%}
+          {%else%}
+          <div id="payment" class="">
+            <div>
+              <div class="card">
+                <div class="card-header">
+                    <h4>Cash Payment</h4>
+                </div>
+                
+         
+                <div class="card-body">
+                    <form action="/payment_calculaton?mrn={{patient_record[0]['MRN']}}&order={{OrderNumber}}" method="POST">
+                        <div class="mb-3">
+                            <!-- <label for="amountDue" class="form-label">Amount Due</label> -->
+                            <input name="Total_amount" id="totalAmount" type="hidden" class="form-control form-control-sm" id="amountDue" placeholder="Enter amount due" value="{{round_amount}}">
+                        </div>
+                        <div class="mb-3">
+                            <label  for="amountReceived" class="form-label">Amount Received</label>
+                            <input name="cashGiven" id="cashGiven" type="number" class="form-control form-control-sm" id="amountReceived" placeholder="Enter cash given" oninput="calculateChange()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="change" class="form-label">Change</label>
+                            <input id="changeAmount" readonly type="text" class="form-control form-control-sm" id="change" readonly>
+                        </div>
+                        
+
+                        <button onclick="submitTransaction()">Submit</button>
+              
+                        <div id="result"></div>
+                    </form>
+                </div>
+            </div>
+            </div>
+          </div>
+          {%endif%}
+
+         
+
+
+                <script>
+                  function calculateChange() {
+                    const total = parseFloat(document.getElementById('totalAmount').textContent) || 0;
+                    const cash = parseFloat(document.getElementById('cashGiven').value) || 0;
+              
+                    if (cash >= total) {
+                      document.getElementById('changeAmount').value = (cash - total).toFixed(2);
+                    } else {
+                      document.getElementById('changeAmount').value = "Insufficient Cash";
+                    }
+                  }
+              
+                  function submitTransaction() {
+                    const total = parseFloat(document.getElementById('totalAmount').value);
+                    const cash = parseFloat(document.getElementById('cashGiven').value);
+                    const change = document.getElementById('changeAmount').value;
+              
+                    if ( isNaN(cash) || cash < total) {
+                      document.getElementById('result').innerHTML = "Please enter valid amounts.";
+                      document.getElementById('result').style.color = "red";
+                      return;
+                    }
+              
+                    document.getElementById('result').innerHTML =
+                      `Transaction completed. Change: $${(cash - total).toFixed(2)}`;
+                    document.getElementById('result').style.color = "green";
+              
+                    // Clear input fields (optional)
+                    // document.getElementById('totalAmount').value = "";
+                    // document.getElementById('cashGiven').value = "";
+                    // document.getElementById('changeAmount').value = "";
+                  }
+                </script>
+     
+
 
 
       </div>
