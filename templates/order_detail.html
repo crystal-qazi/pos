@@ -82,27 +82,95 @@
       </div>
     </div>
     {%endfor%}
-
-
+   
+    <style>
+      .disabled-row {
+        text-decoration: line-through;
+        color: gray;
+        opacity: 0.6;
+        pointer-events: none; /* disables clicks */
+      }
+    </style>
 
     <div class="row">
       <div class="col-md-4">
-        <div class="bg-white" style="height: 80vh;">
+        <div class="bg-white" style="height: 60vh;">
           <div class="">
-            <form action="/cancel_order?OrderNumber={{OrderNumber}}" method="POST">
+
+            <form id="returnForm" action="/return_order?mrn={{patient_record[0]['MRN']}}&OrderNumber={{OrderNumber}}" method="POST">
               <input type="hidden" name="mrn" value="{{patient_record[0]['MRN']}}">
-            <table id="cartTable" class="table table-bordered table-sm table-responsive-sm">
-            </table>
-          
-              
-        
-          </div>
-         
-        </div>
-        <!-- <button onclick="clearCart()" class="btn btn-primary">x Clear Cart</button> -->
-        <!-- <button onclick="SaveCart()" class="btn btn-primary">x Save Cart</button> -->
-        <button type="submit" class="btn btn-primary">Cancel</button>
-      </form>
+              <table id="cartTable" class="table table-bordered table-sm table-responsive-sm">
+                <thead>
+                  <tr>
+                    <th><input id="checkAll" type="checkbox"></th>
+                    <th>Item Code</th>
+                    <th>Description</th>                
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in order_detail %}
+                  <tr {%if item.return_item_id%}  style="text-decoration: line-through;" class="disabled-row"  {%else%}{%endif%}>
+                    <td>
+                      <input class="check" type="checkbox" data-id="{{ item.oitem_id }}">
+                    </td>
+                    <td>{{ item.item_code }}</td>
+                    <td>{{ item.oitem_name }}</td>               
+                    <td>{{ item.selling_price }}</td>
+                    <td>
+                      <input style="width: 60px;" type="number" class="qty-input" data-id="{{ item.oitem_id }}" value="{{ item.qty }}">
+                    </td>
+                    <td>{{ item.qty * item.selling_price }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+                      
+    </div>
+     
+  </div>
+  <button type="submit" class="btn btn-primary">Return</button>
+</form>
+
+
+<script>
+  document.getElementById('returnForm').addEventListener('submit', function (e) {
+    // Remove any previous hidden inputs
+    document.querySelectorAll('input.hidden-dynamic').forEach(el => el.remove());
+
+    // For each checked box
+    document.querySelectorAll('input.check:checked').forEach(chk => {
+      const itemId = chk.getAttribute('data-id');
+      const qtyInput = document.querySelector(`input.qty-input[data-id="${itemId}"]`);
+      const qtyValue = qtyInput ? qtyInput.value : 0;
+
+      // Create hidden inputs for submission
+      const idInput = document.createElement('input');
+      idInput.type = 'hidden';
+      idInput.name = 'order_detail_item_id';
+      idInput.value = itemId;
+      idInput.classList.add('hidden-dynamic');
+      this.appendChild(idInput);
+
+      const qtyHidden = document.createElement('input');
+      qtyHidden.type = 'hidden';
+      qtyHidden.name = 'order_detail_item_qty';
+      qtyHidden.value = qtyValue;
+      qtyHidden.classList.add('hidden-dynamic');
+      this.appendChild(qtyHidden);
+    });
+  });
+
+  // Optional: Check all logic
+  document.getElementById('checkAll').addEventListener('change', function () {
+    const checked = this.checked;
+    document.querySelectorAll('input.check').forEach(cb => cb.checked = checked);
+  });
+</script>
+
+
       </div>
       <div class="col-md-5">
         <div class="grid-margin stretch-card">
@@ -135,7 +203,49 @@
                       <td>{{Slip.transaction_date}}</td>                     
                                          
                       
-                      <td><label class="badge bg-danger">{{Slip_detail.status}}</label></td>
+                      <td><a href="/invoice/{{OrderNumber}}"><i class="fa fa-print"></i></a></td>
+                    </tr>
+                   {%endfor%}
+                   
+                  </tbody>
+                </table>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Returns</h4>
+              <!-- <p class="card-description">
+                Voucher Number <code>{{OrderNumber}}</code>
+              </p> -->
+              <div class="table-responsive">
+                <table class="table">
+                  
+                  <thead>
+                    <tr>
+                      <th>Receipt #</th>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Print</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    
+                    {%for Slip in vSlip_detail %}
+                  
+                    <tr>
+                      <td>{{Slip.return_number}}</td>
+                      <td>{{Slip.reason_code}}</td>                     
+                      <td>{{Slip.status}}</td>                     
+                      <td>{{Slip.return_date}}</td>                     
+                                         
+                      
+                      <td><a href="/invoice/{{OrderNumber}}"><i class="fa fa-print"></i></a></td>
                     </tr>
                    {%endfor%}
                    
@@ -157,7 +267,7 @@
       </div>
       <div class="col-md-3 col-lg-3 col-xl-3">
         
-        
+
       
         
           <div class="p-3 bg-body-tertiary">
@@ -289,7 +399,7 @@
 
   <script>
     /** 🔵 Search Item (FEFO) */
-    function searchItem() {
+   /* function searchItem() {
       let query = document.getElementById("searchInput").value;
       if (query.length < 2) return;
       fetch(`/cart_item_search?query=${query}`)
@@ -321,10 +431,10 @@
           
         });
     }
-
+*/
 
     /** 🟡 Add to Cart */
-    function addToCart(item_code, item_name, batch_no, expiry_date, price) {
+ /*   function addToCart(item_code, item_name, batch_no, expiry_date, price) {
       fetch("/add_to_cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -333,9 +443,9 @@
         .then(response => response.json())
         .then(data => updateCartUI());
     }
-
+*/
     /** 🟣 Update Cart UI */
-    function updateCartUI() {
+ /*   function updateCartUI() {
       fetch("/cart")
         .then(response => response.json())
         .then(cart => {
@@ -343,6 +453,7 @@
           cartTable.innerHTML = `
           <thead>
             <tr>
+               <th scope="col"><input class="chk" type="checkbox" data-orderdetailid="952992"></th>
                 <th scope="col">Item Code</th>
                 <th scope="col">Description</th>
                 <!-- <th>Batch</th>
@@ -358,7 +469,8 @@
             cartTable.innerHTML += `
             <tbody>
                 <tr>
-                    <td scope="row">${item.item_code}</td>
+                    <td ><input class="chk" type="checkbox" name="order_detail_item_id" value="${item.oitem_id}"></td>
+                    <td >${item.item_code}</td>
                     <td>${item.description}</td>
                     <!-- <td>${item.batch_number}</td>
                     <td>${item.expiry_date}</td> -->
@@ -372,9 +484,9 @@
           });
         });
     }
-
+*/
     /** 🟤 Remove from Cart */
-    function removeFromCart(item_code, batch_number) {
+ /*   function removeFromCart(item_code, batch_number) {
       fetch("/remove_from_cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -383,9 +495,9 @@
         .then(response => response.json())
         .then(data => updateCartUI());
     }
-
+*/
     /** 🟤 Save Cart */
-    function SaveCart(item_code, batch_number) {
+ /*   function SaveCart(item_code, batch_number) {
       fetch("/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -394,9 +506,9 @@
         .then(response => response.json())
        
     }
-
+*/
     /** ⚫ Clear Cart */
-    function clearCart() {
+  /*  function clearCart() {
       fetch("/clear_cart", { method: "POST" })
         .then(response => response.json())
         .then(data => updateCartUI());
@@ -404,6 +516,7 @@
 
     // 🔵 Load cart on page load
     updateCartUI();
+    */
   </script>
 
   {%endblock%}

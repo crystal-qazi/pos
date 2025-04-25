@@ -143,12 +143,13 @@
                           <div class="card-body" >
                             <h5 class="card-title">${item.item_name}</h5>
                             <p>Batch: ${item.batch_no}</p>
+                            <p>item_id: ${item.item_id}</p>
                             <p>Stock: ${item.stock_quantity}</p>
                             <p>Expiry: ${formattedExpiryDate}</p>
                             
                           </div>
                           
-                          <button onclick="addToCart('${item.item_code}', '${item.item_name}', '${item.batch_no}', '${item.expiry_date}', ${item.selling_price})">🛒 Add to Cart</button>
+                          <button onclick="addToCart('${item.item_id}','${item.item_code}', '${item.item_name}', '${item.batch_no}', '${item.expiry_date}', ${item.selling_price})">🛒 Add to Cart</button>
                         </div>                     
                        
                         `;
@@ -160,11 +161,11 @@
 
 
     /** 🟡 Add to Cart */
-    function addToCart(item_code, item_name, batch_no, expiry_date, price) {
+    function addToCart(item_id,item_code, item_name, batch_no, expiry_date, price) {
       fetch("/add_to_cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item_code, item_name, batch_no, expiry_date, price })
+        body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price })
       })
         .then(response => response.json())
         .then(data => updateCartUI());

@@ -1,0 +1,411 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+<style>
+ 
+  .table thead th {
+    
+    border-bottom-width: 0px;
+    font-weight: 500;
+    font-size: 14px;
+    
+}
+.table th, .table td {
+  vertical-align: middle;
+  line-height: 1;
+  white-space: normal;
+  padding: 5px;
+  font-size: 12px;
+}
+
+</style>
+
+<!-- partial -->
+<div class="main-panel">
+  <div class="content-wrapper">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class=flashes>
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+
+   
+
+
+    {%for result in patient_record%}
+ 
+ 
+    <div class="col-md-12 grid-margin stretch-card">
+      <div class="">
+        <div class="">
+          <!-- <p class="card-title">Patient Details</p> -->
+          <div class="d-flex flex-wrap mb-3">
+            <div class="me-5">
+              <p class="text-muted">Patient Name</p>
+              <h5 class="text-primary  font-weight-medium">{{result.first_name|capitalize}}
+                {{result.last_name|capitalize}}</h5>
+            </div>
+            <div class="me-5">
+              <p class="text-muted">MRN</p>
+              <h5 class="text-primary font-weight-medium">{{result.MRN}}</h5>
+            </div>
+            <div class="me-5">
+              <p class="text-muted">Age</p>
+              <h5 class="text-primary font-weight-medium">{{result.age}}</h5>
+            </div>
+            <div class="me-5">
+              <p class="text-muted">Mobile Number</p>
+              <h5 class="text-primary font-weight-medium">{{result.Mobile}}</h5>
+            </div>
+            <div class="me-5">
+              <p class="text-muted">Visit Number</p>              
+              {%if visit_number%}
+              {{visitnumber}}              
+              <h5 class="text-primary font-weight-medium">{{visit_number}}</h5>        
+              {%else%}
+              <h5 class="text-primary font-weight-medium">Not Generated yet</h5>
+              {%endif%}
+              
+            </div>
+            <div class="me-5">
+              <p class="text-muted">Order Status</p>
+              <h5 class="text-primary font-weight-medium">{{result.order_status}}</h5>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    {%endfor%}
+
+
+
+    <div class="row">
+      <div class="col-md-4">
+        <div class="bg-white" style="height: 80vh;">
+          <div class="">
+            <form action="/cancel_order?OrderNumber={{OrderNumber}}" method="POST">
+              <input type="hidden" name="mrn" value="{{patient_record[0]['MRN']}}">
+            <table id="cartTable" class="table table-bordered table-sm table-responsive-sm">
+            </table>
+          
+              
+        
+          </div>
+         
+        </div>
+        <!-- <button onclick="clearCart()" class="btn btn-primary">x Clear Cart</button> -->
+        <!-- <button onclick="SaveCart()" class="btn btn-primary">x Save Cart</button> -->
+        <button type="submit" class="btn btn-primary">Cancel</button>
+      </form>
+      </div>
+      <div class="col-md-5">
+        <div class="grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Receipts</h4>
+              <p class="card-description">
+                Order Number <code>{{OrderNumber}}</code>
+              </p>
+              <div class="table-responsive">
+                <table class="table">
+                  
+                  <thead>
+                    <tr>
+                      <th>Receipt #</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                      <th>Print</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    
+                    {%for Slip in Slip_detail %}
+                  
+                    <tr>
+                      <td>{{Slip.invoice_number}}</td>
+                      <td>{{Slip.transection_type}}</td>                     
+                      <td>{{Slip.total_amount}}</td>                     
+                      <td>{{Slip.transaction_date}}</td>                     
+                                         
+                      
+                      <td><a href="/invoice/{{OrderNumber}}"><i class="fa fa-print"></i></a></td>
+                    </tr>
+                   {%endfor%}
+                   
+                  </tbody>
+                </table>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+
+      
+
+                
+              
+      
+
+              
+      </div>
+      <div class="col-md-3 col-lg-3 col-xl-3">
+        
+        
+      
+        
+          <div class="p-3 bg-body-tertiary">
+            <span class="fw-bold">Order Recap</span>
+            <span class="float-end">{{order_detail[0]['order_status']}}</span>
+            <div class="d-flex justify-content-between mt-2">
+              <span>Total Price</span> <span>{{total}}</span>
+            </div>
+            <div class="d-flex justify-content-between mt-2">
+              <span>SST </span> <span>0</span>
+            </div>
+            <!-- <div class="d-flex justify-content-between mt-2">
+              <span>Amount Deductible</span> <span>$0.0</span>
+            </div> -->
+            <!-- <div class="d-flex justify-content-between mt-2">
+              <span>Coinsurance(0%)</span> <span>+ $0.0</span>
+            </div> -->
+            <!-- <div class="d-flex justify-content-between mt-2">
+              <span>Copayment </span> <span>+ 40.00</span>
+            </div> -->
+            <hr />
+            <!-- <div class="d-flex justify-content-between mt-2">
+              <span class="lh-sm">Total Deductible,<br />
+                Coinsurance and copay
+              </span>
+              <span>$40.00</span>
+            </div> -->
+            <!-- <div class="d-flex justify-content-between mt-2">
+              <span class="lh-sm">Maximum out-of-pocket <br />
+                on insurance policy</span>
+              <span>$40.00</span>
+            </div>
+            <hr />
+            <div class="d-flex justify-content-between mt-2">
+              <span>Insurance Responsibility </span> <span>$71.76</span>
+            </div> -->
+            <div class="d-flex justify-content-between mt-2">
+              <span>Round Off </span> <span>{{round_def}}</span>
+            </div>
+            <hr />
+            <div class="d-flex justify-content-between mt-2">
+              <span>Final Amount </span> <span class="text-success" id="totalAmount" >{{round_amount}}</span>
+            </div>
+          </div>
+
+          <br>
+
+          {%if order_detail[0]['order_status'] == 'Complete'%}
+          {%else%}
+          <div id="payment" class="">
+            <div>
+              <div class="card">
+                <div class="card-header">
+                    <h4>Cash Payment</h4>
+                </div>
+                
+         
+                <div class="card-body">
+                    <form action="/payment_calculaton?mrn={{patient_record[0]['MRN']}}&order={{OrderNumber}}" method="POST">
+                        <div class="mb-3">
+                            <!-- <label for="amountDue" class="form-label">Amount Due</label> -->
+                            <input name="Total_amount" id="totalAmount" type="hidden" class="form-control form-control-sm" id="amountDue" placeholder="Enter amount due" value="{{round_amount}}">
+                        </div>
+                        <div class="mb-3">
+                            <label  for="amountReceived" class="form-label">Amount Received</label>
+                            <input name="cashGiven" id="cashGiven" type="number" class="form-control form-control-sm" id="amountReceived" placeholder="Enter cash given" oninput="calculateChange()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="change" class="form-label">Change</label>
+                            <input id="changeAmount" readonly type="text" class="form-control form-control-sm" id="change" readonly>
+                        </div>
+                        
+
+                        <button onclick="submitTransaction()">Submit</button>
+              
+                        <div id="result"></div>
+                    </form>
+                </div>
+            </div>
+            </div>
+          </div>
+          {%endif%}
+
+         
+
+
+                <script>
+                  function calculateChange() {
+                    const total = parseFloat(document.getElementById('totalAmount').textContent) || 0;
+                    const cash = parseFloat(document.getElementById('cashGiven').value) || 0;
+              
+                    if (cash >= total) {
+                      document.getElementById('changeAmount').value = (cash - total).toFixed(2);
+                    } else {
+                      document.getElementById('changeAmount').value = "Insufficient Cash";
+                    }
+                  }
+              
+                  function submitTransaction() {
+                    const total = parseFloat(document.getElementById('totalAmount').value);
+                    const cash = parseFloat(document.getElementById('cashGiven').value);
+                    const change = document.getElementById('changeAmount').value;
+              
+                    if ( isNaN(cash) || cash < total) {
+                      document.getElementById('result').innerHTML = "Please enter valid amounts.";
+                      document.getElementById('result').style.color = "red";
+                      return;
+                    }
+              
+                    document.getElementById('result').innerHTML =
+                      `Transaction completed. Change: $${(cash - total).toFixed(2)}`;
+                    document.getElementById('result').style.color = "green";
+              
+                    // Clear input fields (optional)
+                    // document.getElementById('totalAmount').value = "";
+                    // document.getElementById('cashGiven').value = "";
+                    // document.getElementById('changeAmount').value = "";
+                  }
+                </script>
+     
+
+
+
+      </div>
+    </div>
+
+  <!-- content-wrapper ends -->
+  </div>
+
+  <script>
+    /** 🔵 Search Item (FEFO) */
+    function searchItem() {
+      let query = document.getElementById("searchInput").value;
+      if (query.length < 2) return;
+      fetch(`/cart_item_search?query=${query}`)
+        .then(response => response.json())
+        .then(data => {
+          let resultsDiv = document.getElementById("searchResults");
+          resultsDiv.innerHTML = "";
+          data.forEach(item => {
+            // Format the expiry date to a shorter format (e.g., DD/MM/YYYY)
+                const expiryDate = new Date(item.expiry_date);
+                const formattedExpiryDate = `${expiryDate.getDate()}/${expiryDate.getMonth() + 1}/${expiryDate.getFullYear()}`;
+            resultsDiv.innerHTML += `
+                        <div class="card w-25 mx-2">
+                          <div class="card-header">
+                            ${item.item_code}
+                          </div>                          
+                          <div class="card-body" >
+                            <h5 class="card-title">${item.item_name}</h5>
+                            <p>Batch: ${item.batch_no}</p>
+                            <p>Expiry: ${formattedExpiryDate}</p>
+                            
+                          </div>
+                          <button onclick="addToCart('${item.item_code}', '${item.item_name}', '${item.batch_no}', '${item.expiry_date}', ${item.selling_price})">🛒 Add to Cart</button>
+                        </div>                     
+                       
+                        `;
+                        
+          });
+          
+        });
+    }
+
+
+    /** 🟡 Add to Cart */
+    function addToCart(item_code, item_name, batch_no, expiry_date, price) {
+      fetch("/add_to_cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_code, item_name, batch_no, expiry_date, price })
+      })
+        .then(response => response.json())
+        .then(data => updateCartUI());
+    }
+
+    /** 🟣 Update Cart UI */
+    function updateCartUI() {
+      fetch("/cart")
+        .then(response => response.json())
+        .then(cart => {
+          let cartTable = document.getElementById("cartTable");
+          cartTable.innerHTML = `
+          <thead>
+            <tr>
+               <th scope="col"><input class="chk" type="checkbox" data-orderdetailid="952992"></th>
+                <th scope="col">Item Code</th>
+                <th scope="col">Description</th>
+                <!-- <th>Batch</th>
+                <th>Expiry</th> -->
+                <th scope="col">Price</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Total</th>
+                <th scope="col">Action</th>
+            </tr>
+          </thead>
+        `;
+          cart.forEach(item => {
+            cartTable.innerHTML += `
+            <tbody>
+                <tr>
+                    <td ><input class="chk" type="checkbox" name="order_detail_item_id" value="${item.oitem_id}"></td>
+                    <td >${item.item_code}</td>
+                    <td>${item.description}</td>
+                    <!-- <td>${item.batch_number}</td>
+                    <td>${item.expiry_date}</td> -->
+                    <td>${item.price}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.total}</td>
+                    <td><button onclick="removeFromCart('${item.item_code}', '${item.batch_number}')">x</button></td>
+                </tr>
+              </tbody>
+            `;
+          });
+        });
+    }
+
+    /** 🟤 Remove from Cart */
+    function removeFromCart(item_code, batch_number) {
+      fetch("/remove_from_cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_code, batch_number })
+      })
+        .then(response => response.json())
+        .then(data => updateCartUI());
+    }
+
+    /** 🟤 Save Cart */
+    function SaveCart(item_code, batch_number) {
+      fetch("/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ "status": "save" })
+      })
+        .then(response => response.json())
+       
+    }
+
+    /** ⚫ Clear Cart */
+    function clearCart() {
+      fetch("/clear_cart", { method: "POST" })
+        .then(response => response.json())
+        .then(data => updateCartUI());
+    }
+
+    // 🔵 Load cart on page load
+    updateCartUI();
+  </script>
+
+  {%endblock%}

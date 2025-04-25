@@ -7,23 +7,281 @@
     <div class="row">
       <div class="col-md-12 grid-margin">
         <div class="row">
-          <div class="col-12 col-xl-8 mb-4 mb-xl-0">
+          <div class="col-12 mb-4 mb-xl-0">
             <h3 class="font-weight-bold">Pharmacy Stock</h3>
+
+
+            <div class="container">
+              <h2>Add Stock to Inventory</h2>
+              
+              <!-- Search Box -->
+              <div class="form-group">
+                <label for="itemSearch">Search Items:</label>
+                <input type="text" class="form-control" id="itemSearch" placeholder="Start typing item name or code...">
+                <div id="searchResults" class="list-group"></div>
+              </div>
+              
+              <!-- Stock Addition Form -->
+              <form id="stockForm" method="POST" action="/pharmacy_stock">
+                <input type="hidden" id="itemId" name="item_id">
+
+                
+
+
+                <div class="row">
+
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="itemCode">Item Code:</label>
+                      <input type="text" class="form-control" id="itemCode" name="item_code" readonly>
+                    </div>
+                  </div>
+
+                <div class="col-md-2">
+                <div class="form-group">
+                  <label for="itemName">Item Name:</label>
+                  <input type="text" class="form-control" id="itemName" name="item_name" readonly>
+                </div>
+              </div>
+
+              <input type="hidden" id="cat" name="cat">
+              
+
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="currentStock">Current Stock:</label>
+                  <input type="text" class="form-control" id="currentStock" readonly>
+                </div>
+              </div>
+
+              
+
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="quantity">Quantity to Add:</label>
+                  <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+                </div>
+              </div>
+
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="quantity">purchase_price:</label>
+                  <input type="number" step="0.01" class="form-control" id="purchase_price" name="purchase_price" min="1" required>
+                </div>
+              </div>
+
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="quantity">selling_price:</label>
+                  <input type="number" step="0.01" class="form-control" id="selling_price" name="selling_price" min="1" required>
+                </div>
+              </div>
+
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="supplier">expiry_date:</label>
+                  <input type="text" class="form-control" id="expiry_date" name="expiry_date">
+                </div>
+              </div>
+
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="notes">batch_no:</label>
+                  <input type="text" class="form-control" id="batch_no" name="batch_no">
+                </div>
+                </div>
+
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label for="notes">reorder_level:</label>
+                    <input type="number" class="form-control" id="reorder_level" name="reorder_level">
+                    
+                  </div>
+                  </div>
+
+              </div>
+                <button type="submit" class="btn btn-primary">Add Stock</button>
+              </form>
+            </div>
+
+
+
+
+
+            <script>
+              $(document).ready(function() {
+  // Live search functionality
+  $('#itemSearch').on('input', function() {
+    const searchTerm = $(this).val().trim();
+    
+    if (searchTerm.length >= 2) { // Only search after 2 characters
+      $.ajax({
+        url: '/search_item',
+        method: 'GET',
+        data: { query: searchTerm },
+        success: function(data) {
+          const resultsContainer = $('#searchResults');
+          resultsContainer.empty();
+          
+          if (data.length > 0) {
+            data.forEach(function(item) {
+              resultsContainer.append(`
+                <a href="#" class="list-group-item list-group-item-action" 
+                   data-id="${item.b_item_id}"
+                   data-code="${item.b_Item_code}"
+                   data-name="${item.b_item_name}"
+                   data-cat="${item.b_cat}"
+                   data-stock="${item.stock_quantity}">
+                  ${item.b_Item_code} - ${item.b_item_name} (Cat: ${item.b_cat}) (Current: ${item.stock_quantity})
+                </a>
+              `);
+            });
+            resultsContainer.show();
+          } else {
+            resultsContainer.append('<div class="list-group-item">No items found</div>');
+            resultsContainer.show();
+          }
+        }
+      });
+    } else {
+      $('#searchResults').hide();
+    }
+  });
+  
+  // Handle item selection from search results
+  $(document).on('click', '#searchResults a', function(e) {
+    e.preventDefault();
+    
+    const itemId = $(this).data('id');
+    const itemName = $(this).data('name');
+    const itemCode = $(this).data('code');
+    const currentStock = $(this).data('stock');
+    const cat = $(this).data('cat');
+    
+    // Fill the form
+    $('#itemId').val(itemId);
+    $('#itemName').val(itemName);
+    $('#itemCode').val(itemCode);
+    $('#currentStock').val(currentStock);
+    $('#cat').val(cat);
+    
+    // Clear search and hide results
+    $('#itemSearch').val('');
+    $('#searchResults').hide();
+    
+    // Focus on quantity field
+    $('#quantity').focus();
+  });
+  
+  // Form submission
+  $('#stockForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    if (!$('#itemId').val()) {
+      alert('Please select an item first');
+      return;
+    }
+    
+    // Submit via AJAX or standard form submission
+    this.submit();
+  });
+});
+            </script>
+            
+
+            <form action="/search_item" method="POST">
+              <p class="card-description">
+                Search item not Exit then create here
+              </p>
+              <div class="row">
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label class="">Item Code</label>
+                    <div>
+                      <input type="text" class="form-control form-control-sm" name="item_code">
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label class="">Item Name</label>
+                    <div>
+                      <input type="text" class="form-control form-control-sm" name="item_name">
+                    </div>
+                  </div>
+                </div>
+    
+                <!-- <div class="col-md-2">
+                  <div class="form-group">
+                    <label class="">Category</label>
+                    <div>
+                      
+                      <select class="form-select" name="cat">
+                        <option>Tablet</option>
+                        <option>Injection</option>
+                        <option>Syrup</option>
+                        <option>Capsule</option>
+                        <option>Ointment</option>
+                        <option>Misc</option>
+                        <option>Drops</option>
+                        <option>Inhaler</option>
+                        <option>Suppository</option>
+                        <option>Gel</option>
+                        <option>Cream</option>
+                        <option>Lotion</option>
+                        <option>Spray</option>
+                        <option>Powder</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label class="">Measurment</label>
+                    <div class="col-sm-9">
+                      
+                      <select class="form-select" name="oum">
+                        <option>pcs</option>
+                        <option>ml</option>
+                        <option>mg</option>
+                        <option>g</option>
+                        <option>l</option>
+                        <option>kg</option>
+    
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label class="">Pieces per Unit</label>
+                    <div class="col-sm-9">
+                      <input class="form-control form-control-sm" type="number" name="pieces-per-unit">
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label class="">Pack per unit</label>
+                    <div class="col-sm-9">
+                      <input class="form-control form-control-sm" type="number" name="pack-per-unit">
+                    </div>
+                  </div>
+                </div> -->
+    
+              </div>
+           
+    
+              <button type="submit" class="btn btn-facebook ">Create Item</button>
+             
+    
+            </form>
         
           </div>
           <div class="col-12 col-xl-4">
             <div class="justify-content-end d-flex">
-              <!-- <div class="dropdown flex-md-grow-1 flex-xl-grow-0">
-                <button class="btn btn-sm btn-light bg-white dropdown-toggle" type="button" id="dropdownMenuDate2"
-                  data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                  <i class="mdi mdi-calendar"></i> Today (10 Jan 2021) </button>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuDate2">
-                  <a class="dropdown-item" href="#">January - March</a>
-                  <a class="dropdown-item" href="#">March - June</a>
-                  <a class="dropdown-item" href="#">June - August</a>
-                  <a class="dropdown-item" href="#">August - November</a>
-                </div>
-              </div> -->
+             
             </div>
           </div>
         </div>
@@ -31,44 +289,7 @@
     </div>
     <div class="row">
       <div class="col-md-12 grid-margin transparent">
-        <!-- <div class="row">
-          <div class="col-md-3 mb-4 stretch-card transparent">
-            <div class="card card-tale">
-              <div class="card-body">
-                <p class="mb-4">Total Stock</p>
-                <p class="fs-30 mb-2">100</p>
-                <p>10.00% (30 days)</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 mb-4 stretch-card transparent">
-            <div class="card card-dark-blue">
-              <div class="card-body">
-                <p class="mb-4">Total Bookings</p>
-                <p class="fs-30 mb-2">61344</p>
-                <p>22.00% (30 days)</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 mb-4 stretch-card transparent">
-            <div class="card card-tale">
-              <div class="card-body">
-                <p class="mb-4">Today’s Bookings</p>
-                <p class="fs-30 mb-2">4006</p>
-                <p>10.00% (30 days)</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 mb-4 stretch-card transparent">
-            <div class="card card-dark-blue">
-              <div class="card-body">
-                <p class="mb-4">Total Bookings</p>
-                <p class="fs-30 mb-2">61344</p>
-                <p>22.00% (30 days)</p>
-              </div>
-            </div>
-          </div>
-        </div> -->
+       
         <div class="row">
           <div class="">
             <div class="">
@@ -89,9 +310,7 @@
                               </select></label></div>
                         </div>
                         <div class="col-sm-12 col-md-6">
-                          <!-- <div id="order-listing_filter" class="dataTables_filter"><label><input type="search"
-                                class="form-control" placeholder="Search" aria-controls="order-listing"></label></div>
-                        </div> -->
+                  
                       </div>
                       <!-- {{medicines}} -->
                       <div class="row dt-row">

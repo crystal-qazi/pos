@@ -1,0 +1,214 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+<!-- partial -->
+<div class="main-panel">
+  <div class="content-wrapper">
+
+
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    
+      {% for category, message in messages  %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong> {{ message }} </strong> {{ category }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       
+      {% endfor %}
+    </div>
+
+    {% endif %}
+  {% endwith %}
+  
+    <div class="card">
+      <div class="card-body position-relative">
+        <h4 class="card-title">Add Items</h4>
+        <form action="/create_item" method="POST">
+          <p class="card-description">
+            Search item not Exit then create here
+          </p>
+          <div class="row">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="">Item Code</label>
+                <div>
+                  <input type="text" class="form-control form-control-sm" name="item_code">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="">Item Name</label>
+                <div>
+                  <input type="text" class="form-control form-control-sm" name="item_name">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="">Category</label>
+                <div>
+                  
+                  <select class="form-select" name="cat">
+                    <option>Tablet</option>
+                    <option>Injection</option>
+                    <option>Syrup</option>
+                    <option>Capsule</option>
+                    <option>Ointment</option>
+                    <option>Misc</option>
+                    <option>Drops</option>
+                    <option>Inhaler</option>
+                    <option>Suppository</option>
+                    <option>Gel</option>
+                    <option>Cream</option>
+                    <option>Lotion</option>
+                    <option>Spray</option>
+                    <option>Powder</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="">Measurment</label>
+                <div class="col-sm-9">
+                  
+                  <select class="form-select" name="oum">
+                    <option>pcs</option>
+                    <option>ml</option>
+                    <option>mg</option>
+                    <option>g</option>
+                    <option>l</option>
+                    <option>kg</option>
+
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="">Pieces per Unit</label>
+                <div class="col-sm-9">
+                  <input class="form-control form-control-sm" type="number" name="pieces-per-unit">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="">Pack per unit</label>
+                <div class="col-sm-9">
+                  <input class="form-control form-control-sm" type="number" name="pack-per-unit">
+                </div>
+              </div>
+            </div>
+
+           
+
+          </div>
+
+          <button type="submit" class="btn btn-facebook ">Create Item</button>
+         
+
+        </form>
+      </div>
+    </div>
+
+
+  </div>
+
+
+  <div class="content-wrapper">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Hoverable Table</h4>
+        <p class="card-description">
+          Add class <code>.table-hover</code>
+        </p>
+        <div class="table-responsive">
+          <table class="table table-hover" id="item-data">
+            <thead>
+              <tr>
+                <th>Item Code</th>
+                <th>Item Name</th>
+                <th>Category</th>
+                <th>uom</th>
+                <th>Pieces per pack</th>
+                <th>Packs per unit</th>
+                <th>Created date</th>
+                <th>Active</th>
+                <th>Edit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {%for item_record in item_record %}
+              <tr>
+                <td>{{item_record.b_Item_code}}</td>
+                <td>{{item_record.b_item_name}}</td>
+                <td>{{item_record.b_cat}}</td>
+                <td>{{item_record.uom}}</td>
+                <td>{{item_record.pieces_per_pack}}</td>
+                <td>{{item_record.packs_per_unit}}</td>
+                <td>{{item_record.created_at}}</td>
+                <td>{%if item_record.is_active == 0 %}<label class="badge bg-danger">Deactive</label>{%else%}<label
+                    class="badge bg-success">Active</label>{%endif%}</td>
+                <td><a href=""><i class="ti-more-alt"></i></a></td>
+
+
+
+              </tr>
+              {%endfor%}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- content-wrapper ends -->
+
+
+
+
+
+
+
+<script>
+  new DataTable('#item-data', {
+    layout: {
+        bottomEnd: {
+            paging: {
+                type: 'simple'
+            }
+        }
+    }
+});
+</script>
+
+
+
+  <script>/*
+    new DataTable('#item-data', {
+      columnDefs: [
+        {
+          targets: [0],
+          orderData: [0, 1]
+        },
+        {
+          targets: [1],
+          orderData: [1, 0]
+        },
+        {
+          targets: [4],
+          orderData: [4, 0]
+        }
+      ]
+    });
+
+*/
+  </script>
+
+  {%endblock%}

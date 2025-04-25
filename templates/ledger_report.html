@@ -1,0 +1,78 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+        <!-- partial -->
+        <div class="main-panel">
+          <div class="content-wrapper">
+            <div class="row">
+              <div class="col-md-12 grid-margin">
+                
+<h1>📜 Ledger Report</h1>
+
+<!-- 🔍 Filter Section -->
+<label>Start Date:</label>
+<input type="date" id="startDate" value="{{ start_date }}" onchange="applyFilter()">
+
+<label>End Date:</label>
+<input type="date" id="endDate" value="{{ end_date }}" onchange="applyFilter()">
+
+<label>Transaction Type:</label>
+<select id="transactionType" onchange="applyFilter()">
+    <option value="all" {% if transaction_type == 'all' %}selected{% endif %}>All</option>
+    <option value="sale" {% if transaction_type == 'sale' %}selected{% endif %}>Sale</option>
+    <option value="purchase" {% if transaction_type == 'purchase' %}selected{% endif %}>Purchase</option>
+    <option value="return" {% if transaction_type == 'return' %}selected{% endif %}>Return</option>
+    <option value="stock_adjustment" {% if transaction_type == 'stock_adjustment' %}selected{% endif %}>Stock Adjustment</option>
+</select>
+
+<button onclick="downloadLedgerReport()">📥 Download PDF</button>
+
+<!-- 📋 Ledger Table -->
+<table class="table">
+    <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Reference Number</th>
+        <th>Description</th>
+        <th>Amount</th>
+    </tr>
+    
+    {% for entry in ledger_data %}
+    <tr>
+        <td>{{ entry.transaction_date }}</td>
+        <td>{{ entry.transection_type }}</td>
+        <td>{{ entry.invoice_number }}</td>
+        <td>{{ entry.payment_method }}</td>
+        <td>{{ entry.total_amount }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<script>
+/** 🟠 Apply Filters */
+function applyFilter() {
+    let startDate = document.getElementById("startDate").value;
+    let endDate = document.getElementById("endDate").value;
+    let transactionType = document.getElementById("transactionType").value;
+
+    let query = `?start_date=${startDate}&end_date=${endDate}&transaction_type=${transactionType}`;
+    window.location.href = "/ledger-report" + query;
+}
+
+/** 📥 Download Ledger Report */
+function downloadLedgerReport() {
+    let startDate = document.getElementById("startDate").value;
+    let endDate = document.getElementById("endDate").value;
+    let transactionType = document.getElementById("transactionType").value;
+
+    let query = `?start_date=${startDate}&end_date=${endDate}&transaction_type=${transactionType}`;
+    window.location.href = "/download-ledger-report" + query;
+}
+</script>
+              </div>
+            </div>
+        
+          </div>
+          <!-- content-wrapper ends -->
+        
+{%endblock%}
