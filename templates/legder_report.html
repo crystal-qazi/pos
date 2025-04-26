@@ -1,0 +1,89 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+        <!-- partial -->
+        <div class="main-panel">
+          <div class="content-wrapper">
+           <div class="row">
+
+            <div class="card">
+              <div class="card-body position-relative">
+                <span class="mdi mdi-crown-circle fs-4 text-warning" style="position: absolute; top: 1rem; right:1rem;"></span>
+                <h4 class="card-title">Horizontal Two column</h4>
+                <form class="form-sample">
+                 
+                  <div class="row">
+                    <div class="col-md-3">
+                      <div class="form-group row">
+                        <label class="col-form-label">From</label>
+                        <div >
+                          <input type="text" class="form-control">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group row">
+                        <label class="col-form-label">To</label>
+                        <div >
+                          <input type="text" class="form-control">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+              
+                </form>
+              </div>
+            </div>
+
+           </div>
+           <div class="row">
+
+        
+{{data}}
+            <div class="card">
+              <div class="card-body">
+               
+              
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Sr</th>
+                        <th>Item Code</th>
+                        <th>Item Name</th>                        
+                        <th>Stock In</th>
+                        <th>Stock Out</th>
+                        <th>Balance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {%if data%}
+                      {%for data in data%}
+                      <tr>
+                        <td>{{ loop.index }} </td>
+                        <td>{{data['item_code']}}</td>
+                        <td>{{data['item_name']}}</td>
+                        <td>{{data['stock_in']}}</td>
+                        <td>{{data['stock_out']}}</td>
+                        {%if data['reorder_level'] > data['closing_balance']%}
+                        <td class="text-danger"> {{data['closing_balance']}} <i class="ti-arrow-down"></i></td>
+                        {%elif data['reorder_level'] == data['closing_balance']%}
+                        <td class="text-info"> {{data['closing_balance']}} <i class="ti-arrows-vertical"></i></td>
+                        {%else%}
+                        <td class="text-success"> {{data['closing_balance']}} <i class="ti-arrow-up"></i></td>
+                        {%endif%}
+                        
+                      </tr>
+                      {%endfor%}
+                      {%endif%}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            
+           </div>
+          </div>
+          <!-- content-wrapper ends -->
+        
+{%endblock%}

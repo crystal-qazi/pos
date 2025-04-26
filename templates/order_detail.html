@@ -23,15 +23,19 @@
 <!-- partial -->
 <div class="main-panel">
   <div class="content-wrapper">
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <ul class=flashes>
-      {% for message in messages %}
-      <li>{{ message }}</li>
+    
+      {% for category, message in messages  %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong> {{ message }} </strong> {{ category }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       
       {% endfor %}
-    </ul>
+    </div>
+
     {% endif %}
-    {% endwith %}
+  {% endwith %}
 
 
    
@@ -397,126 +401,5 @@
   <!-- content-wrapper ends -->
   </div>
 
-  <script>
-    /** 🔵 Search Item (FEFO) */
-   /* function searchItem() {
-      let query = document.getElementById("searchInput").value;
-      if (query.length < 2) return;
-      fetch(`/cart_item_search?query=${query}`)
-        .then(response => response.json())
-        .then(data => {
-          let resultsDiv = document.getElementById("searchResults");
-          resultsDiv.innerHTML = "";
-          data.forEach(item => {
-            // Format the expiry date to a shorter format (e.g., DD/MM/YYYY)
-                const expiryDate = new Date(item.expiry_date);
-                const formattedExpiryDate = `${expiryDate.getDate()}/${expiryDate.getMonth() + 1}/${expiryDate.getFullYear()}`;
-            resultsDiv.innerHTML += `
-                        <div class="card w-25 mx-2">
-                          <div class="card-header">
-                            ${item.item_code}
-                          </div>                          
-                          <div class="card-body" >
-                            <h5 class="card-title">${item.item_name}</h5>
-                            <p>Batch: ${item.batch_no}</p>
-                            <p>Expiry: ${formattedExpiryDate}</p>
-                            
-                          </div>
-                          <button onclick="addToCart('${item.item_code}', '${item.item_name}', '${item.batch_no}', '${item.expiry_date}', ${item.selling_price})">🛒 Add to Cart</button>
-                        </div>                     
-                       
-                        `;
-                        
-          });
-          
-        });
-    }
-*/
-
-    /** 🟡 Add to Cart */
- /*   function addToCart(item_code, item_name, batch_no, expiry_date, price) {
-      fetch("/add_to_cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item_code, item_name, batch_no, expiry_date, price })
-      })
-        .then(response => response.json())
-        .then(data => updateCartUI());
-    }
-*/
-    /** 🟣 Update Cart UI */
- /*   function updateCartUI() {
-      fetch("/cart")
-        .then(response => response.json())
-        .then(cart => {
-          let cartTable = document.getElementById("cartTable");
-          cartTable.innerHTML = `
-          <thead>
-            <tr>
-               <th scope="col"><input class="chk" type="checkbox" data-orderdetailid="952992"></th>
-                <th scope="col">Item Code</th>
-                <th scope="col">Description</th>
-                <!-- <th>Batch</th>
-                <th>Expiry</th> -->
-                <th scope="col">Price</th>
-                <th scope="col">Quantity</th>
-                <th scope="col">Total</th>
-                <th scope="col">Action</th>
-            </tr>
-          </thead>
-        `;
-          cart.forEach(item => {
-            cartTable.innerHTML += `
-            <tbody>
-                <tr>
-                    <td ><input class="chk" type="checkbox" name="order_detail_item_id" value="${item.oitem_id}"></td>
-                    <td >${item.item_code}</td>
-                    <td>${item.description}</td>
-                    <!-- <td>${item.batch_number}</td>
-                    <td>${item.expiry_date}</td> -->
-                    <td>${item.price}</td>
-                    <td>${item.quantity}</td>
-                    <td>${item.total}</td>
-                    <td><button onclick="removeFromCart('${item.item_code}', '${item.batch_number}')">x</button></td>
-                </tr>
-              </tbody>
-            `;
-          });
-        });
-    }
-*/
-    /** 🟤 Remove from Cart */
- /*   function removeFromCart(item_code, batch_number) {
-      fetch("/remove_from_cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item_code, batch_number })
-      })
-        .then(response => response.json())
-        .then(data => updateCartUI());
-    }
-*/
-    /** 🟤 Save Cart */
- /*   function SaveCart(item_code, batch_number) {
-      fetch("/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ "status": "save" })
-      })
-        .then(response => response.json())
-       
-    }
-*/
-    /** ⚫ Clear Cart */
-  /*  function clearCart() {
-      fetch("/clear_cart", { method: "POST" })
-        .then(response => response.json())
-        .then(data => updateCartUI());
-    }
-
-    // 🔵 Load cart on page load
-    updateCartUI();
-    */
-  </script>
 
   {%endblock%}

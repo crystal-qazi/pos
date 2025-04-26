@@ -1,282 +1,222 @@
 {%block dashboard_header%}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Premier health Pharma</title>
-    <!-- plugins:css -->
-    <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/feather/feather.css'))}}">
-    <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/ti-icons/css/themify-icons.css'))}}">
-    <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/css/vendor.bundle.base.css'))}}">
-    <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/font-awesome/css/font-awesome.min.css'))}}">
-    <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/mdi/css/materialdesignicons.min.css'))}}">
-    <link rel="stylesheet" href="{{url_for('static', filename=('assets/js/dataTables.dataTables.css'))}}">
-    <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/ti-icons/css/themify-icons.css'))}}">
-    <link rel="stylesheet" href="{{url_for('static', filename=('assets/css/style.css'))}}">
-    <link rel="shortcut icon" href="{{url_for('static', filename=('assets/images/favicon.png'))}}" />
 
-    <script src="{{url_for('static', filename=('assets/js/jquery-3.7.1.min.js'))}}"></script>
-    <script src="{{url_for('static', filename=('assets/js/dataTables.js'))}}"></script>    
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Premier health Pharma</title>
+  <!-- plugins:css -->
+  <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/feather/feather.css'))}}">
+  <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/ti-icons/css/themify-icons.css'))}}">
+  <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/css/vendor.bundle.base.css'))}}">
+  <link rel="stylesheet"
+    href="{{url_for('static', filename=('assets/vendors/font-awesome/css/font-awesome.min.css'))}}">
+  <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/mdi/css/materialdesignicons.min.css'))}}">
+  <link rel="stylesheet" href="{{url_for('static', filename=('assets/js/dataTables.dataTables.css'))}}">
+  <link rel="stylesheet" href="{{url_for('static', filename=('assets/vendors/ti-icons/css/themify-icons.css'))}}">
+  <link rel="stylesheet" href="{{url_for('static', filename=('assets/css/style.css'))}}">
+  <link rel="shortcut icon" href="{{url_for('static', filename=('assets/images/favicon.png'))}}" />
+
+  <script src="{{url_for('static', filename=('assets/js/jquery-3.7.1.min.js'))}}"></script>
+  <script src="{{url_for('static', filename=('assets/js/dataTables.js'))}}"></script>
+
+
+
+
+
+</head>
+
+<body class="sidebar-icon-only">
+  <div class="container-scroller">
+    <!-- partial:partials/_navbar.html -->
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
+        <a class="navbar-brand brand-logo me-5" href="index.html"><img
+            src="{{url_for('static', filename=('assets/images/logo-dark.png'))}}" class="me-2" alt="logo" /></a>
+        <a class="navbar-brand brand-logo-mini" href="index.html"><img
+            src="{{url_for('static', filename=('assets/images/logo-dark-sm.png'))}}" alt="logo" /></a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+          <span class="icon-menu"></span>
+        </button>
+        <ul class="navbar-nav mr-lg-2">
+          <li class="nav-item nav-search d-none d-lg-block">
+            <div class="input-group">
+              <div class="input-group-prepend hover-cursor" id="navbar-search-icon">
+                <span class="input-group-text" id="search">
+                  <i class="icon-search"></i>
+                </span>
+              </div>
+              <input type="text" class="form-control" id="navbar-search-input" placeholder="Search now"
+                aria-label="search" aria-describedby="search">
+            </div>
+          </li>
+        </ul>
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item dropdown">
+            <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#"
+              data-bs-toggle="dropdown">
+              <i class="icon-bell mx-0"></i>
+              <span class="count"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
+              aria-labelledby="notificationDropdown">
+              <p class="mb-0 font-weight-normal float-left dropdown-header">Notifications</p>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-success">
+                    <i class="ti-info-alt mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">Application Error</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted"> Just now </p>
+                </div>
+              </a>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-warning">
+                    <i class="ti-settings mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">Settings</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted"> Private message </p>
+                </div>
+              </a>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-info">
+                    <i class="ti-user mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">New user registration</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted"> 2 days ago </p>
+                </div>
+              </a>
+            </div>
+          </li>
+          <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown">
+              <img src="{{url_for('static', filename=('assets/images/faces/face28.jpg'))}}" alt="profile" />
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+              <a class="dropdown-item">
+                <i class="ti-settings text-primary"></i> Settings </a>
+              <a class="dropdown-item">
+                <i class="ti-power-off text-primary"></i> Logout </a>
+            </div>
+          </li>
+          <li class="nav-item nav-settings d-none d-lg-flex">
+            <a class="nav-link" href="#">
+              <i class="icon-ellipsis"></i>
+            </a>
+          </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button"
+          data-toggle="offcanvas">
+          <span class="icon-menu"></span>
+        </button>
+      </div>
+    </nav>
+
+
+
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:partials/_sidebar.html -->
+      <nav class="sidebar sidebar-offcanvas" id="sidebar">
+        <ul class="nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/dashboard">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#patient" aria-expanded="false"
+              aria-controls="ui-basic">
+              <i class="icon-layout menu-icon"></i>
+              <span class="menu-title">Pharma POS</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="patient">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="/all_patient">All Patient</a></li>
+                <li class="nav-item"> <a class="nav-link" href="/search_patient">Create Order</a></li>
+                <li class="nav-item"> <a class="nav-link" href="/all_order">All Orders</a></li>
+                <li class="nav-item"> <a class="nav-link" href="/find_member">Refund</a></li>  
+                <li class="nav-item"><a class="nav-link" href="/pharmacy_stock">Stock</a></li>             
+                <li class="nav-item"> <a class="nav-link" href="/create_item">Create Items</a></li>
+                <li class="nav-item"> <a class="nav-link" href="/PO_request">PO Request</a></li>                
+                <li class="nav-item"> <a class="nav-link" href="/find_member">Stock Return Order</a></li>
+                
+
+              </ul>
+            </div>
+          </li>
+
+
        
 
-
-    <!-- script for tinymce editor -->
-    <!-- <script>
-      tinymce.init({
-        selector: '#mytextarea',
-        license_key: 'gpl|<your-license-key>'
-      });
-    </script> -->
-
-    
-  </head>
-  <body class="sidebar-icon-only">
-    <div class="container-scroller">
-      <!-- <div class="row p-0 m-0 proBanner" id="proBanner">
-        <div class="col-md-12 p-0 m-0">
-          <div class="card-body card-body-padding px-3 d-flex align-items-center justify-content-between">
-            <div>
-              <div class="d-flex align-items-center justify-content-between">
-                <p class="mb-0 font-weight-medium me-3 buy-now-text">Free 24/7 customer support, updates, and more with this template!</p>
-                <a href="https://www.bootstrapdash.com/product/skydash-admin-template" target="_blank" class="btn me-2 buy-now-btn border-0">Buy Now</a>
-              </div>
-            </div>
-            <div class="d-flex align-items-center justify-content-between">
-              <a href="https://www.bootstrapdash.com/product/skydash-admin-template/"><i class="ti-home me-3 text-white"></i></a>
-              <button id="bannerClose" class="btn border-0 p-0">
-                <i class="ti-close text-white"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div> -->
-      <!-- partial:partials/_navbar.html -->
-      <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-  <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
-    <a class="navbar-brand brand-logo me-5" href="index.html"><img src="{{url_for('static', filename=('assets/images/logo-dark.png'))}}" class="me-2" alt="logo" /></a>
-    <a class="navbar-brand brand-logo-mini" href="index.html"><img src="{{url_for('static', filename=('assets/images/logo-dark-sm.png'))}}" alt="logo" /></a>
-  </div>
-  <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
-    <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-      <span class="icon-menu"></span>
-    </button>
-    <ul class="navbar-nav mr-lg-2">
-      <li class="nav-item nav-search d-none d-lg-block">
-        <div class="input-group">
-          <div class="input-group-prepend hover-cursor" id="navbar-search-icon">
-            <span class="input-group-text" id="search">
-              <i class="icon-search"></i>
-            </span>
-          </div>
-          <input type="text" class="form-control" id="navbar-search-input" placeholder="Search now" aria-label="search" aria-describedby="search">
-        </div>
-      </li>
-    </ul>
-    <ul class="navbar-nav navbar-nav-right">
-      <li class="nav-item dropdown">
-        <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
-          <i class="icon-bell mx-0"></i>
-          <span class="count"></span>
-        </a>
-        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="notificationDropdown">
-          <p class="mb-0 font-weight-normal float-left dropdown-header">Notifications</p>
-          <a class="dropdown-item preview-item">
-            <div class="preview-thumbnail">
-              <div class="preview-icon bg-success">
-                <i class="ti-info-alt mx-0"></i>
-              </div>
-            </div>
-            <div class="preview-item-content">
-              <h6 class="preview-subject font-weight-normal">Application Error</h6>
-              <p class="font-weight-light small-text mb-0 text-muted"> Just now </p>
-            </div>
-          </a>
-          <a class="dropdown-item preview-item">
-            <div class="preview-thumbnail">
-              <div class="preview-icon bg-warning">
-                <i class="ti-settings mx-0"></i>
-              </div>
-            </div>
-            <div class="preview-item-content">
-              <h6 class="preview-subject font-weight-normal">Settings</h6>
-              <p class="font-weight-light small-text mb-0 text-muted"> Private message </p>
-            </div>
-          </a>
-          <a class="dropdown-item preview-item">
-            <div class="preview-thumbnail">
-              <div class="preview-icon bg-info">
-                <i class="ti-user mx-0"></i>
-              </div>
-            </div>
-            <div class="preview-item-content">
-              <h6 class="preview-subject font-weight-normal">New user registration</h6>
-              <p class="font-weight-light small-text mb-0 text-muted"> 2 days ago </p>
-            </div>
-          </a>
-        </div>
-      </li>
-      <li class="nav-item nav-profile dropdown">
-        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown">
-          <img src="{{url_for('static', filename=('assets/images/faces/face28.jpg'))}}" alt="profile" />
-        </a>
-        <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
-          <a class="dropdown-item">
-            <i class="ti-settings text-primary"></i> Settings </a>
-          <a class="dropdown-item">
-            <i class="ti-power-off text-primary"></i> Logout </a>
-        </div>
-      </li>
-      <li class="nav-item nav-settings d-none d-lg-flex">
-        <a class="nav-link" href="#">
-          <i class="icon-ellipsis"></i>
-        </a>
-      </li>
-    </ul>
-    <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
-      <span class="icon-menu"></span>
-    </button>
-  </div>
-</nav>
-
-
-
-      <!-- partial -->
-      <div class="container-fluid page-body-wrapper">
-        <!-- partial:partials/_sidebar.html -->
-        <nav class="sidebar sidebar-offcanvas" id="sidebar">
-  <ul class="nav">
-    <li class="nav-item">
-      <a class="nav-link" href="/dashboard">
-        <i class="icon-grid menu-icon"></i>
-        <span class="menu-title">Dashboard</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" data-bs-toggle="collapse" href="#patient" aria-expanded="false" aria-controls="ui-basic">
-        <i class="icon-layout menu-icon"></i>
-        <span class="menu-title">Pharma POS</span>
-        <i class="menu-arrow"></i>
-      </a>
-      <div class="collapse" id="patient">
-        <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" href="/all_patient">All Patient</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/search_patient">Create Order</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/all_order">All Orders</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/find_member">Refund</a></li>
-          <li class="nav-item"> <a class="nav-link" href="#">Stock</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/PO_request">PO Request</a></li>
-          <!-- <li class="nav-item"> <a class="nav-link" href="/find_member">Bed</a></li> -->
-
-        </ul>
-      </div>
-    </li>
-    <!-- <li class="nav-item">
-      <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
-        <i class="icon-layout menu-icon"></i>
-        <span class="menu-title">Store</span>
-        <i class="menu-arrow"></i>
-      </a>
-      <div class="collapse" id="ui-basic">
-        <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" href="/pharmacy_stock">Stock</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/create_family">Add Items</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/edit_person_detail">Indent Order</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/find_member">Stock Return Order</a></li>
-
-        </ul>
-      </div>
-    </li> -->
-    <li class="nav-item">
-      <a class="nav-link" data-bs-toggle="collapse" href="#form-elements" aria-expanded="false" aria-controls="form-elements">
-        <i class="icon-columns menu-icon"></i>
-        <span class="menu-title">Pharmacy Store</span>
-        <i class="menu-arrow"></i>
-      </a>
-      <div class="collapse" id="form-elements">
-        <ul class="nav flex-column sub-menu">
-          <li class="nav-item"><a class="nav-link" href="/pharmacy_stock">Stock</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/create_item">Add Items</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/edit_person_detail">Indent Order</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/find_member">Stock Return Order</a></li>
-        </ul>
        
-      </div>
-    </li>
-    <!-- <li class="nav-item">
-      <a class="nav-link" data-bs-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
-        <i class="icon-bar-graph menu-icon"></i>
-        <span class="menu-title">Store POS</span>
-        <i class="menu-arrow"></i>
-      </a>
-      <div class="collapse" id="charts">
-        <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">POS</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Orders</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Pending Orders</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Refund Vouchers</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Patients</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Items</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/charts/chartjs.html">Reports</a></li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#icons" aria-expanded="false" aria-controls="icons">
+              <i class="icon-monitor menu-icon"></i>
+              <span class="menu-title">Cash Managment</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="icons">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="/">Store Invoices</a></li>
+                <li class="nav-item"> <a class="nav-link" href="pages/icons/mdi.html">Pharmacy Invoices</a></li>
+                <li class="nav-item"> <a class="nav-link" href="pages/icons/mdi.html">Patient Bill</a></li>
+                <li class="nav-item"> <a class="nav-link" href="pages/icons/mdi.html">LP Bill</a></li>
+                <li class="nav-item"> <a class="nav-link" href="pages/icons/mdi.html">Return Vouchers</a></li>
+                <li class="nav-item"> <a class="nav-link" href="/ledger-report">Reports</a></li>
+              </ul>
+            </div>
+          </li>
 
-        </ul>
-      </div>
-    </li> -->
-    <li class="nav-item">
-      <a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
-        <i class="icon-grid-2 menu-icon"></i>
-        <span class="menu-title">Store</span>
-        <i class="menu-arrow"></i>
-      </a>
-      <div class="collapse" id="tables">
-        <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">POS</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Orders</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Pending Orders</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Refund Vouchers</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Patients</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Items</a></li>
-          <!-- <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Basic table</a></li> -->
-          <li class="nav-item"> <a class="nav-link" href="pages/tables/basic-table.html">Reports</a></li>
-        </ul>
-      </div>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" data-bs-toggle="collapse" href="#icons" aria-expanded="false" aria-controls="icons">
-        <i class="icon-contract menu-icon"></i>
-        <span class="menu-title">Cash Managment</span>
-        <i class="menu-arrow"></i>
-      </a>
-      <div class="collapse" id="icons">
-        <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" href="pages/icons/mdi.html">Store Invoices</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/icons/mdi.html">Pharmacy Invoices</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/icons/mdi.html">Patient Bill</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/icons/mdi.html">LP Bill</a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/icons/mdi.html">Return Vouchers</a></li>
-          <li class="nav-item"> <a class="nav-link" href="/ledger-report">Reports</a></li>
-        </ul>
-      </div>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-        <i class="icon-head menu-icon"></i>
-        <span class="menu-title">Setup</span>
-        <i class="menu-arrow"></i>
-      </a>
-      <div class="collapse" id="auth">
-        <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" href="pages/samples/login.html"> Store </a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/samples/register.html"> Pharmacy </a></li>
-          <li class="nav-item"> <a class="nav-link" href="pages/samples/register.html"> Cash </a></li>
-        </ul>
-      </div>
-    </li>
- 
-    
-  </ul>
-</nav>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
+              <i class="icon-bar-graph-2 menu-icon"></i>
+              <span class="menu-title">Reports</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="auth">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="/sale_report"> Sale Report </a></li>
+                <li class="nav-item"> <a class="nav-link" href="pages/samples/register.html"> Stock Report </a></li>
+                <li class="nav-item"> <a class="nav-link" href="/legder_report"> Ledger Report </a></li>
+                <li class="nav-item"> <a class="nav-link" href="pages/samples/register.html"> REVENUE REPORT </a></li>
+              </ul>
+            </div>
+          </li>
 
 
-{%endblock%}
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#repo" aria-expanded="false" aria-controls="repo">
+              <i class="icon-head menu-icon"></i>
+              <span class="menu-title">Setup</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="repo">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="pages/samples/login.html"> Store </a></li>
+                <li class="nav-item"> <a class="nav-link" href="pages/samples/register.html"> Pharmacy </a></li>
+                <li class="nav-item"> <a class="nav-link" href="pages/samples/register.html"> Cash </a></li>
+              </ul>
+            </div>
+          </li>
+
+
+        </ul>
+      </nav>
+
+
+      {%endblock%}

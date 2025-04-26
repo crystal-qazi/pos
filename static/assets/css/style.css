@@ -25692,4 +25692,9 @@ table.dataTable tbody td.select-checkbox:after {
     display: none;
   }
 }
+
+.required:after {
+  content:" *";
+  color: red;
+}
 /*# sourceMappingURL=maps/style.css.map */

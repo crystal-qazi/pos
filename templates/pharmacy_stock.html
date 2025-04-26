@@ -8,11 +8,26 @@
       <div class="col-md-12 grid-margin">
         <div class="row">
           <div class="col-12 mb-4 mb-xl-0">
-            <h3 class="font-weight-bold">Pharmacy Stock</h3>
+            <h3 class="font-weight-bold">Pharmacy Stock (Add Stock to Inventory)</h3>
 
+            {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    
+      {% for category, message in messages  %}
+      <div class="alert alert-warning alert-dismissible fade show" id="success-alert" role="alert">
+        <strong> {{ message }} </strong> {{ category }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       
+      {% endfor %}
+    </div>
+
+    {% endif %}
+  {% endwith %}
+
+ 
 
             <div class="container">
-              <h2>Add Stock to Inventory</h2>
+           
               
               <!-- Search Box -->
               <div class="form-group">
@@ -58,43 +73,43 @@
 
               <div class="col-md-2">
                 <div class="form-group">
-                  <label for="quantity">Quantity to Add:</label>
+                  <label for="quantity">Quantity to Add: *</label>
                   <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
                 </div>
               </div>
-
+              
               <div class="col-md-2">
                 <div class="form-group">
-                  <label for="quantity">purchase_price:</label>
+                  <label for="quantity">Purchase Price: *</label>
                   <input type="number" step="0.01" class="form-control" id="purchase_price" name="purchase_price" min="1" required>
                 </div>
               </div>
 
               <div class="col-md-2">
                 <div class="form-group">
-                  <label for="quantity">selling_price:</label>
+                  <label for="quantity">Selling Price: *</label>
                   <input type="number" step="0.01" class="form-control" id="selling_price" name="selling_price" min="1" required>
                 </div>
               </div>
 
-              <div class="col-md-2">
+              <!-- <div class="col-md-2">
                 <div class="form-group">
                   <label for="supplier">expiry_date:</label>
-                  <input type="text" class="form-control" id="expiry_date" name="expiry_date">
+                  <input type="date" class="form-control" id="expiry_date" name="expiry_date">
                 </div>
-              </div>
+              </div> -->
 
-              <div class="col-md-2">
+              <!-- <div class="col-md-2">
                 <div class="form-group">
                   <label for="notes">batch_no:</label>
                   <input type="text" class="form-control" id="batch_no" name="batch_no">
                 </div>
-                </div>
+                </div> -->
 
                 <div class="col-md-2">
                   <div class="form-group">
-                    <label for="notes">reorder_level:</label>
-                    <input type="number" class="form-control" id="reorder_level" name="reorder_level">
+                    <label for="notes">Reorder level: *</label>
+                    <input type="number" class="form-control" id="reorder_level" name="reorder_level" required>
                     
                   </div>
                   </div>
@@ -131,7 +146,8 @@
                    data-code="${item.b_Item_code}"
                    data-name="${item.b_item_name}"
                    data-cat="${item.b_cat}"
-                   data-stock="${item.stock_quantity}">
+                   data-stock="${item.stock_quantity}"
+                   data-reorder_level="${item.reorder_level}">
                   ${item.b_Item_code} - ${item.b_item_name} (Cat: ${item.b_cat}) (Current: ${item.stock_quantity})
                 </a>
               `);
@@ -157,6 +173,7 @@
     const itemCode = $(this).data('code');
     const currentStock = $(this).data('stock');
     const cat = $(this).data('cat');
+    const reorder_level = $(this).data('reorder_level');
     
     // Fill the form
     $('#itemId').val(itemId);
@@ -164,6 +181,7 @@
     $('#itemCode').val(itemCode);
     $('#currentStock').val(currentStock);
     $('#cat').val(cat);
+    $('#reorder_level').val(reorder_level);
     
     // Clear search and hide results
     $('#itemSearch').val('');
@@ -189,7 +207,7 @@
             </script>
             
 
-            <form action="/search_item" method="POST">
+            <!-- <form action="/search_item" method="POST">
               <p class="card-description">
                 Search item not Exit then create here
               </p>
@@ -209,7 +227,7 @@
                       <input type="text" class="form-control form-control-sm" name="item_name">
                     </div>
                   </div>
-                </div>
+                </div> -->
     
                 <!-- <div class="col-md-2">
                   <div class="form-group">
@@ -269,7 +287,7 @@
                     </div>
                   </div>
                 </div> -->
-    
+<!--     
               </div>
            
     
@@ -278,7 +296,7 @@
     
             </form>
         
-          </div>
+          </div> -->
           <div class="col-12 col-xl-4">
             <div class="justify-content-end d-flex">
              

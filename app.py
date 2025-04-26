@@ -963,7 +963,7 @@ def search_item():
         print(search_item)
         conn = connect()
         cur = conn.cursor(dictionary=True)
-        sql = "SELECT  items.*, stock.stock_quantity FROM items\
+        sql = "SELECT  items.*, stock.stock_quantity, stock.reorder_level FROM items\
                 LEFT JOIN stock ON stock.b_item_id = items.b_item_id where b_item_name like %s"
         cur.execute(sql, (f"%{search_item}%",))
         result = cur.fetchall()
@@ -1060,12 +1060,13 @@ def pharmacy_stock():
             quantity = request.form.get('quantity', '0')
             purchase_price = request.form.get('purchase_price', '0')
             selling_price = request.form.get('selling_price', '0')
-            expiry_date = request.form.get('expiry_date') or None
+            expiry_date = request.form.get('expiry_date')
             batch_no = request.form.get('batch_no', '').strip()
             reorder_level = request.form.get('reorder_level', '0')
+            print(expiry_date)
             
             # Validate required fields
-            if not all([item_id, item_code, item_name, quantity]):
+            if not all([item_id, item_code, item_name, quantity, reorder_level]):
                 flash('Missing required fields', 'error')
                 return redirect(url_for('pharmacy_stock'))
             
@@ -1081,9 +1082,9 @@ def pharmacy_stock():
                     return redirect(url_for('pharmacy_stock'))
                 
                 # Check if item exists
-                cursor.execute("SELECT stock_quantity FROM stock WHERE b_item_id = %s", (item_id,))
+                cursor.execute("SELECT stock_quantity, item_id FROM stock WHERE b_item_id = %s", (item_id,))
                 existing_stock = cursor.fetchone()
-                print(existing_stock)
+                # print(existing_stock)
                 
                 # Calculate new quantity
                 if existing_stock:
@@ -1097,7 +1098,7 @@ def pharmacy_stock():
                         category = %s,
                         stock_quantity = %s,
                         reorder_level = %s,
-                        batch_no = %s,
+                       
                         
                         purchase_price = %s,
                         selling_price = %s
@@ -1106,27 +1107,45 @@ def pharmacy_stock():
                     """
                     cursor.execute(update_sql, (
                         item_code, item_name, cat, stock_quantity,
-                        reorder_level_int, batch_no, 
+                        reorder_level_int,  
                         purchase_price_float, selling_price_float,
                         item_id
                     ))
                     action = "updated"
+
+                    #stock transaction in on existing items
+                    t_id = existing_stock['item_id']
+                    print(f"stock item id {t_id}")
+
+                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `quantity`) \
+                          VALUES (%s, 'Stock In', %s);"
+                    cursor.execute(s_trans,(t_id,quantity_int,))
+
+                    
+                    
+                
                 else:
                     stock_quantity = quantity_int
                     # Insert new stock
                     insert_sql = """
                     INSERT INTO stock (
                         b_item_id, item_code, item_name, category,
-                        stock_quantity, reorder_level, batch_no,
-                        expiry_date, purchase_price, selling_price
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        stock_quantity, reorder_level, purchase_price, selling_price
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     """
                     cursor.execute(insert_sql, (
                         item_id, item_code, item_name, cat,
-                        stock_quantity, reorder_level_int, batch_no,
-                        expiry_date, purchase_price_float, selling_price_float
+                        stock_quantity, reorder_level_int, purchase_price_float, selling_price_float
                     ))
                     action = "added"
+
+                    #stock transaction in on new items
+                    t_id = cursor.lastrowid
+                    print(f"stock item id {t_id}")
+
+                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `quantity`) \
+                          VALUES (%s, 'Stock In', %s);"
+                    cursor.execute(s_trans,(t_id,quantity_int,))
                 
                 conn.commit()
                 flash(f'Stock {action} successfully! New quantity: {stock_quantity}', 'success')
@@ -1153,6 +1172,104 @@ def pharmacy_stock():
             conn.close()
     
     return render_template('pharmacy_stock.html', medicines=medicines)
+
+
+@app.route('/legder_report')
+def legder_report():
+    if request.method == 'POST':
+        
+
+        data = None
+        return render_template('legder_report.html', data = data)
+    else:
+
+        start_date = '2025-04-25'
+        end_date = '2025-04-26'
+        item_code = None  # Or you can set like 'ITEM001'
+
+        conn = connect()
+        cur = conn.cursor(dictionary=True)
+
+        # Base SQL
+        sql = """
+            SELECT 
+                items.b_Item_code, 
+                items.b_item_name, 
+                stock.item_code,
+                stock.item_name,
+                stock.reorder_level,
+
+                (
+                    SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
+                    -
+                    SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
+                ) AS op_balance,
+                
+                SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS stock_in,
+                
+                SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS stock_out,
+
+                (
+                    (
+                        SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
+                        -
+                        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
+                    )
+                    +
+                    (
+                        SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END)
+                        -
+                        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END)
+                    )
+                ) AS closing_balance
+
+            FROM 
+                items
+            JOIN 
+                stock ON stock.b_item_id = items.b_item_id
+            JOIN 
+                stock_transactions st ON st.item_id = stock.item_id
+        """
+
+        params = [
+            start_date, start_date,
+            start_date, end_date,
+            start_date, end_date,
+            start_date, start_date,
+            start_date, end_date,
+            start_date, end_date
+        ]
+
+        # 🔥 Add WHERE condition dynamically
+        if item_code is not None:
+            sql += " WHERE stock.item_code = %s"
+            params.append(item_code)
+
+        # 🔥 Always add GROUP BY
+        sql += """
+            GROUP BY 
+                items.b_Item_code, 
+                items.b_item_name, 
+                stock.item_code,
+                stock.item_name,
+                stock.reorder_level
+        """
+
+        # Execute
+        cur.execute(sql, params)
+        data = cur.fetchall()
+
+        conn.close()
+        cur.close()
+
+        print(data)
+
+
+
+
+
+
+        return render_template('legder_report.html', data = data)
 
 if __name__ == '__main__':
     app.run(debug=True)
