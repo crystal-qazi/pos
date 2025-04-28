@@ -23,8 +23,8 @@
                   <table class="table">
                     <thead>
                       <tr>
-                        <th scope="col">Order ID</th>
-                        <th scope="col">Visit ID</th>
+                        <th scope="col">Sr</th>
+                        <th scope="col">Visit #</th>
                         <th scope="col">Order #</th>
                         <th scope="col">Status</th>
                         <th scope="col">Date</th>
@@ -33,10 +33,11 @@
                     </thead>
                     <tbody>
                       {%for result in result%}
+                      {{result}}
                    
                       <tr>
-                        <th scope="row">{{result['order_id']}}</th>
-                        <td>{{result['visit_id']}}</td>
+                        <th scope="row">{{loop.index}}</th>
+                        <td>{{result['visit_number']}}</td>
                         <td>{{result['order_number']}}</td>
                         <td>{{result['order_status']}}</td>
                         <td>{{result['created_date']}}</td>

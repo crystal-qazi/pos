@@ -47,7 +47,17 @@
                               <input type="number" name="patient_cnic" class="form-control form-control-sm">
                             </div>                            
                           </div>
-                        </div>                        
+                        </div>  
+                        
+                        
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">VIsit</label>
+                            <div class="col-sm-9">
+                              <input type="text" name="v_number" class="form-control form-control-sm">
+                            </div>                            
+                          </div>
+                        </div> 
                       </div>
                       <div>
                       <button type="submit" class="btn btn-primary me-2 float-end"> Searchs</button>                   
@@ -58,6 +68,7 @@
                 </div>
               </div>
             </div>
+            {%if patient_record%}
             <div class="row">
               <div class="col-md-12 grid-margin stretch-card">
                 <div class="card">
@@ -69,6 +80,7 @@
                           <th>First Name</th>
                           <th>Last Name</th>
                           <th>Age</th> 
+                          <th>Mobile</th> 
                           <th>Action</th>
                         </tr>
                       </thead>
@@ -79,6 +91,7 @@
                           <td>{{result.first_name}}</td>
                           <td>{{result.last_name}}</td>
                           <td>{{result.age}}</td>                                       
+                          <td>{{result.Mobile}}</td>                                       
                           {%if result.adm_status=='Admitted'%} 
                           <td><label class="badge badge-success">Admitted</label></td>
                           {%elif result.adm_status=='Pending'%}
@@ -101,6 +114,44 @@
                
               </div>
             </div>
+            {%else%}
+           
+            <div class="row">
+              <div class="col-md-12 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Visit</th>
+                          <th>First Name</th>
+                          <th>Last Name</th>
+                          <th>Age</th> 
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      {%for result in patient_visit%}
+                      <tbody>
+                        <tr>
+                          <td>{{result.visit_number}}</td>
+                          <td>{{result.first_name}}</td>
+                          <td>{{result.last_name}}</td>
+                          <td>{{result.age}}</td>                                      
+                          
+                          <td>
+                            <a href="/create_order?mrn={{result.MRN}}">Continue</a>
+                          </td>
+                        </tr>                     
+                      </tbody>
+                      {%endfor%}
+                    </table>
+
+                  </div>
+                </div>
+               
+              </div>
+            </div>
+            {%endif%}
           </div>
           <!-- content-wrapper ends -->
         

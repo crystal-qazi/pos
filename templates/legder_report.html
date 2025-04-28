@@ -8,16 +8,15 @@
 
             <div class="card">
               <div class="card-body position-relative">
-                <span class="mdi mdi-crown-circle fs-4 text-warning" style="position: absolute; top: 1rem; right:1rem;"></span>
-                <h4 class="card-title">Horizontal Two column</h4>
-                <form class="form-sample">
+                <h4 class="card-title">Legder Report</h4>
+                <form class="form-sample" action="" method="POST">
                  
                   <div class="row">
                     <div class="col-md-3">
                       <div class="form-group row">
                         <label class="col-form-label">From</label>
                         <div >
-                          <input type="text" class="form-control">
+                          <input type="date" class="form-control" name="s-date">
                         </div>
                       </div>
                     </div>
@@ -25,12 +24,22 @@
                       <div class="form-group row">
                         <label class="col-form-label">To</label>
                         <div >
-                          <input type="text" class="form-control">
+                          <input type="date" class="form-control" name="e-date">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group row">
+                        <label class="col-form-label">Item Code</label>
+                        <div >
+                          <input type="text" class="form-control" name="item_code">
                         </div>
                       </div>
                     </div>
                   </div>
-              
+                  <div class="col-md-3">
+                  <button type="submit" class="btn btn-behance"> Submit</button>
+                </div>
                 </form>
               </div>
             </div>
@@ -39,7 +48,7 @@
            <div class="row">
 
         
-{{data}}
+
             <div class="card">
               <div class="card-body">
                
@@ -51,6 +60,7 @@
                         <th>Sr</th>
                         <th>Item Code</th>
                         <th>Item Name</th>                        
+                        <th>Open Balance</th>                        
                         <th>Stock In</th>
                         <th>Stock Out</th>
                         <th>Balance</th>
@@ -63,6 +73,7 @@
                         <td>{{ loop.index }} </td>
                         <td>{{data['item_code']}}</td>
                         <td>{{data['item_name']}}</td>
+                        <td>{{data['op_balance']}}</td>
                         <td>{{data['stock_in']}}</td>
                         <td>{{data['stock_out']}}</td>
                         {%if data['reorder_level'] > data['closing_balance']%}

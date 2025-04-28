@@ -9,6 +9,8 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
 
+from datetime import datetime, date, time
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -81,15 +83,31 @@ def search_patient():
         patient_mrn = request.args.get('patient_mrn') or ''
         patient_mobile = request.args.get('patient_mobile') or ''
         patient_cnic = request.args.get('patient_cnic') or ''
-
-        conn = connect()
-        cur = conn.cursor(dictionary=True)
-        sql = "SELECT * FROM patients WHERE first_name LIKE %s;"      
-        cur.execute(sql,(patient_name,))
-        patient_record = cur.fetchall()
-        cur.close()
-        conn.close()
-        print(patient_record)
+        v_number = request.args.get('v_number') or None
+        print(v_number)
+        if v_number == None:
+            conn = connect()
+            cur = conn.cursor(dictionary=True)
+            sql = "SELECT * FROM patients WHERE first_name LIKE %s OR \
+                last_name LIKE %s OR Mobile LIKE %s;"      
+            cur.execute(sql,(patient_name,patient_name,'%'+patient_mobile+'%',))
+            
+            patient_record = cur.fetchall()
+            print(cur)
+            cur.close()
+            conn.close()
+            return render_template('search_patient.html', patient_record = patient_record)
+        else:
+            conn = connect()
+            cur = conn.cursor(dictionary=True)
+            sql = """SELECT * FROM patient_visit
+                    LEFT JOIN patients ON patients.patient_id = patient_visit.patient_id
+                    WHERE patient_visit.visit_number = %s """   
+            cur.execute(sql,(v_number,))
+            patient_visit = cur.fetchall()
+            cur.close()
+            conn.close()
+            return render_template('search_patient.html', patient_visit = patient_visit)
       
 
     
@@ -241,8 +259,8 @@ def VisitNumber():
     """Retrieve today's latest serial number within a transaction."""
     conn = connect()
     cursor = conn.cursor()  
-    today_code = datetime.datetime.now().strftime("%d%m")  # Format: DDMM
-    year = datetime.datetime.now().year
+    today_code = datetime.now().strftime("%d%m")  # Format: DDMM
+    year = datetime.now().year
     sql = "SELECT COUNT(*) FROM orders WHERE order_number LIKE  %s"
     cursor.execute(sql, (f'%{year}%',))
     count = cursor.fetchone()[0]
@@ -259,8 +277,8 @@ def OrderNumber():
     
     conn = connect()
     cursor = conn.cursor()  
-    today_code = datetime.datetime.now().strftime("%d%m")  # Format: DDMM
-    year = datetime.datetime.now().year
+    today_code = datetime.now().strftime("%d%m")  # Format: DDMM
+    year = datetime.now().year
     sql = "SELECT COUNT(*) FROM orders WHERE order_number LIKE  %s"
     cursor.execute(sql, (f'%{year}%',))
     count = cursor.fetchone()[0]
@@ -277,8 +295,8 @@ def Cashslipnumber():
     
     conn = connect()
     cursor = conn.cursor()  
-    today_code = datetime.datetime.now().strftime("%d%m")  # Format: DDMM
-    year = datetime.datetime.now().year
+    today_code = datetime.now().strftime("%d%m")  # Format: DDMM
+    year = datetime.now().year
     sql = "SELECT COUNT(*) FROM sales WHERE invoice_number LIKE  %s"
     cursor.execute(sql, (f'%{year}%',))
     count = cursor.fetchone()[0]
@@ -296,8 +314,8 @@ def RVouchernumber():
     
     conn = connect()
     cursor = conn.cursor()  
-    today_code = datetime.datetime.now().strftime("%d%m")  # Format: DDMM
-    year = datetime.datetime.now().year
+    today_code = datetime.now().strftime("%d%m")  # Format: DDMM
+    year = datetime.now().year
     sql = "SELECT COUNT(*) FROM returns WHERE return_number LIKE  %s"
     cursor.execute(sql, (f'%{year}%',))
     count = cursor.fetchone()[0]
@@ -374,10 +392,12 @@ def create_order():
        
       
         #Create Order
+        today = datetime.now()
+        print(today)
         conn = connect()
         cur  = conn.cursor()
-        sql = "INSERT INTO `orders` (`visit_id`, `order_number`, `order_status`) VALUES (%s, %s, %s);"
-        cur.execute(sql,(visit_id,order_number,'pending'))
+        sql = "INSERT INTO `orders` (`visit_id`, `order_number`, `created_date`, `order_status`) VALUES (%s, %s, %s,%s);"
+        cur.execute(sql,(visit_id,order_number,today,'pending'))
         conn.commit()
         order_id = cur.lastrowid
         cur.close()
@@ -444,13 +464,15 @@ def payment():
             cur.execute(sql,(order_number,))
             conn.commit()
             conn.close()
+            today = date.today()
+            print(today)
 
             #transection Record
             conn = connect()
             cur = conn.cursor(dictionary=True)
-            sql = "INSERT INTO stock_transactions(item_id,transaction_type,quantity) VALUES (%s,%s,%s) "
+            sql = "INSERT INTO stock_transactions(item_id,transaction_type,transaction_date,quantity) VALUES (%s,%s,%s,%s) "
                     
-            cur.execute(sql,(int(item_d[0]['item_id']),'Stock Out',quantity))
+            cur.execute(sql,(int(item_d[0]['item_id']),'Stock Out',today,quantity))
             conn.commit()
             conn.close()
             cur.close()
@@ -1116,10 +1138,15 @@ def pharmacy_stock():
                     #stock transaction in on existing items
                     t_id = existing_stock['item_id']
                     print(f"stock item id {t_id}")
+                    
+                    
+                    today = date.today()
+                    print(today)
+                  
 
-                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `quantity`) \
-                          VALUES (%s, 'Stock In', %s);"
-                    cursor.execute(s_trans,(t_id,quantity_int,))
+                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`,`transaction_date`, `quantity`) \
+                          VALUES (%s, 'Stock In', %s, %s);"
+                    cursor.execute(s_trans,(t_id,today,quantity_int,))
 
                     
                     
@@ -1142,10 +1169,14 @@ def pharmacy_stock():
                     #stock transaction in on new items
                     t_id = cursor.lastrowid
                     print(f"stock item id {t_id}")
+                    from datetime import date
+                    today = date.today()
+                    print(today)
+                  
 
-                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `quantity`) \
-                          VALUES (%s, 'Stock In', %s);"
-                    cursor.execute(s_trans,(t_id,quantity_int,))
+                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`) \
+                          VALUES (%s, 'Stock In', %s, %s);"
+                    cursor.execute(s_trans,(t_id,today,quantity_int,))
                 
                 conn.commit()
                 flash(f'Stock {action} successfully! New quantity: {stock_quantity}', 'success')
@@ -1174,18 +1205,22 @@ def pharmacy_stock():
     return render_template('pharmacy_stock.html', medicines=medicines)
 
 
-@app.route('/legder_report')
+@app.route('/legder_report', methods=['GET', 'POST'])
 def legder_report():
-    if request.method == 'POST':
+    if request.method == 'GET':
         
 
         data = None
         return render_template('legder_report.html', data = data)
     else:
 
-        start_date = '2025-04-25'
-        end_date = '2025-04-26'
-        item_code = None  # Or you can set like 'ITEM001'
+        # start_date = '2025-04-25'
+        # end_date = '2025-04-26'
+
+        start_date = request.form.get('s-date')
+        end_date = request.form.get('e-date')
+        item_code = request.form.get('item_code') or None
+        # item_code = None  # Or you can set like 'ITEM001'
 
         conn = connect()
         cur = conn.cursor(dictionary=True)
