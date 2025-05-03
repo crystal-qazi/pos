@@ -23,15 +23,19 @@
 <!-- partial -->
 <div class="main-panel">
   <div class="content-wrapper">
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <ul class=flashes>
-      {% for message in messages %}
-      <li>{{ message }}</li>
+    
+      {% for category, message in messages  %}
+      <div class="alert alert-warning alert-dismissible fade show" id="success-alert" role="alert">
+        <strong> {{ message }} </strong> {{ category }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       
       {% endfor %}
-    </ul>
+    </div>
+
     {% endif %}
-    {% endwith %}
+  {% endwith %}
 
     {%for result in patient_record%}
 
@@ -109,6 +113,11 @@
             <div class="col-12">
               <div>
                 <div id="searchResults" class="d-flex"></div>
+
+
+               
+
+
               </div>
             </div>
           </div>
@@ -136,23 +145,50 @@
                 const expiryDate = new Date(item.expiry_date);
                 const formattedExpiryDate = `${expiryDate.getDate()}/${expiryDate.getMonth() + 1}/${expiryDate.getFullYear()}`;
             resultsDiv.innerHTML += `
+
+            
+            
                         <div class="card w-25 mx-2">
                           <div class="card-header">
                             ${item.item_code}
                           </div>                          
-                          <div class="card-body" >
-                            <h5 class="card-title">${item.item_name}</h5>
-                            <p>Batch: ${item.batch_no}</p>
-                            <p>item_id: ${item.item_id}</p>
-                            <p>Stock: ${item.stock_quantity}</p>
-                            <p>Expiry: ${formattedExpiryDate}</p>
+                          <div class="card-body-cus" >
+                            <h5 class="card-title-cus">${item.item_name}</h5>
+                            <div class="card-text">
+                           <!-- <p>Batch: ${item.batch_no}</p> -->
+                           <!-- <p>item_id: ${item.item_id}</p> -->
+                            <div>Stock: ${item.stock_quantity}</div>
+                            <div>Expiry: ${formattedExpiryDate}</div>
                             
-                          </div>
-                          
-                          <button onclick="addToCart('${item.item_id}','${item.item_code}', '${item.item_name}', '${item.batch_no}', '${item.expiry_date}', ${item.selling_price})">🛒 Add to Cart</button>
+
+
+                             <!-- Mode Selection -->
+                              <div class="mode-selection">
+                                <label for="mode">Select Mode:</label>
+                                <select id="mode" class="mode-dropdown">
+                                  <option value="single-piece">Single Piece</option>
+                                  <option value="pack">Pack</option>
+                                  <option value="unit">Unit</option>
+                                  
+                                </select>
+                              </div>
+                        
+                              <!-- Quantity Input -->
+                              <div class="quantity-input">
+                                <label for="quantity">Qty:</label>
+                                <input type="number" id="quantity" min="1" value="1">
+                              </div>
+                        
+                              </div>
+                            
+                          </div>  
+                                              
+                          <button class="btn" onclick="addToCart('${item.stock_quantity}','${item.packs_per_unit}','${item.pieces_per_pack}','${item.item_id}','${item.item_code}', '${item.item_name}', '${item.batch_no}', '${item.expiry_date}', ${item.selling_price})">🛒 Add to Cart</button>
                         </div>                     
                        
                         `;
+                       
+                       
                         
           });
           
@@ -161,15 +197,155 @@
 
 
     /** 🟡 Add to Cart */
-    function addToCart(item_id,item_code, item_name, batch_no, expiry_date, price) {
-      fetch("/add_to_cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price })
-      })
-        .then(response => response.json())
-        .then(data => updateCartUI());
-    }
+
+    /*
+    function addToCart(stock_quantity,packs_per_unit,pieces_per_pack,item_id,item_code, item_name, batch_no, expiry_date, price) {
+      // let unit = document.getElementById("unit").value;
+      let mode = document.getElementById("mode").value;
+      let qty = document.getElementById("quantity").value;
+
+      console.log('mode '+mode)
+      console.log('qty '+qty)
+      console.log('stock qty '+stock_quantity)
+      console.log('pack in unit size' + packs_per_unit)
+      console.log('pieces per pack size ' + pieces_per_pack)
+      console.log('item unit size calculation ' + packs_per_unit * qty)
+      console.log('item pack size calculation ' + pieces_per_pack * qty)   
+
+      
+      if (mode === 'pack' ) {
+          console.log('pack calucation ' + pieces_per_pack /packs_per_unit * qty )
+          let cart_qty = pieces_per_pack /packs_per_unit * qty
+          console.log(cart_qty)   
+               
+          
+          fetch("/add_to_cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            // body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price,unit })
+            body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price,cart_qty })
+          })
+            .then(response => response.json())
+            .then(data => updateCartUI());
+        } 
+
+        else if (mode === 'unit' ) {
+          console.log('unit calucation ' + qty *  pieces_per_pack )
+          let cart_qty = qty *  pieces_per_pack
+          console.log(cart_qty)    
+         
+         
+          fetch("/add_to_cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            // body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price,unit })
+            body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price,cart_qty })
+          })
+            .then(response => response.json())
+            .then(data => updateCartUI());       
+        }
+
+        else if (mode === 'single-piece') {
+          console.log('unit calucation ' + qty  )         
+          
+          let cart_qty = qty 
+          console.log('cart qty '+cart_qty)  
+
+          if (stock_quantity < cart_qty){
+            console.log("low stock");            
+            alert("s");
+              }
+              else{ 
+                fetch("/add_to_cart", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price,cart_qty })
+              })
+                .then(response => response.json())
+                .then(data => updateCartUI());
+                console.log("go");
+              }
+        }
+      }
+    
+  */
+
+
+
+
+  /** 🟡 Add to Cart */
+function addToCart(stock_quantity, packs_per_unit, pieces_per_pack, item_id, item_code, item_name, batch_no, expiry_date, price) {
+  let mode = document.getElementById("mode").value;
+  let qty = parseFloat(document.getElementById("quantity").value);
+
+  console.log('Mode:', mode);
+  console.log('Qty:', qty);
+  console.log('Stock Qty:', stock_quantity);
+  console.log('Packs per Unit:', packs_per_unit);
+  console.log('Pieces per Pack:', pieces_per_pack);
+
+  let cart_qty;
+  
+  
+
+  if (isNaN(qty) || qty <= 0) {
+    alert("Please enter a valid quantity.");
+    return;
+  }
+
+  if (mode === 'pack') {
+    cart_qty = (pieces_per_pack / packs_per_unit) * qty;
+    console.log('Cart Qty (Pack):', cart_qty);
+  } else if (mode === 'unit') {
+    cart_qty = qty * pieces_per_pack;
+    console.log('Cart Qty (Unit):', cart_qty);
+  } else if (mode === 'single-piece') {
+    cart_qty = qty;
+    console.log('Cart Qty (Single-piece):', cart_qty);
+    
+    
+
+              if (stock_quantity < cart_qty) {
+                console.log("Low stock");
+                alert("Not enough stock for the selected quantity.");
+                return;
+              }
+                } else {
+                  alert("Invalid mode selected.");
+                  return;
+                }
+
+  // Optional: Do a stock check in all modes (if required)
+  if (stock_quantity < cart_qty  ) {
+    alert("Stock too low for the selected quantity.");
+    return;
+  }
+
+  
+ 
+  fetch("/add_to_cart", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ item_id, item_code, item_name, batch_no, expiry_date, price, cart_qty })
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.message) 
+      alert(data.message);
+      updateCartUI();
+      console.log("Item added to cart.");     
+      
+    })
+    .catch(error => {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add item to cart.");
+    });
+
+    
+}
+
+
+
 
     /** 🟣 Update Cart UI */
     function updateCartUI() {
@@ -177,6 +353,7 @@
         .then(response => response.json())
         .then(cart => {
           let cartTable = document.getElementById("cartTable");
+          
           cartTable.innerHTML = `
           <thead>
             <tr>
@@ -200,7 +377,7 @@
                     <!-- <td>${item.batch_number}</td>
                     <td>${item.expiry_date}</td> -->
                     <td>${item.price}</td>
-                    <td>${item.quantity}</td>
+                    <td id="cart_ui_qty">${item.quantity}</td>
                     <td>${item.total}</td>
                     <td><a  onclick="removeFromCart('${item.item_code}', '${item.batch_number}')"> <i class="fa fa-dribbble"></i></a></td>
                     <!-- <td><button onclick="removeFromCart('${item.item_code}', '${item.batch_number}')">x </button></td> -->

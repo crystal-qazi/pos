@@ -25697,4 +25697,69 @@ table.dataTable tbody td.select-checkbox:after {
   content:" *";
   color: red;
 }
+
+
+.product-card {
+                    margin-bottom: 20px;
+                    padding: 20px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    width: 30%;
+                  }
+                  
+                  .mode-selection, .quantity-input, .total-price {
+                    margin: 5px 0;
+                  }
+                  
+                  .mode-dropdown {
+                    padding: 5px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                  }
+                  
+                  .quantity-input input {
+                    width: 60px;
+                    padding: 5px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                  }
+                  
+                  .total-price {
+                    font-size: 18px;
+                    font-weight: bold;
+                  }
+                  
+                  .add-to-cart {
+                    display: block;
+                    width: 100%;
+                    padding: 10px;
+                    background-color: #28a745;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 16px;
+                  }
+                  
+                  .add-to-cart:hover {
+                    background-color: #218838;
+                  }
+
+
+
+
+  .card .card-title-cus {
+    color: #010101;
+    /* margin-bottom: 1.2rem; */
+    text-transform: capitalize;
+    font-size: 15px;
+    font-weight: 600;
+
+}
+.card .card-body-cus {
+  padding: 5px 15px;
+}
+.card-text{
+  font-size: 13px;
+}
 /*# sourceMappingURL=maps/style.css.map */

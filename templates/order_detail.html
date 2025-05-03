@@ -330,7 +330,7 @@
                 
          
                 <div class="card-body">
-                    <form action="/payment_calculaton?mrn={{patient_record[0]['MRN']}}&order={{OrderNumber}}" method="POST">
+                    <form action="/payment_calculaton?mrn={{patient_record[0]['MRN']}}&order={{OrderNumber}}" method="POST" onsubmit="return submitTransaction(event)">
                         <div class="mb-3">
                             <!-- <label for="amountDue" class="form-label">Amount Due</label> -->
                             <input name="Total_amount" id="totalAmount" type="hidden" class="form-control form-control-sm" id="amountDue" placeholder="Enter amount due" value="{{round_amount}}">
@@ -345,7 +345,7 @@
                         </div>
                         
 
-                        <button onclick="submitTransaction()">Submit</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
               
                         <div id="result"></div>
                     </form>
@@ -362,6 +362,9 @@
                   function calculateChange() {
                     const total = parseFloat(document.getElementById('totalAmount').textContent) || 0;
                     const cash = parseFloat(document.getElementById('cashGiven').value) || 0;
+
+                    console.log(total)
+                    console.log(cash)
               
                     if (cash >= total) {
                       document.getElementById('changeAmount').value = (cash - total).toFixed(2);
@@ -370,20 +373,25 @@
                     }
                   }
               
-                  function submitTransaction() {
-                    const total = parseFloat(document.getElementById('totalAmount').value);
+                  function submitTransaction(event) {
+                    event.preventDefault(); // Prevent default form submit
+                    const total = parseFloat(document.getElementById('totalAmount').textContent);
                     const cash = parseFloat(document.getElementById('cashGiven').value);
-                    const change = document.getElementById('changeAmount').value;
+                    const change = document.getElementById('changeAmount').textContent;
+                    console.log(total)
+                    console.log(cash)
+                    
               
-                    if ( isNaN(cash) || cash < total) {
+                    if ( isNaN(total) || isNaN(cash) || cash < total) {
                       document.getElementById('result').innerHTML = "Please enter valid amounts.";
                       document.getElementById('result').style.color = "red";
-                      return;
+                      return false;
                     }
               
                     document.getElementById('result').innerHTML =
                       `Transaction completed. Change: $${(cash - total).toFixed(2)}`;
                     document.getElementById('result').style.color = "green";
+                    event.target.submit();
               
                     // Clear input fields (optional)
                     // document.getElementById('totalAmount').value = "";

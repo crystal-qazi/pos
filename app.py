@@ -84,20 +84,48 @@ def search_patient():
         patient_mobile = request.args.get('patient_mobile') or ''
         patient_cnic = request.args.get('patient_cnic') or ''
         v_number = request.args.get('v_number') or None
-        print(v_number)
+
+
+        conditions = []
+        params = []
+
+
+        
+        
+        print(patient_mobile)
         if v_number == None:
+
+            if patient_name:
+                conditions.append("(first_name LIKE %s OR last_name LIKE %s)")
+                params.extend(['%' + patient_name + '%', '%' + patient_name + '%'])
+
+            if patient_mrn:
+                conditions.append("mrn = %s")
+                params.append(patient_mrn)
+
+            if patient_mobile:
+                conditions.append("Mobile LIKE %s")
+                params.append('%' + patient_mobile + '%')
+
+            if patient_cnic:
+                conditions.append("cnic = %s")
+                params.append(patient_cnic)
+
+
+
             conn = connect()
             cur = conn.cursor(dictionary=True)
-            sql = "SELECT * FROM patients WHERE first_name LIKE %s OR \
-                last_name LIKE %s OR Mobile LIKE %s;"      
-            cur.execute(sql,(patient_name,patient_name,'%'+patient_mobile+'%',))
-            
+            sql = "SELECT * FROM patients WHERE "+' or '.join(conditions)    
+            print(sql) 
+            cur.execute(sql,(params))
+            print(cur)
             patient_record = cur.fetchall()
             print(cur)
             cur.close()
             conn.close()
             return render_template('search_patient.html', patient_record = patient_record)
         else:
+            
             conn = connect()
             cur = conn.cursor(dictionary=True)
             sql = """SELECT * FROM patient_visit
@@ -171,7 +199,8 @@ def cart_item_search():
         search_item = request.args.get('query')
         conn = connect()
         cur = conn.cursor(dictionary=True)
-        sql = "select * from stock where item_name like %s"
+        sql = """select * from stock
+                JOIN items ON items.b_item_id = stock.b_item_id where item_name LIKE %s"""
         cur.execute(sql, (f"%{search_item}%",))
         result = cur.fetchall()
         cur.close()
@@ -188,7 +217,7 @@ def view_cart():
     else:
         res = request.json
         data = res.get("status") 
-        print(f"test : {res}")           
+        # print(f"test : {res}")           
         return jsonify({"message": "Save", "cart": session.get("cart", [])})
 
 
@@ -203,34 +232,87 @@ def add_to_cart():
     item_name = data.get("item_name")
     batch_number = data.get("batch_no")
     expiry_date = data.get("expiry_date")
-    price = data.get("price")
+    cart_qty = data.get("cart_qty")
     
-    cart = session.get("cart", [])
+
+    price = data.get("price")
+    print(f"price {price}" )
+    print(f"qty {cart_qty}")
+    print( int(cart_qty) * price)
+    
+    cart = session.get("cart", []) 
+
     print(f"this is cart item {cart}")
 
+    conn = connect()
+    cur = conn.cursor(dictionary=True)
+    sql = "SELECT * FROM stock\
+         LEFT JOIN items ON items.b_item_id = stock.b_item_id WHERE stock.item_id = %s"
+    print(f"item id {item_id}")
+    cur.execute(sql,(item_id,))
+    result_qty = cur.fetchall()
+    print(f"result {result_qty[0]['stock_quantity']}")
+    print(f"this is cartui {cart_qty}")
+
+    
+
+    
+
     # 🟠 **Check if item already exists in cart**
+    item_found = False
     for item in cart:
         if item["item_code"] == item_code and item["batch_number"] == batch_number:
-            item["quantity"] += 1
-            item["total"] = item["quantity"] * item["price"]
-            session["cart"] = cart
-            return jsonify({"message": "Item quantity updated", "cart": cart})
+            if result_qty[0]['stock_quantity'] >= item['quantity']+cart_qty:
+                item["quantity"] += int(cart_qty)
+                item["total"] = item["quantity"] * item["price"]
+                session["cart"] = cart
+                # return jsonify({"message": "Item added to cart", "cart": cart})
+                return jsonify({"cart": cart})
+            else:
+                return jsonify({"message": "Stock Low", "cart": cart})
+            # item_found = True
+            # break
+
+    if not item_found:
+            
 
     # 🟡 **Add new item to cart**
-    cart.append({
-        "item_id": item_id,
-        "item_code": item_code,
-        "description": item_name,
-        "batch_number": batch_number,
-        "expiry_date": expiry_date,
-        "price": price,
-        "quantity": 1,
-        "total": price
-    })
+
+        conn = connect()
+        cur = conn.cursor(dictionary=True)
+        sql = "SELECT * FROM stock\
+            LEFT JOIN items ON items.b_item_id = stock.b_item_id WHERE stock.item_id = %s"
+        print(f"item id {item_id}")
+        cur.execute(sql,(item_id,))
+        result_qty = cur.fetchall()
+        print(f"result {result_qty[0]['stock_quantity']}")
+        print(f"this is cartui {cart_qty}")
+
     
-    session["cart"] = cart
-    print(f"added to cart {cart}")
-    return jsonify({"message": "Item added to cart", "cart": cart})
+
+        if result_qty[0]['stock_quantity'] >= int(cart_qty):
+            print("ok")
+
+            cart.append({
+                "item_id": item_id,
+                "item_code": item_code,
+                "description": item_name,
+                "batch_number": batch_number,
+                "expiry_date": expiry_date,
+                "price": price,
+                # "quantity": 1,
+                "quantity": cart_qty,
+                # "total": price
+                "total": price * int(cart_qty)
+            })
+            
+            session["cart"] = cart
+            print(f"added to cart {cart}")
+            # flash("cart updated")
+            # return jsonify({"message": "Item added to cart", "cart": cart})
+            return jsonify({ "cart": cart})
+        else:      
+            return jsonify({"message": "Stock Low", "cart": cart})
 
 
 

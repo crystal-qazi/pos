@@ -69,6 +69,19 @@
                 </div>
               </div>
 
+
+
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="currentStock">Measurment:</label>
+                  <select class="form-control" name="measurment" id="">
+                    <option value="pieces_per_pack">Pack</option>
+                    <option value="packs_per_unit">Unit</option>
+                  </select>
+                 
+                </div>
+              </div>
+
               
 
               <div class="col-md-2">
@@ -91,20 +104,7 @@
                   <input type="number" step="0.01" class="form-control" id="selling_price" name="selling_price" min="1" required>
                 </div>
               </div>
-
-              <!-- <div class="col-md-2">
-                <div class="form-group">
-                  <label for="supplier">expiry_date:</label>
-                  <input type="date" class="form-control" id="expiry_date" name="expiry_date">
-                </div>
-              </div> -->
-
-              <!-- <div class="col-md-2">
-                <div class="form-group">
-                  <label for="notes">batch_no:</label>
-                  <input type="text" class="form-control" id="batch_no" name="batch_no">
-                </div>
-                </div> -->
+           
 
                 <div class="col-md-2">
                   <div class="form-group">
@@ -147,6 +147,8 @@
                    data-name="${item.b_item_name}"
                    data-cat="${item.b_cat}"
                    data-stock="${item.stock_quantity}"
+                   data-stock="${item.pieces_per_pack}"
+                   data-stock="${item.packs_per_unit}"
                    data-reorder_level="${item.reorder_level}">
                   ${item.b_Item_code} - ${item.b_item_name} (Cat: ${item.b_cat}) (Current: ${item.stock_quantity})
                 </a>
@@ -172,6 +174,8 @@
     const itemName = $(this).data('name');
     const itemCode = $(this).data('code');
     const currentStock = $(this).data('stock');
+    const pieces_per_pack = $(this).data('pieces_per_pack');
+    const packs_per_unit = $(this).data('packs_per_unit');
     const cat = $(this).data('cat');
     const reorder_level = $(this).data('reorder_level');
     
@@ -180,6 +184,8 @@
     $('#itemName').val(itemName);
     $('#itemCode').val(itemCode);
     $('#currentStock').val(currentStock);
+    $('#pieces_per_pack').val(pieces_per_pack);
+    $('#packs_per_unit').val(packs_per_unit);
     $('#cat').val(cat);
     $('#reorder_level').val(reorder_level);
     
