@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Payment Slip</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 10px;
+            background-color: #fff;
+        }
+        
+        .receipt-container {
+            width: 80mm;
+            margin: 0 auto;
+            padding: 5px;
+            border: 1px dashed #ccc;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #000;
+        }
+        
+        .pharmacy-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .pharmacy-address {
+            font-size: 10px;
+            margin-bottom: 3px;
+        }
+        
+        .pharmacy-contact {
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .receipt-title {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin: 8px 0;
+            text-transform: uppercase;
+        }
+        
+        .receipt-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 10px;
+        }
+        
+        .customer-info {
+            margin-bottom: 10px;
+            font-size: 10px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 10px;
+        }
+        
+        .items-table th {
+            text-align: left;
+            border-bottom: 1px dashed #000;
+            padding: 3px 0;
+        }
+        
+        .items-table td {
+            padding: 3px 0;
+            vertical-align: top;
+        }
+        
+        .items-table .qty {
+            text-align: center;
+            width: 15%;
+        }
+        
+        .items-table .price {
+            text-align: right;
+            width: 20%;
+        }
+        
+        .items-table .total {
+            text-align: right;
+            width: 20%;
+        }
+        
+        .summary {
+            border-top: 1px dashed #000;
+            padding-top: 5px;
+            margin-top: 5px;
+            font-size: 11px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+        }
+        
+        .summary-total {
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 9px;
+            border-top: 1px dashed #000;
+            padding-top: 5px;
+        }
+        
+        .barcode {
+            text-align: center;
+            margin: 10px 0;
+            font-family: 'Libre Barcode 39', cursive;
+            font-size: 24px;
+        }
+        
+        .thank-you {
+            text-align: center;
+            font-style: italic;
+            margin: 10px 0;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="header">
+            <div class="pharmacy-name">HEALTHCARE PHARMACY</div>
+            <div class="pharmacy-address">123 Medical Street, Health City, HC 12345</div>
+            <div class="pharmacy-contact">Tel: (123) 456-7890 | License: PH123456</div>
+        </div>
+        
+        <div class="receipt-title">Payment Receipt</div>
+        
+        <div class="receipt-info">
+            <div>Receipt #: RX-2023-1001</div>
+            <div>Date: 15-Nov-2023</div>
+        </div>
+        
+        <div class="receipt-info">
+            <div>Time: 14:30:45</div>
+            <div>Staff: Dr. Smith</div>
+        </div>
+        
+        <div class="customer-info">
+            <div>Customer: John Doe</div>
+            <div>Insurance: MediCare (ID: MC123456789)</div>
+        </div>
+        
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="qty">Qty</th>
+                    <th class="price">Price</th>
+                    <th class="total">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Amoxicillin 500mg Capsule</td>
+                    <td class="qty">30</td>
+                    <td class="price">$0.75</td>
+                    <td class="total">$22.50</td>
+                </tr>
+                <tr>
+                    <td>Lisinopril 10mg Tablet</td>
+                    <td class="qty">90</td>
+                    <td class="price">$0.25</td>
+                    <td class="total">$22.50</td>
+                </tr>
+                <tr>
+                    <td>Atorvastatin 20mg Tablet</td>
+                    <td class="qty">30</td>
+                    <td class="price">$1.20</td>
+                    <td class="total">$36.00</td>
+                </tr>
+                <tr>
+                    <td>Cotton Swabs (100pc)</td>
+                    <td class="qty">1</td>
+                    <td class="price">$3.99</td>
+                    <td class="total">$3.99</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="summary">
+            <div class="summary-row">
+                <div>Subtotal:</div>
+                <div>$84.99</div>
+            </div>
+            <div class="summary-row">
+                <div>Insurance Coverage:</div>
+                <div>-$67.99</div>
+            </div>
+            <div class="summary-row">
+                <div>Tax (6%):</div>
+                <div>$1.02</div>
+            </div>
+            <div class="summary-row summary-total">
+                <div>Amount Due:</div>
+                <div>$18.02</div>
+            </div>
+            <div class="summary-row">
+                <div>Payment Method:</div>
+                <div>VISA ****4242</div>
+            </div>
+            <div class="summary-row">
+                <div>Payment Received:</div>
+                <div>$20.00</div>
+            </div>
+            <div class="summary-row summary-total">
+                <div>Change Due:</div>
+                <div>$1.98</div>
+            </div>
+        </div>
+        
+        <div class="barcode">*RX-2023-1001*</div>
+        
+        <div class="thank-you">Thank you for choosing Healthcare Pharmacy!</div>
+        
+        <div class="footer">
+            <div>Please retain this receipt for your records</div>
+            <div>Returns accepted within 7 days with receipt</div>
+            <div>Questions? Call (123) 456-7890</div>
+        </div>
+    </div>
+</body>
+</html>

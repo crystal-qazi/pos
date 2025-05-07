@@ -1,5 +1,5 @@
 from conn import connect
-from flask import Flask, render_template, request, redirect, flash, g, jsonify,session, send_from_directory, json, make_response,send_file, url_for
+from flask import Flask, render_template, request, redirect, flash, g, jsonify,session, send_from_directory, json, make_response,send_file, url_for,send_file
 import yaml
 import datetime
 import mysql.connector
@@ -8,7 +8,8 @@ import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import os
-
+from weasyprint import HTML
+import io
 from datetime import datetime, date, time
 
 
@@ -111,16 +112,17 @@ def search_patient():
                 conditions.append("cnic = %s")
                 params.append(patient_cnic)
 
-
-
+     
+            
             conn = connect()
             cur = conn.cursor(dictionary=True)
-            sql = "SELECT * FROM patients WHERE "+' or '.join(conditions)    
-            print(sql) 
+            if conditions:
+                sql = "SELECT * FROM patients where" + ' or' .join(conditions)
+            else:
+                sql = "SELECT * FROM patients " 
+            print(conditions)    
             cur.execute(sql,(params))
-            print(cur)
             patient_record = cur.fetchall()
-            print(cur)
             cur.close()
             conn.close()
             return render_template('search_patient.html', patient_record = patient_record)
@@ -148,8 +150,8 @@ def MRN():
     # today_code = '0402'
     # year = 2026
     
-    today_code = datetime.datetime.now().strftime("%d%m")  # Format: DDMM
-    year = datetime.datetime.now().year
+    today_code = datetime.now().strftime("%d%m")  # Format: DDMM
+    year = datetime.now().strftime("%y")
     
     sql = "SELECT COUNT(*) FROM patients WHERE mrn LIKE  %s"
     cursor.execute(sql, (f"%{year}-{today_code}-%",))
@@ -184,9 +186,13 @@ def add_patient():
             conn.commit()
             return redirect('create_order?mrn='+mrn)
         except mysql.connector.Error as error:
-            flash(error.args)
-            print(error)  # If MRN is duplicated (shouldn't happen due to COUNT logic)
+            if 'cnic' in str(error):
+                    flash("Please check NIC Feild Enter withou dash")
+            else:
+                flash(error.args)
+            # print(error)  # If MRN is duplicated (shouldn't happen due to COUNT logic)
             # conn.rollback()
+            
             return redirect('add_patient')        
           # Retry with new MRN   
      else:       
@@ -236,6 +242,8 @@ def add_to_cart():
     
 
     price = data.get("price")
+    
+    
     print(f"price {price}" )
     print(f"qty {cart_qty}")
     print( int(cart_qty) * price)
@@ -251,8 +259,12 @@ def add_to_cart():
     print(f"item id {item_id}")
     cur.execute(sql,(item_id,))
     result_qty = cur.fetchall()
-    print(f"result {result_qty[0]['stock_quantity']}")
+    print(f"result {result_qty[0]['pieces_per_pack']}")
     print(f"this is cartui {cart_qty}")
+
+    price_per_peice = price / result_qty[0]['pieces_per_pack']
+    
+    print(f"price per piece {price_per_peice}")
 
     
 
@@ -264,7 +276,7 @@ def add_to_cart():
         if item["item_code"] == item_code and item["batch_number"] == batch_number:
             if result_qty[0]['stock_quantity'] >= item['quantity']+cart_qty:
                 item["quantity"] += int(cart_qty)
-                item["total"] = item["quantity"] * item["price"]
+                item["total"] = round(item["quantity"] * price_per_peice,2)
                 session["cart"] = cart
                 # return jsonify({"message": "Item added to cart", "cart": cart})
                 return jsonify({"cart": cart})
@@ -285,13 +297,13 @@ def add_to_cart():
         print(f"item id {item_id}")
         cur.execute(sql,(item_id,))
         result_qty = cur.fetchall()
-        print(f"result {result_qty[0]['stock_quantity']}")
+        print(f"result {price_per_peice}")
         print(f"this is cartui {cart_qty}")
 
     
 
         if result_qty[0]['stock_quantity'] >= int(cart_qty):
-            print("ok")
+            print(f"ok {cart}")
 
             cart.append({
                 "item_id": item_id,
@@ -299,11 +311,11 @@ def add_to_cart():
                 "description": item_name,
                 "batch_number": batch_number,
                 "expiry_date": expiry_date,
-                "price": price,
+                "price": round(price_per_peice,2),
                 # "quantity": 1,
                 "quantity": cart_qty,
                 # "total": price
-                "total": price * int(cart_qty)
+                "total": round(price_per_peice * int(cart_qty),2)
             })
             
             session["cart"] = cart
@@ -453,7 +465,7 @@ def create_order():
         conn = connect()
         cur = conn.cursor()
         sql = "INSERT INTO patient_visit (visit_number, patient_id, STATUS ) VALUES \
-              (%s, %s,'comfirmed');"      
+              (%s, %s,'Confirmed');"      
         cur.execute(sql, (visitnumber, patient_id, ))
         conn.commit()
         conn.close()
@@ -479,7 +491,7 @@ def create_order():
         conn = connect()
         cur  = conn.cursor()
         sql = "INSERT INTO `orders` (`visit_id`, `order_number`, `created_date`, `order_status`) VALUES (%s, %s, %s,%s);"
-        cur.execute(sql,(visit_id,order_number,today,'pending'))
+        cur.execute(sql,(visit_id,order_number,today,'Pending'))
         conn.commit()
         order_id = cur.lastrowid
         cur.close()
@@ -499,8 +511,8 @@ def create_order():
             print(f"item id {item_id}")
             conn = connect()
             cur  = conn.cursor()
-            sql = "INSERT INTO order_detail (order_id, o_item_id, item_code, oitem_name, qty, selling_price) VALUES (%s, %s, %s, %s,%s,%s);"
-            cur.execute(sql,(order_id,item_id,item_code,item_name, quantity,price))
+            sql = "INSERT INTO order_detail (order_id, o_item_id, item_code, oitem_name, qty, selling_price,oi_status) VALUES (%s, %s, %s, %s, %s,%s,%s);"
+            cur.execute(sql,(order_id,item_id,item_code,item_name, quantity,price,'Pending'))
             conn.commit()
             cur.close()
         
@@ -593,6 +605,7 @@ def payment():
         
         round_amount = round(total)
         round_def = round(round_amount -  total, 1)
+        print(f"round amount {round_amount}")
 
         
         #transection Record
@@ -603,7 +616,7 @@ def payment():
         sql = "INSERT INTO sales(invoice_number,transection_type,s_order_id,total_amount,amount_paid,payment_method,status) \
             VALUES (%s,%s,%s,%s,%s,%s,%s) "
                 
-        cur.execute(sql,(cashslip_number,'sale_invoice',int(sale_d[0]['order_id']),round_amount,round_amount,'cash','complete',))
+        cur.execute(sql,(cashslip_number,'Sale',int(sale_d[0]['order_id']),round_amount,round_amount,'cash','complete',))
         conn.commit()
         conn.close()
         cur.close()
@@ -626,7 +639,7 @@ def order_detail():
     # search_item = request.args.get('search-item')
     conn = connect()
     cur = conn.cursor(dictionary=True)
-    sql = "select * from patients where MRN = %s"
+    sql = "select * from patients where MRN = %s LIMIT 1"
     cur.execute(sql,(mrn,))
     result = cur.fetchall()
     conn.close()
@@ -673,6 +686,11 @@ def order_detail():
     conn.close()
     # print(f"order_detail  {order_detail}")
 
+   
+
+
+
+
 
     #vSlip
     #Recipt
@@ -718,77 +736,82 @@ def return_detail():
     OrderNumber = request.args.get('OrderNumber') 
     return_item_id = request.form.getlist("order_detail_item_id")
     return_item = request.form.getlist("order_detail_item_qty")
+    return_price = request.form.getlist("order_detail_item_price")
 
 
     print(f"mrn {mrn}")
     print(f"OrderNumber {OrderNumber}")
-    print(f"return_item {return_item_id}")
-    print(f"return_item {return_item}")
+    print(f"return_item_id {return_item_id}")
+    print(f"return_item_qty {return_item}")
+    print(f"return_item_price {return_price}")
+    
+    if return_item :
 
-    for item_id, qty in zip(return_item_id, return_item):
-    # process each item
-        print(f"{OrderNumber} Returning {qty} units of item ID {item_id}")
+        for item_id, qty, price_per_pice in zip(return_item_id, return_item,return_price):
+        # process each item
+            print(f"{OrderNumber} Returning {qty} units of item ID {item_id} price per pice {price_per_pice}")
 
+        
+
+        conn = connect()
+        cur = conn.cursor(dictionary=True)
+        sql = "select * from patients where MRN = %s"
+        cur.execute(sql,(mrn,))
+        result = cur.fetchall()
+        conn.close()
     
 
-    conn = connect()
-    cur = conn.cursor(dictionary=True)
-    sql = "select * from patients where MRN = %s"
-    cur.execute(sql,(mrn,))
-    result = cur.fetchall()
-    conn.close()
-  
+        conn = connect()
+        cur = conn.cursor(dictionary=True)
+        sql = "SELECT * FROM order_detail \
+                inner JOIN orders ON orders.order_id = order_detail.order_id \
+                INNER JOIN patient_visit pv ON orders.visit_id = pv.visit_id \
+                WHERE order_number = %s "
+        cur.execute(sql,(OrderNumber,))
+        order_detail = cur.fetchall()
+        conn.close()
+        visitnumber = order_detail[0]['visit_number'] 
+        return_price = order_detail[0]['selling_price'] 
+        print(order_detail)
 
-    conn = connect()
-    cur = conn.cursor(dictionary=True)
-    sql = "SELECT * FROM order_detail \
-            inner JOIN orders ON orders.order_id = order_detail.order_id \
-            INNER JOIN patient_visit pv ON orders.visit_id = pv.visit_id \
-            WHERE order_number = %s "
-    cur.execute(sql,(OrderNumber,))
-    order_detail = cur.fetchall()
-    conn.close()
-    visitnumber = order_detail[0]['visit_number'] 
-    print(order_detail)
+        #return Order
 
-    #return Order
-
-    rvouchernumber = RVouchernumber()
-    print(rvouchernumber)
-    order_id = order_detail[0]['order_id']
-    print(order_id)
-    conn = connect()
-    cur  = conn.cursor()
-    sql = "INSERT INTO `returns` ( `return_number`,original_sale_id, `status`) VALUES ( %s, %s,%s);"
-    cur.execute(sql,(rvouchernumber,order_id, 'PENDING'),)
-    conn.commit()
-    order_id = cur.lastrowid
-    cur.close()
-    # print(f"last order id: {order_id}")
-
-    #Insert Order Detail along items into db
-    # item = session.get("cart", [])
-    # print(item)
-    for item_id, qty in zip(return_item_id, return_item):
-    # process each item
-        print(f"{OrderNumber} Returning {qty} units of item ID {item_id}")
+        rvouchernumber = RVouchernumber()
+        print(rvouchernumber)
+        order_id = order_detail[0]['order_id']
+        print(order_id)
         conn = connect()
         cur  = conn.cursor()
-        sql = "INSERT INTO return_items (return_id, original_sale_item_id, item_id, quantity) VALUES ( %s, %s, %s,%s);"
-        cur.execute(sql,(rvouchernumber,OrderNumber,item_id,qty))
+        sql = "INSERT INTO `returns` ( `return_number`,original_sale_id, reason_code,`status`) VALUES ( %s,%s, %s,%s);"
+        cur.execute(sql,(rvouchernumber,order_id,'PATIENT RETURN' ,'PENDING'),)
         conn.commit()
+        order_id = cur.lastrowid
         cur.close()
+        # print(f"last order id: {order_id}")
 
-        print(f"qty {qty}")
-        print(f"item id {order_detail[0]['o_item_id']}")
-        conn = connect()
-        cur  = conn.cursor()
-        sql = "UPDATE stock \
-                SET stock_quantity = stock_quantity + %s \
-                WHERE item_id = %s;"
-        cur.execute(sql,(int(qty),int(order_detail[0]['o_item_id']),))
-        conn.commit()
-        cur.close()
+        #Insert Order Detail along items into db
+        # item = session.get("cart", [])
+        # print(item)
+        for item_id, qty, price in zip(return_item_id, return_item, [price_per_pice]):
+        # process each item
+            print(f"{OrderNumber} Returning {qty} units of item ID {item_id} price {price}")
+            conn = connect()
+            cur  = conn.cursor()
+            sql = "INSERT INTO return_items (return_id, original_sale_item_id, item_id, quantity, original_price) VALUES (%s, %s, %s, %s,%s);"
+            cur.execute(sql,(rvouchernumber,OrderNumber,item_id,qty,price))
+            conn.commit()
+            cur.close()
+
+            print(f"qty {qty}")
+            print(f"item id {order_detail[0]['o_item_id']}")
+            conn = connect()
+            cur  = conn.cursor()
+            sql = "UPDATE stock \
+                    SET stock_quantity = stock_quantity + %s \
+                    WHERE item_id = %s;"
+            cur.execute(sql,(int(qty),int(order_detail[0]['o_item_id']),))
+            conn.commit()
+            cur.close()
 
     
     
@@ -857,26 +880,31 @@ def return_detail():
     #     })
     # session["cart"] = cart
    
+        return redirect('/order_detail?mrn='+str(mrn)+"&order="+str(OrderNumber))
+    flash("no items selected")
     return redirect('/order_detail?mrn='+str(mrn)+"&order="+str(OrderNumber))
-    return render_template('/order_detail.html',patient_record=result, visit_number = visitnumber,OrderNumber=OrderNumber,order_detail=order_detail, total=total, round_amount=round_amount,round_def=round_def,Slip_detail=Slip_detail)
-
 
     
 @app.route("/cancel_order", methods=['GET','POST'])
 def cancel_order():
     cart = session.get("cart", [])
     order_id = request.args.get('OrderNumber')
+    mrn = request.args.get('mrn')
+    print(f"mrn {mrn}")
     
 
     conn = connect()
     cur = conn.cursor(dictionary=True)
-    sql = "UPDATE orders SET order_status = 'cancel' \
-        WHERE order_id = ( SELECT order_id \
-            FROM (SELECT order_id FROM orders WHERE order_number = %s LIMIT 1) AS sub);"
+    sql = """UPDATE orders SET order_status = 'Cancel'
+            WHERE order_number = %s;
+            """
+    sql2 = """UPDATE order_detail SET oi_status = 'Cancel'
+            WHERE order_id = (SELECT orders.order_id FROM orders WHERE order_number = %s);"""
     cur.execute(sql,(order_id,))
+    cur.execute(sql2,(order_id,))
     conn.commit()
     cur.close()
-    return redirect("order_detail?mrn=A2025-1804-0001&order="+order_id)
+    return redirect("order_detail?mrn="+mrn+"&order="+order_id)
     
 @app.route('/Searchitem', methods=['GET','POST'] )
 def searchitem():    
@@ -908,17 +936,21 @@ def PO_reqeust():
 
 
 
+@app.route('/cash_invoice/<order_number>')
+def cash_invoice(order_number): 
 
-# 🟢 **Generate PDF Invoice**
-@app.route("/invoice/<order_number>")
-def generate_invoice(order_number):
     conn = connect()
     cursor = conn.cursor(dictionary=True)
 
     # 🔵 **Fetch Order Details**
-    cursor.execute("SELECT * FROM orders WHERE order_number = %s", (order_number,))
+    cursor.execute("""
+                    SELECT o.*, p.*, pv.*, s.* FROM orders o
+LEFT JOIN patient_visit pv ON pv.visit_id = o.visit_id
+LEFT JOIN sales s ON s.s_order_id = o.order_id
+LEFT JOIN patients p ON p.patient_id = pv.patient_id
+                    WHERE o.order_number =%s""", (order_number,))
     order = cursor.fetchone()
-    print(order)
+    print(f"this is order detail {order}")
 
     # 🟠 **Fetch Order Items**
     cursor.execute("SELECT * FROM order_detail WHERE order_id = %s", (order["order_id"],))
@@ -940,30 +972,71 @@ def generate_invoice(order_number):
     
     round_amount = round(total)
     round_def = round(round_amount -  total, 1)
+    
+    # return  render_template('/cash_invoice.html', data = items, order_detail=order, round_amount=round_amount , round_def=round_def)
+
+    rendered = render_template('/cash_invoice.html', data = items, order_detail=order, round_amount=round_amount , round_def=round_def,total=total)
+    html = HTML(string=rendered)  
+
+    rendered_pdf = html.write_pdf()  
+    return send_file(io.BytesIO(rendered_pdf), download_name='invoice.pdf')
+
+
+# 🟢 **Generate PDF Invoice**
+# @app.route("/invoice/<order_number>")
+# def generate_invoice(order_number):
+#     conn = connect()
+#     cursor = conn.cursor(dictionary=True)
+
+#     # 🔵 **Fetch Order Details**
+#     cursor.execute("SELECT * FROM orders WHERE order_number = %s", (order_number,))
+#     order = cursor.fetchone()
+#     print(order)
+
+#     # 🟠 **Fetch Order Items**
+#     cursor.execute("SELECT * FROM order_detail WHERE order_id = %s", (order["order_id"],))
+#     items = cursor.fetchall()
+    
+#     cursor.close()
+#     conn.close()
+#     print(f"items {items}")
+
+#      #Round
+#     total = 0
+#     print(total)
+#     for item in items:
+#         print(item['selling_price'])
+#         print(item['qty'])
+#         total += float(item['selling_price']) * int(item['qty'])
+
+#     print(f"this is total {total}")
+    
+#     round_amount = round(total)
+#     round_def = round(round_amount -  total, 1)
    
 
-    # 🟡 **Create PDF Invoice**
-    pdf_path = f"invoices/{order_number}.pdf"
-    os.makedirs("invoices", exist_ok=True)
+#     # 🟡 **Create PDF Invoice**
+#     pdf_path = f"invoices/{order_number}.pdf"
+#     os.makedirs("invoices", exist_ok=True)
     
-    c = canvas.Canvas(pdf_path, pagesize=letter)
-    c.drawString(100, 750, f"Pharmacy Invoice - Order #{order_number}")
-    c.drawString(100, 730, f"Date: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    c.drawString(100, 710, f"Total: {round_amount} | Discount: {'0'} | Paid: {round_amount}")
+#     c = canvas.Canvas(pdf_path, pagesize=letter)
+#     c.drawString(100, 750, f"Pharmacy Invoice - Order #{order_number}")
+#     c.drawString(100, 730, f"Date: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+#     c.drawString(100, 710, f"Total: {round_amount} | Discount: {'0'} | Paid: {round_amount}")
     
-    y = 680
-    c.drawString(100, y, "----------------------------------------------")
-    c.drawString(100, y-20, "Item Code | Description | Qty | Price | Total")
-    c.drawString(100, y-40, "----------------------------------------------")
+#     y = 680
+#     c.drawString(100, y, "----------------------------------------------")
+#     c.drawString(100, y-20, "Item Code | Description | Qty | Price | Total")
+#     c.drawString(100, y-40, "----------------------------------------------")
     
-    y -= 60
-    for item in items:
-        c.drawString(100, y, f"{item['item_code']}  | {item['oitem_name']}          | {item['qty']}         | {item['selling_price']}       | {item['selling_price']}")
-        y -= 20
+#     y -= 60
+#     for item in items:
+#         c.drawString(100, y, f"{item['item_code']}  | {item['oitem_name']}          | {item['qty']}         | {item['selling_price']}       | {item['selling_price']}")
+#         y -= 20
     
-    c.save()
+#     c.save()
      
-    return send_file(pdf_path, as_attachment=True)
+#     return send_file(pdf_path, as_attachment=True)
 
 
 
@@ -1161,22 +1234,31 @@ def pharmacy_stock():
             item_code = request.form.get('item_code', '').strip()
             item_name = request.form.get('item_name', '').strip()
             cat = request.form.get('cat', '').strip()
+            measurment = request.form.get('measurment', '').strip()
+            # cat = request.form.get('cat', '').strip()
             quantity = request.form.get('quantity', '0')
             purchase_price = request.form.get('purchase_price', '0')
             selling_price = request.form.get('selling_price', '0')
-            expiry_date = request.form.get('expiry_date')
+            # expiry_date = request.form.get('expiry_date')
             batch_no = request.form.get('batch_no', '').strip()
             reorder_level = request.form.get('reorder_level', '0')
-            print(expiry_date)
+
+            print(f"measurment {measurment}")
+            # print(expiry_date)
             
+            if measurment != 'Pieces':
+                stock_insert = int(measurment) * int(quantity) 
+            else:
+                stock_insert = int(quantity) 
+            print(f"stock insert {stock_insert}")
             # Validate required fields
-            if not all([item_id, item_code, item_name, quantity, reorder_level]):
+            if not all([item_id, item_code, item_name, quantity]):
                 flash('Missing required fields', 'error')
                 return redirect(url_for('pharmacy_stock'))
             
             try:
                 # Convert numeric values
-                quantity_int = int(quantity)
+                quantity_int = int(stock_insert)
                 purchase_price_float = float(purchase_price)
                 selling_price_float = float(selling_price)
                 reorder_level_int = int(reorder_level)
@@ -1222,11 +1304,15 @@ def pharmacy_stock():
                     print(f"stock item id {t_id}")
                     
                     
-                    today = date.today()
+                    #stock transaction in on new items
+                    # t_id = cursor.lastrowid
+                    # print(f"stock item id {t_id}")
+                    # from datetime import date
+                    today = datetime.now()
                     print(today)
                   
 
-                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`,`transaction_date`, `quantity`) \
+                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`) \
                           VALUES (%s, 'Stock In', %s, %s);"
                     cursor.execute(s_trans,(t_id,today,quantity_int,))
 
@@ -1251,8 +1337,8 @@ def pharmacy_stock():
                     #stock transaction in on new items
                     t_id = cursor.lastrowid
                     print(f"stock item id {t_id}")
-                    from datetime import date
-                    today = date.today()
+                    # from datetime import date
+                    today = datetime.now()
                     print(today)
                   
 
@@ -1273,7 +1359,7 @@ def pharmacy_stock():
             except Exception as e:
                 conn.rollback()
                 flash(f'Database error: {str(e)}', 'error')
-                return redirect(url_for('pharmacy_stock'))
+                # return redirect(url_for('pharmacy_stock'))
                 
     except Exception as e:
         flash(f'System error: {str(e)}', 'error')
@@ -1387,6 +1473,37 @@ def legder_report():
 
 
         return render_template('legder_report.html', data = data)
+
+
+
+
+
+
+
+@app.route('/invoice')
+def invoice(): 
+    import io
+    name = "qazi"  
+    return  render_template('/invoice3.html', name = name)
+
+    rendered = render_template('/invoice3.html', name = name)
+    html = HTML(string=rendered)
+    # rendered_pdf = html.write_pdf('./static/invoice.pdf')
+    # return send_file('./static/invoice.pdf')
+
+    rendered_pdf = html.write_pdf()
+    #print(rendered)
+    return send_file(io.BytesIO(rendered_pdf), download_name='invoice.pdf')
+
+    
+
+
+def hello_world():
+    # --snip-- #
+    rendered = render_template('invoice.html')
+    html = HTML(string=rendered)
+    rendered_pdf = html.write_pdf('./static/invoice.pdf')
+    return send_file('./static/invoice.pdf')
 
 if __name__ == '__main__':
     app.run(debug=True)

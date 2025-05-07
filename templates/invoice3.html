@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pharmacy Cash Slip</title>
+    <style>
+        @page {
+                size: A5;
+                margin-top: 4in;
+                }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0px;
+        }
+        
+        .cash-slip {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 1px;
+            margin-bottom: 1px;
+        }
+        
+        .header h2 {
+            margin: 0;
+            color: #007bff;
+        }
+        
+        .header p {
+            margin: 2px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .customer-info {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: small;
+        }
+
+        
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: x-small;
+        
+        }
+        
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        
+        .table th {
+            background-color: #f8f9fa;
+        }
+        
+        .totals {
+            text-align: right;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .total-cus {
+            margin: 10px 0;
+            display: flex;
+            /* justify-content: space-between; */
+            justify-content: end;
+            font-size: small;
+            /* width: 100%; */
+        }
+        
+        .payment-method {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+        }
+        
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+ 
+        
+ 
+    </style>
+</head>
+<body>
+    <div class="cash-slip">
+        <div class="header">
+            <h2>Premier Health Centre</h2>
+            <p>Bangalow No. 235-C masjid-e-Tayyaba street</p>
+            <p>Behind Anjum plaza, P.E.C.H.S., Karachi</p>
+            <p>Tel: (+92) 309-3182950 </p>
+        </div>
+
+        <div class="customer-info">
+            <div>
+                <strong>Customer:</strong> John Doe<br>
+                <strong>Phone:</strong> 9876543210
+            </div>
+            <div>
+                <strong>Date:</strong> 2023-10-05<br>
+                <strong>Bill No:</strong> #123456
+            </div>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sl No</th>
+                    <th>Item Name</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Paracetamol 500mg</td>
+                    <td>2</td>
+                    <td>15.00</td>
+                    <td>30.00</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Amoxicillin 250mg</td>
+                    <td>3</td>
+                    <td>20.00</td>
+                    <td>60.00</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="total-cus">
+            <div>
+                <strong>Sub Total:</strong><br>
+                <strong>Discount:</strong><br>
+                <strong>GST (5%):</strong><br>
+                <strong>Total Payable::</strong><br>
+            </div>
+            <div>
+                 2023-10-05<br>
+                 #123456 <br>
+                 1000000000 <br>
+            </div>
+        </div>
+
+        <!-- <div class="totals">
+            <p><strong>Sub Total:</strong> Rs90.00</p>
+            <p><strong>Discount:</strong> Rs5.00</p>
+            <p><strong>GST (5%):</strong> Rs4.25</p>
+            <p class="total-row"><strong>Total Payable:</strong> Rs89.25</p>
+        </div> -->
+
+        <div class="payment-method">
+            <strong>Payment Method:</strong> Cash<br>
+            <strong>Amount Paid:</strong> Rs100.00<br>
+            <strong>Change:</strong> Rs10.75
+        </div>
+
+        <div class="footer">
+            <p>Thank you for visiting PharmaCare Pharmacy!</p>
+            <p>Return Policy: Items returned within 7 days with receipt.</p>
+        </div>
+
+        
+    </div>
+</body>
+</html>

@@ -33,7 +33,6 @@
                     </thead>
                     <tbody>
                       {%for result in result%}
-                      {{result}}
                    
                       <tr>
                         <th scope="row">{{loop.index}}</th>
@@ -41,7 +40,7 @@
                         <td>{{result['order_number']}}</td>
                         <td>{{result['order_status']}}</td>
                         <td>{{result['created_date']}}</td>
-                        <td><a href="/order_detail?mrn=A2025-1804-0001&order={{result['order_number']}}">View Detail</a></td>
+                        <td><a href="/order_detail?mrn={{result['MRN']}}&order={{result['order_number']}}">View Detail</a></td>
                         
                       </tr>
                       {%endfor%}
