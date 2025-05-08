@@ -616,7 +616,7 @@ def payment():
         sql = "INSERT INTO sales(invoice_number,transection_type,s_order_id,total_amount,amount_paid,payment_method,status) \
             VALUES (%s,%s,%s,%s,%s,%s,%s) "
                 
-        cur.execute(sql,(cashslip_number,'Sale',int(sale_d[0]['order_id']),round_amount,round_amount,'cash','complete',))
+        cur.execute(sql,(cashslip_number,'Sale',int(sale_d[0]['order_id']),round_amount,round_amount,'Cash','Complete',))
         conn.commit()
         conn.close()
         cur.close()
@@ -745,14 +745,7 @@ def return_detail():
     print(f"return_item_qty {return_item}")
     print(f"return_item_price {return_price}")
     
-    if return_item :
-
-        for item_id, qty, price_per_pice in zip(return_item_id, return_item,return_price):
-        # process each item
-            print(f"{OrderNumber} Returning {qty} units of item ID {item_id} price per pice {price_per_pice}")
-
-        
-
+    if return_item :  
         conn = connect()
         cur = conn.cursor(dictionary=True)
         sql = "select * from patients where MRN = %s"
@@ -771,7 +764,7 @@ def return_detail():
         order_detail = cur.fetchall()
         conn.close()
         visitnumber = order_detail[0]['visit_number'] 
-        return_price = order_detail[0]['selling_price'] 
+        return_price2 = order_detail[0]['selling_price'] 
         print(order_detail)
 
         #return Order
@@ -787,18 +780,16 @@ def return_detail():
         conn.commit()
         order_id = cur.lastrowid
         cur.close()
-        # print(f"last order id: {order_id}")
-
-        #Insert Order Detail along items into db
-        # item = session.get("cart", [])
-        # print(item)
-        for item_id, qty, price in zip(return_item_id, return_item, [price_per_pice]):
+       
+        print(f"before zip {return_item}")
+        for item_id, qty, price_per_pice in zip(return_item_id, return_item, return_price):
         # process each item
-            print(f"{OrderNumber} Returning {qty} units of item ID {item_id} price {price}")
+            print(f"{OrderNumber} Returning first {qty} units of item ID {item_id} price per pice {price_per_pice}")
+
             conn = connect()
             cur  = conn.cursor()
             sql = "INSERT INTO return_items (return_id, original_sale_item_id, item_id, quantity, original_price) VALUES (%s, %s, %s, %s,%s);"
-            cur.execute(sql,(rvouchernumber,OrderNumber,item_id,qty,price))
+            cur.execute(sql,(rvouchernumber,OrderNumber,item_id,qty,price_per_pice))
             conn.commit()
             cur.close()
 
@@ -813,38 +804,55 @@ def return_detail():
             conn.commit()
             cur.close()
 
-    
-    
-    # for items in return_item:
-    #     print(f"order items: {items['description']}")
-    #     item_code = items['item_code']
-    #     item_name = items['description']
-    #     quantity = items['quantity']
-    #     price = items['price']
-    #     print(f"item price {price}")
-    #     conn = connect()
-    #     cur  = conn.cursor()
-    #     sql = "INSERT INTO order_detail (order_id, item_code, oitem_name, qty, selling_price) VALUES (%s, %s, %s, %s,%s);"
-    #     cur.execute(sql,(order_id,item_code,item_name,quantity,price))
-    #     conn.commit()
-    #     cur.close()
 
+             
+        # #Return Entry
+        conn = connect()
+        cur = conn.cursor(dictionary=True)
+        sql2 = """SELECT * FROM return_items
+                    JOIN returns ON returns.return_number = return_items.return_id
+                    JOIN orders ON orders.order_id = returns.original_sale_id
 
-
-
-    #calculation
-        # total = 0
+                    WHERE returns.return_number = %s"""
+        cur.execute(sql2,(rvouchernumber,))        
+        sale_d = cur.fetchall()
+        # print(f"this is order detail {sale_d}")
+        conn.close()
+        cur.close()
+        #Round
+        total = 0
         # print(total)
-        # for item in order_detail:
-        #     print(item['selling_price'])
-        #     print(item['qty'])
-        #     total += float(item['selling_price']) * int(item['qty'])
+        for item in sale_d:
+            print(item['original_price'])
+            print(item['quantity'])
+            total += float(item['original_price']) * int(item['quantity'])
 
         # print(f"this is total {total}")
+        
+        round_amount = round(total)
+        round_def = round(round_amount -  total, 1)
+        print(f"round amount {round_amount}")
 
-        # #Round
-        # round_amount = round(total)
-        # round_def = round(round_amount -  total, 1)
+        
+        #transection Record
+
+        # cashslip_number = Cashslipnumber()
+        conn = connect()
+        cur = conn.cursor(dictionary=True)
+        sql = "INSERT INTO sales(invoice_number,transection_type,s_order_id,total_amount,amount_paid,payment_method,status) \
+            VALUES (%s,%s,%s,%s,%s,%s,%s) "
+                
+        cur.execute(sql,(rvouchernumber,'Return',int(order_id),round_amount,round_amount,'Cash','Complete',))
+        conn.commit()
+        conn.close()
+        cur.close()
+
+    
+    
+
+
+
+
    
 
     #Recipt
@@ -857,28 +865,11 @@ def return_detail():
     # vSlip_detail = cur.fetchall()
     # conn.close()
     # print(f"order_detail  {order_detail}")
-   
     
 
    
  
-    
-    # cart = session.get("cart", [])
-    
-    
-    # for item in order_detail:
- 
-
-    #     cart.append({
-    #         "item_code": item['item_code'],
-    #         "description": item['oitem_name'],
-    #         # "batch_number": order_detail.batch_number,
-    #         # "expiry_date": order_detail.expiry_date,
-    #         "price": item['selling_price'],
-    #         "quantity": item['qty'],
-    #         "total": 1
-    #     })
-    # session["cart"] = cart
+   
    
         return redirect('/order_detail?mrn='+str(mrn)+"&order="+str(OrderNumber))
     flash("no items selected")
@@ -945,9 +936,9 @@ def cash_invoice(order_number):
     # 🔵 **Fetch Order Details**
     cursor.execute("""
                     SELECT o.*, p.*, pv.*, s.* FROM orders o
-LEFT JOIN patient_visit pv ON pv.visit_id = o.visit_id
-LEFT JOIN sales s ON s.s_order_id = o.order_id
-LEFT JOIN patients p ON p.patient_id = pv.patient_id
+                    LEFT JOIN patient_visit pv ON pv.visit_id = o.visit_id
+                    LEFT JOIN sales s ON s.s_order_id = o.order_id
+                    LEFT JOIN patients p ON p.patient_id = pv.patient_id
                     WHERE o.order_number =%s""", (order_number,))
     order = cursor.fetchone()
     print(f"this is order detail {order}")
@@ -980,6 +971,55 @@ LEFT JOIN patients p ON p.patient_id = pv.patient_id
 
     rendered_pdf = html.write_pdf()  
     return send_file(io.BytesIO(rendered_pdf), download_name='invoice.pdf')
+
+
+@app.route('/return_invoice/<rvouchernumber>')
+def return_invoice(rvouchernumber): 
+    print(rvouchernumber)
+
+    conn = connect()
+    cursor = conn.cursor(dictionary=True,buffered=True)
+
+    # 🔵 **Fetch Order Details**
+    cursor.execute("""
+                    SELECT * FROM return_items
+                    JOIN returns ON returns.return_number = return_items.return_id
+                    JOIN orders ON orders.order_id = returns.original_sale_id  
+                    LEFT JOIN sales s ON s.s_order_id = returns.return_id                  
+                    WHERE returns.return_number = %s;""", (rvouchernumber,))
+    return_v = cursor.fetchone()
+    print(f"this is Return order detail {return_v}")
+
+    # 🟠 **Fetch Order Items**
+    cursor.execute("SELECT * FROM return_items WHERE return_id = %s", (str(return_v['return_number']),))
+    items = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    print(f"items {items}")
+
+     #Round
+    total = 0
+    print(total)
+    for item in items:
+        print(item['original_price'])
+        print(item['quantity'])
+        total += float(item['original_price']) * int(item['quantity'])
+
+    print(f"this is total {total}")
+    
+    round_amount = round(total)
+    round_def = round(round_amount -  total, 1)
+    
+    # return  render_template('/cash_invoice.html', data = items, order_detail=order, round_amount=round_amount , round_def=round_def)
+
+    rendered = render_template('/return_invoice.html', data = items, order_detail=return_v, round_amount=round_amount , round_def=round_def,total=total)
+    html = HTML(string=rendered)  
+
+    rendered_pdf = html.write_pdf()  
+    return send_file(io.BytesIO(rendered_pdf), download_name='return_invoice.pdf')
+
+
 
 
 # 🟢 **Generate PDF Invoice**

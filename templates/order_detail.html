@@ -310,8 +310,8 @@
                       <td>{{Slip.status}}</td>                     
                       <td>{{Slip.return_date}}</td>                     
                                          
-                      
-                      <td><a href="/cash_invoice/{{OrderNumber}}"><i class="fa fa-print"></i></a></td>
+                      {{Slip}}
+                      <td><a href="/return_invoice/{{Slip.return_number}}"><i class="fa fa-print"></i></a></td>
                     </tr>
                    {%endfor%}
                    
