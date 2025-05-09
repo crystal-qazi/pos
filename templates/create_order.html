@@ -77,7 +77,7 @@
     </div>
     {%endfor%}
 
-
+ 
     
     <div class="row">
       <div class="col-md-4">
@@ -85,7 +85,10 @@
           <div class="">
             <form action="/create_order" method="POST">
               <input type="hidden" name="mrn" value="{{patient_record[0]['MRN']}}">
-              <input type="hidden" name="visitnumber" value="{{visit_number}}">
+              {%if visit_record%}
+              <input type="hidden" name="visitnumber" value="{{visit_record[0]['visit_number']}}">
+              {%else%}
+              {%endif%}
             <table id="cartTable" class="table table-bordered table-sm table-responsive-sm">
             </table>
           

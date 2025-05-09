@@ -177,7 +177,7 @@
         <div style="display: flex;">
             <div style="padding-right: 10px;">
                 <strong>Date:</strong> <br>
-                <strong>Order Number:</strong> <br>
+                <strong>Return Order #:</strong> <br>
                 <strong>Cash Slip Number:</strong> 
             </div>
             <div >
@@ -200,12 +200,13 @@
             </thead>
             <tbody>
                 {%for data in data%}
+             
                 <tr>
                     <td>{{loop.index}}</td>
                     <td>{{data.oitem_name}}</td>
                     <td>{{data.quantity}}</td>
                     <td>{{data.original_price}}</td>
-                    <td>{{data.quantity * data.original_price}}</td>
+                    <td>{{(data.quantity * data.original_price) |float(2)}}</td>
                 </tr>
                 {%endfor%}
 

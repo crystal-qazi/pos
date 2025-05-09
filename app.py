@@ -363,7 +363,7 @@ def VisitNumber():
     letter_index = count // 9999
     # prefix_letter = chr(ord('A') + letter_index)
     serial = (count % 9999) + 1
-    visitnumber = f"v{year}{serial:04d}"
+    visitnumber = f"pv{year}{serial:04d}"
     return visitnumber
 
 def OrderNumber():
@@ -444,80 +444,138 @@ def create_order():
     if request.method == 'GET': 
         session["cart"] = []
         mrn = request.args.get('mrn') 
+        pv = request.args.get('pv') or None
         conn = connect()
-        cur = conn.cursor(dictionary=True)
-        sql = "select * from patients where MRN = %s"
+        cur = conn.cursor(dictionary=True, buffered=True)
+        sql = "select * from patients where MRN = %s;"
         cur.execute(sql,(mrn,))
-        result = cur.fetchall()     
+        p_result = cur.fetchall()
+        sql = "SELECT * FROM patient_visit WHERE visit_number = %s;"
+        cur.execute(sql,(pv,))
+        v_result = cur.fetchall()     
         
-        return render_template('create_order.html', patient_record=result)
+        return render_template('create_order.html', patient_record=p_result, visit_record = v_result)
     else:
         mrn = request.form.get('mrn')
+        pv_number = request.form.get('visitnumber') or None
         conn = connect()
         cur = conn.cursor(dictionary=True)
         sql = "select * from patients where MRN = %s"
         cur.execute(sql,(mrn,))
         result = cur.fetchall()      
         patient_id = result[0]['patient_id']
+        if pv_number == None:
 
-        # Visit Number generate 
-        visitnumber = VisitNumber()        
-        conn = connect()
-        cur = conn.cursor()
-        sql = "INSERT INTO patient_visit (visit_number, patient_id, STATUS ) VALUES \
-              (%s, %s,'Confirmed');"      
-        cur.execute(sql, (visitnumber, patient_id, ))
-        conn.commit()
-        conn.close()
+            # Visit Number generate 
+            visitnumber = VisitNumber()        
+            conn = connect()
+            cur = conn.cursor()
+            sql = "INSERT INTO patient_visit (visit_number, patient_id, STATUS ) VALUES \
+                (%s, %s,'Confirmed');"      
+            cur.execute(sql, (visitnumber, patient_id, ))
+            conn.commit()
+            conn.close()
 
-                
-        #Get Patient Detail
-        order_number = OrderNumber()              
-        conn = connect()
-        cur = conn.cursor(dictionary=True)
-        sql = "SELECT * from patient_visit \
-                LEFT JOIN patients ON patients.patient_id = patient_visit.patient_id \
-                WHERE patients.MRN = %s AND patient_visit.visit_number = %s"
-        cur.execute(sql,(mrn,visitnumber))
-        result2 = cur.fetchall()
-        conn.close()
-        cur.close()  
-        visit_id =      result2[0]['visit_id']  
-       
-      
-        #Create Order
-        today = datetime.now()
-        print(today)
-        conn = connect()
-        cur  = conn.cursor()
-        sql = "INSERT INTO `orders` (`visit_id`, `order_number`, `created_date`, `order_status`) VALUES (%s, %s, %s,%s);"
-        cur.execute(sql,(visit_id,order_number,today,'Pending'))
-        conn.commit()
-        order_id = cur.lastrowid
-        cur.close()
-        # print(f"last order id: {order_id}")
-
-        #Insert Order Detail along items into db
-        item = session.get("cart", [])
-        print(item)
-        for items in item:
-            print(f"order items: {items['description']}")
-
-            item_id = items['item_id']
-            item_code = items['item_code']
-            item_name = items['description']
-            quantity = items['quantity']
-            price = items['price']
-            print(f"item id {item_id}")
+            #Get Patient Detail
+            order_number = OrderNumber()              
+            conn = connect()
+            cur = conn.cursor(dictionary=True)
+            sql = "SELECT * from patient_visit \
+                    LEFT JOIN patients ON patients.patient_id = patient_visit.patient_id \
+                    WHERE patients.MRN = %s AND patient_visit.visit_number = %s"
+            cur.execute(sql,(mrn,visitnumber))
+            result2 = cur.fetchall()
+            conn.close()
+            cur.close()  
+            print(result2)
+            visit_id =      result2[0]['visit_id']  
+        
+        
+            #Create Order
+            today = datetime.now()
+            print(today)
             conn = connect()
             cur  = conn.cursor()
-            sql = "INSERT INTO order_detail (order_id, o_item_id, item_code, oitem_name, qty, selling_price,oi_status) VALUES (%s, %s, %s, %s, %s,%s,%s);"
-            cur.execute(sql,(order_id,item_id,item_code,item_name, quantity,price,'Pending'))
+            sql = "INSERT INTO `orders` (`visit_id`, `order_number`, `created_date`, `order_status`) VALUES (%s, %s, %s,%s);"
+            cur.execute(sql,(visit_id,order_number,today,'Pending'))
             conn.commit()
+            order_id = cur.lastrowid
             cur.close()
+            # print(f"last order id: {order_id}")
+
+            #Insert Order Detail along items into db
+            item = session.get("cart", [])
+            print(item)
+            for items in item:
+                print(f"order items: {items['description']}")
+
+                item_id = items['item_id']
+                item_code = items['item_code']
+                item_name = items['description']
+                quantity = items['quantity']
+                price = items['price']
+                print(f"item id {item_id}")
+                conn = connect()
+                cur  = conn.cursor()
+                sql = "INSERT INTO order_detail (order_id, o_item_id, item_code, oitem_name, qty, selling_price,oi_status) VALUES (%s, %s, %s, %s, %s,%s,%s);"
+                cur.execute(sql,(order_id,item_id,item_code,item_name, quantity,price,'Pending'))
+                conn.commit()
+                cur.close()
+            
+            cart = session.get("cart", [])
+            return redirect('/order_detail?mrn='+str(mrn)+"&order="+str(order_number)) 
+
+
+            
+        else:
+                
+            #Get Patient Detail
+            order_number = OrderNumber()              
+            conn = connect()
+            cur = conn.cursor(dictionary=True)
+            sql = "SELECT * from patient_visit \
+                    LEFT JOIN patients ON patients.patient_id = patient_visit.patient_id \
+                    WHERE patients.MRN = %s AND patient_visit.visit_number = %s"
+            cur.execute(sql,(mrn,pv_number))
+            result2 = cur.fetchall()
+            conn.close()
+            cur.close()  
+            visit_id =      result2[0]['visit_id']  
         
-        cart = session.get("cart", [])
-        return redirect('/order_detail?mrn='+str(mrn)+"&order="+str(order_number))    
+        
+            #Create Order
+            today = datetime.now()
+            print(today)
+            conn = connect()
+            cur  = conn.cursor()
+            sql = "INSERT INTO `orders` (`visit_id`, `order_number`, `created_date`, `order_status`) VALUES (%s, %s, %s,%s);"
+            cur.execute(sql,(visit_id,order_number,today,'Pending'))
+            conn.commit()
+            order_id = cur.lastrowid
+            cur.close()
+            # print(f"last order id: {order_id}")
+
+            #Insert Order Detail along items into db
+            item = session.get("cart", [])
+            print(item)
+            for items in item:
+                print(f"order items: {items['description']}")
+
+                item_id = items['item_id']
+                item_code = items['item_code']
+                item_name = items['description']
+                quantity = items['quantity']
+                price = items['price']
+                print(f"item id {item_id}")
+                conn = connect()
+                cur  = conn.cursor()
+                sql = "INSERT INTO order_detail (order_id, o_item_id, item_code, oitem_name, qty, selling_price,oi_status) VALUES (%s, %s, %s, %s, %s,%s,%s);"
+                cur.execute(sql,(order_id,item_id,item_code,item_name, quantity,price,'Pending'))
+                conn.commit()
+                cur.close()
+            
+            cart = session.get("cart", [])
+            return redirect('/order_detail?mrn='+str(mrn)+"&order="+str(order_number))    
 
 
 
@@ -538,13 +596,14 @@ def payment():
             item_name = items['description']
             quantity = items['quantity']
             price = items['price']
-            # print(f"item price {price}")
+            print(f"item qty {quantity}")
             conn = connect()
             cur  = conn.cursor(dictionary=True)
             sql = "select * from stock where item_code = %s"
             cur.execute(sql,(item_code,))
-            item_d = cur.fetchall()    
-            # print(f"this is tiem {item_d[0]['item_id']}")        
+            item_detail = cur.fetchall() 
+            item_d = item_detail[0]['item_id'] 
+            print(f"this is tiem {item_d}")        
             cur.close()
 
             #detect Stock
@@ -553,9 +612,9 @@ def payment():
             sql = "UPDATE stock s \
                     JOIN order_detail oi ON s.item_code = oi.item_code \
                     JOIN orders o ON o.order_id = oi.order_id \
-                    SET s.stock_quantity = s.stock_quantity - oi.qty \
-                    WHERE o.order_number = %s;"
-            cur.execute(sql,(order_number,))
+                    SET s.stock_quantity = s.stock_quantity - %s \
+                    WHERE o.order_number = %s and oi.o_item_id = %s;"
+            cur.execute(sql,(quantity , order_number,item_d,))
             conn.commit()
             conn.close()
             today = date.today()
@@ -566,7 +625,7 @@ def payment():
             cur = conn.cursor(dictionary=True)
             sql = "INSERT INTO stock_transactions(item_id,transaction_type,transaction_date,quantity) VALUES (%s,%s,%s,%s) "
                     
-            cur.execute(sql,(int(item_d[0]['item_id']),'Stock Out',today,quantity))
+            cur.execute(sql,(int(item_d),'Stock Out',today,quantity))
             conn.commit()
             conn.close()
             cur.close()
@@ -646,11 +705,12 @@ def order_detail():
     
     conn = connect()
     cur = conn.cursor(dictionary=True)
-    sql = "SELECT * FROM order_detail \
-            LEFT  JOIN orders ON orders.order_id = order_detail.order_id \
-            LEFT  JOIN patient_visit pv ON orders.visit_id = pv.visit_id \
-            LEFT  JOIN return_items ri ON ri.item_id = order_detail.oitem_id \
-            WHERE order_number = %s;"
+    sql = """SELECT * FROM order_detail
+            LEFT JOIN orders o ON o.order_id = order_detail.order_id
+            LEFT JOIN returns r ON r.original_sale_id = order_detail.order_id
+            LEFT JOIN return_items ri ON ri.original_sale_item_id = o.order_number
+            LEFT JOIN patient_visit pv ON pv.visit_id = o.visit_id
+            WHERE o.order_number = %s;"""
     cur.execute(sql,(OrderNumber,))
     order_detail = cur.fetchall()
     conn.close()
@@ -658,7 +718,7 @@ def order_detail():
     # print(order_detail)
 
 
-    #calculation
+    #calculation section
     total = 0
     # print(total)
     for item in order_detail:
@@ -764,88 +824,132 @@ def return_detail():
         order_detail = cur.fetchall()
         conn.close()
         visitnumber = order_detail[0]['visit_number'] 
-        return_price2 = order_detail[0]['selling_price'] 
-        print(order_detail)
+        stock_return_id = order_detail[0]['o_item_id'] 
+        print(f"stock_order_id {stock_return_id}")
 
         #return Order
 
         rvouchernumber = RVouchernumber()
         print(rvouchernumber)
         order_id = order_detail[0]['order_id']
+        stock_item_id2 = order_detail[0]['o_item_id']
         print(order_id)
         conn = connect()
         cur  = conn.cursor()
         sql = "INSERT INTO `returns` ( `return_number`,original_sale_id, reason_code,`status`) VALUES ( %s,%s, %s,%s);"
-        cur.execute(sql,(rvouchernumber,order_id,'PATIENT RETURN' ,'PENDING'),)
+        cur.execute(sql,(rvouchernumber,order_id,'PATIENT RETURN' ,'COMPLETED'),)
         conn.commit()
         order_id = cur.lastrowid
         cur.close()
+
+        print(f"before get stock id {return_item_id}")
+
+        
        
-        print(f"before zip {return_item}")
+        # print(f"before zip {stock_item_id}")
         for item_id, qty, price_per_pice in zip(return_item_id, return_item, return_price):
-        # process each item
-            print(f"{OrderNumber} Returning first {qty} units of item ID {item_id} price per pice {price_per_pice}")
+            print(f"after zip item id {item_id}")
+
+            conn = connect()
+            cur  = conn.cursor(dictionary=True)
+            sql = "SELECT * FROM order_detail \
+                inner JOIN orders ON orders.order_id = order_detail.order_id \
+                INNER JOIN patient_visit pv ON orders.visit_id = pv.visit_id \
+                WHERE oitem_id = %s;"
+            cur.execute(sql,(item_id,))
+            stock_item_detail = cur.fetchall()
+            cur.close()
+            # process each item
+            stock_item_id = stock_item_detail[0]['o_item_id']
+
+            
+
+            print(f"{OrderNumber} Returning first {qty} units of item ID {item_id} price per pice {price_per_pice} stock id {stock_item_id}")
 
             conn = connect()
             cur  = conn.cursor()
             sql = "INSERT INTO return_items (return_id, original_sale_item_id, item_id, quantity, original_price) VALUES (%s, %s, %s, %s,%s);"
-            cur.execute(sql,(rvouchernumber,OrderNumber,item_id,qty,price_per_pice))
+            cur.execute(sql,(rvouchernumber,OrderNumber,stock_item_id,qty,price_per_pice))
             conn.commit()
             cur.close()
 
             print(f"qty {qty}")
-            print(f"item id {order_detail[0]['o_item_id']}")
+            print(f"item id {stock_item_id}")
             conn = connect()
             cur  = conn.cursor()
             sql = "UPDATE stock \
                     SET stock_quantity = stock_quantity + %s \
                     WHERE item_id = %s;"
-            cur.execute(sql,(int(qty),int(order_detail[0]['o_item_id']),))
+            cur.execute(sql,(int(qty),int(stock_item_id),))
             conn.commit()
             cur.close()
 
 
              
-        # #Return Entry
-        conn = connect()
-        cur = conn.cursor(dictionary=True)
-        sql2 = """SELECT * FROM return_items
-                    JOIN returns ON returns.return_number = return_items.return_id
-                    JOIN orders ON orders.order_id = returns.original_sale_id
+            # #Return Entry
+            conn = connect()
+            cur = conn.cursor(dictionary=True)
+            sql2 = """SELECT * FROM return_items
+                        JOIN returns ON returns.return_number = return_items.return_id
+                        JOIN orders ON orders.order_id = returns.original_sale_id
 
-                    WHERE returns.return_number = %s"""
-        cur.execute(sql2,(rvouchernumber,))        
-        sale_d = cur.fetchall()
-        # print(f"this is order detail {sale_d}")
-        conn.close()
-        cur.close()
-        #Round
-        total = 0
-        # print(total)
-        for item in sale_d:
-            print(item['original_price'])
-            print(item['quantity'])
-            total += float(item['original_price']) * int(item['quantity'])
+                        WHERE returns.return_number = %s"""
+            cur.execute(sql2,(rvouchernumber,))        
+            sale_d = cur.fetchall()
+            return_item_id2 = item_id
+            print(f"this is return item id {stock_item_id}")
+            conn.close()
+            cur.close()
+            #Round
+            total = 0
+            # print(total)
 
-        # print(f"this is total {total}")
-        
-        round_amount = round(total)
-        round_def = round(round_amount -  total, 1)
-        print(f"round amount {round_amount}")
+            today = datetime.now()
+            print(today)
 
-        
-        #transection Record
-
-        # cashslip_number = Cashslipnumber()
-        conn = connect()
-        cur = conn.cursor(dictionary=True)
-        sql = "INSERT INTO sales(invoice_number,transection_type,s_order_id,total_amount,amount_paid,payment_method,status) \
-            VALUES (%s,%s,%s,%s,%s,%s,%s) "
+            print(f"return detail item id {order_detail[0]['o_item_id']}")
                 
-        cur.execute(sql,(rvouchernumber,'Return',int(order_id),round_amount,round_amount,'Cash','Complete',))
-        conn.commit()
-        conn.close()
-        cur.close()
+            conn = connect()
+            cur = conn.cursor(dictionary=True)
+            s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`,`reference`) \
+                    VALUES (%s, 'Return', %s, %s, %s);"
+            cur.execute(s_trans,(stock_item_id,today,qty,rvouchernumber))
+            conn.commit()
+            conn.close()
+            cur.close()
+
+
+            for item in sale_d:
+                print(item['original_price'])
+                print(item['quantity'])
+                total += float(item['original_price']) * int(item['quantity'])
+
+                # print(f"this is total {total}")
+                
+                round_amount = round(total)
+                round_def = round(round_amount -  total, 1)
+                print(f"round amount {round_amount}")
+
+                
+                #transection Record
+
+                # cashslip_number = Cashslipnumber()
+                conn = connect()
+                cur = conn.cursor(dictionary=True)
+                sql = "INSERT INTO sales(invoice_number,transection_type,s_order_id,total_amount,amount_paid,payment_method,status) \
+                    VALUES (%s,%s,%s,%s,%s,%s,%s) "
+                        
+                cur.execute(sql,(rvouchernumber,'Return',int(order_id),round_amount,round_amount,'Cash','Complete',))
+                conn.commit()
+                conn.close()
+                cur.close()
+
+                
+                
+
+
+
+                
 
     
     
@@ -981,17 +1085,35 @@ def return_invoice(rvouchernumber):
     cursor = conn.cursor(dictionary=True,buffered=True)
 
     # 🔵 **Fetch Order Details**
+
+    
+    # cursor.execute("""
+    #                 SELECT * FROM return_items
+    #                 JOIN returns ON returns.return_number = return_items.return_id
+    #                 JOIN orders ON orders.order_id = returns.original_sale_id  
+    #                 LEFT JOIN sales s ON s.s_order_id = returns.return_id                  
+    #                 WHERE returns.return_number = %s;""", (rvouchernumber,))
     cursor.execute("""
                     SELECT * FROM return_items
                     JOIN returns ON returns.return_number = return_items.return_id
                     JOIN orders ON orders.order_id = returns.original_sale_id  
-                    LEFT JOIN sales s ON s.s_order_id = returns.return_id                  
+                    LEFT JOIN sales s ON s.s_order_id = returns.return_id 
+                   LEFT JOIN patient_visit pv ON pv.visit_id = orders.visit_id   
+						  LEFT JOIN patients p ON p.patient_id = pv.patient_id                   
                     WHERE returns.return_number = %s;""", (rvouchernumber,))
     return_v = cursor.fetchone()
     print(f"this is Return order detail {return_v}")
 
     # 🟠 **Fetch Order Items**
-    cursor.execute("SELECT * FROM return_items WHERE return_id = %s", (str(return_v['return_number']),))
+    item_id = return_v
+    print(f"v {item_id}")
+    # cursor.execute("SELECT * FROM return_items \
+    #                 LEFT JOIN order_detail od ON od.o_item_id = return_items.item_id \
+    #                 WHERE return_items.return_id = %s", (str(rvouchernumber),))
+    cursor.execute("SELECT * FROM returns \
+                    LEFT JOIN return_items ri ON returns.return_number = ri.return_id\
+                    LEFT JOIN stock s ON s.item_id = ri.item_id\
+                    WHERE returns.return_number = %s", (str(rvouchernumber),))
     items = cursor.fetchall()
     
     cursor.close()
@@ -1004,16 +1126,20 @@ def return_invoice(rvouchernumber):
     for item in items:
         print(item['original_price'])
         print(item['quantity'])
+        print(item['item_name'])
         total += float(item['original_price']) * int(item['quantity'])
 
     print(f"this is total {total}")
+
+    total2 = round(total,2)
     
     round_amount = round(total)
-    round_def = round(round_amount -  total, 1)
+    print(round_amount)
+    round_def = round(round_amount -  total2, 1)
     
     # return  render_template('/cash_invoice.html', data = items, order_detail=order, round_amount=round_amount , round_def=round_def)
 
-    rendered = render_template('/return_invoice.html', data = items, order_detail=return_v, round_amount=round_amount , round_def=round_def,total=total)
+    rendered = render_template('/return_invoice.html', data = items, order_detail=return_v, round_amount=round_amount , round_def=round_def,total=total2)
     html = HTML(string=rendered)  
 
     rendered_pdf = html.write_pdf()  
@@ -1022,88 +1148,8 @@ def return_invoice(rvouchernumber):
 
 
 
-# 🟢 **Generate PDF Invoice**
-# @app.route("/invoice/<order_number>")
-# def generate_invoice(order_number):
-#     conn = connect()
-#     cursor = conn.cursor(dictionary=True)
-
-#     # 🔵 **Fetch Order Details**
-#     cursor.execute("SELECT * FROM orders WHERE order_number = %s", (order_number,))
-#     order = cursor.fetchone()
-#     print(order)
-
-#     # 🟠 **Fetch Order Items**
-#     cursor.execute("SELECT * FROM order_detail WHERE order_id = %s", (order["order_id"],))
-#     items = cursor.fetchall()
-    
-#     cursor.close()
-#     conn.close()
-#     print(f"items {items}")
-
-#      #Round
-#     total = 0
-#     print(total)
-#     for item in items:
-#         print(item['selling_price'])
-#         print(item['qty'])
-#         total += float(item['selling_price']) * int(item['qty'])
-
-#     print(f"this is total {total}")
-    
-#     round_amount = round(total)
-#     round_def = round(round_amount -  total, 1)
-   
-
-#     # 🟡 **Create PDF Invoice**
-#     pdf_path = f"invoices/{order_number}.pdf"
-#     os.makedirs("invoices", exist_ok=True)
-    
-#     c = canvas.Canvas(pdf_path, pagesize=letter)
-#     c.drawString(100, 750, f"Pharmacy Invoice - Order #{order_number}")
-#     c.drawString(100, 730, f"Date: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-#     c.drawString(100, 710, f"Total: {round_amount} | Discount: {'0'} | Paid: {round_amount}")
-    
-#     y = 680
-#     c.drawString(100, y, "----------------------------------------------")
-#     c.drawString(100, y-20, "Item Code | Description | Qty | Price | Total")
-#     c.drawString(100, y-40, "----------------------------------------------")
-    
-#     y -= 60
-#     for item in items:
-#         c.drawString(100, y, f"{item['item_code']}  | {item['oitem_name']}          | {item['qty']}         | {item['selling_price']}       | {item['selling_price']}")
-#         y -= 20
-    
-#     c.save()
-     
-#     return send_file(pdf_path, as_attachment=True)
 
 
-
-# 🟢 **Fetch Ledger Report**
-@app.route("/ledger-report")
-def ledger_report():
-    start_date = request.args.get("start_date", (datetime.datetime.now() - datetime.timedelta(days=30)).strftime("%Y-%m-%d"))
-    end_date = request.args.get("end_date", datetime.datetime.now().strftime("%Y-%m-%d"))
-    transaction_type = request.args.get("transaction_type", "all")
-
-    conn = connect()
-    cursor = conn.cursor(dictionary=True)
-
-    query = "SELECT * FROM sales"
-    params = [start_date, end_date]
-
-    if transaction_type != "all":
-        query += " AND transaction_type = %s"
-        params.append(transaction_type)
-
-    cursor.execute(query)
-    ledger_data = cursor.fetchall()
-    
-    cursor.close()
-    conn.close()
-
-    return render_template("ledger_report.html", ledger_data=ledger_data, start_date=start_date, end_date=end_date, transaction_type=transaction_type)
 
 @app.route('/create_item', methods=['GET','POST'])
 def create_items():
@@ -1193,67 +1239,6 @@ def search_item():
        
     
 
-
-# @app.route('/pharmacy_stock', methods=['GET','POST'])
-# def pharmacy_stock():
-#     conn = connect()
-#     cursor = conn.cursor(dictionary=True)
-#     cursor.execute("SELECT * FROM stock")
-#     medicines = cursor.fetchall()
-#     if request.method == 'POST':
-#         item_id = request.form['item_id']
-#         item_code = request.form['item_code']
-#         item_name = request.form['item_name']
-#         cat = request.form['cat']
-#         quantity = request.form['quantity']
-#         purchase_price = request.form['purchase_price']
-#         selling_price = request.form['selling_price']
-#         expiry_date = request.form['expiry_date'] or None
-#         batch_no = request.form['batch_no']
-#         reorder_level = request.form.get('reorder_level') or 0
-        
-
-#         print(quantity)
-#         conn = connect()
-#         cur = conn.cursor(dictionary=True)
-#         sql = "select * from stock where b_item_id = %s"
-#         cur.execute(sql, (item_id,))
-#         q = cur.fetchall()
-#         cur.close()
-#         conn.close()
-#         print(q)
-        
-#         if q != None:
-#             stock_quantity = int(quantity) + int(q[0]['stock_quantity']) or 0
-#             conn = connect()
-#             cursor = conn.cursor()
-#             cursor.execute("INSERT INTO stock (b_item_id,item_code, item_name, category, stock_quantity, reorder_level,batch_no,expiry_date,purchase_price,selling_price) \
-#                         VALUES (%s,%s, %s, %s,%s, %s, %s,%s, %s, %s)", (item_id,item_code, item_name, cat,stock_quantity,reorder_level,batch_no,expiry_date,purchase_price,selling_price))
-#             conn.commit()
-#             conn.close()
-#         else:
-          
-#             stock_quantity = int(quantity)
-#             print(f"if stock was 0 {stock_quantity}")
-
-#             conn = connect()
-#             cursor = conn.cursor()
-#             cursor.execute("INSERT INTO stock (b_item_id,item_code, item_name, category, stock_quantity, reorder_level,batch_no,expiry_date,purchase_price,selling_price) \
-#                         VALUES (%s,%s, %s, %s,%s, %s, %s,%s, %s, %s)", (item_id,item_code, item_name, cat,stock_quantity,reorder_level,batch_no,expiry_date,purchase_price,selling_price))
-#             conn.commit()
-#             conn.close()
-       
-        
-
-
-#         # conn = connect()
-#         # cursor = conn.cursor()
-#         # cursor.execute("INSERT INTO stock (b_item_id,item_code, item_name, category, stock_quantity, reorder_level,batch_no,expiry_date,purchase_price,selling_price) \
-#         #             VALUES (%s,%s, %s, %s,%s, %s, %s,%s, %s, %s)", (item_id,item_code, item_name, cat,stock_quantity,reorder_level,batch_no,expiry_date,purchase_price,selling_price))
-#         # conn.commit()
-#         # conn.close()
-        
-#     return render_template('/pharmacy_stock.html', medicines =medicines)
 
 
 @app.route('/pharmacy_stock', methods=['GET', 'POST'])
@@ -1452,6 +1437,10 @@ def legder_report():
                 
                 SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS stock_out,
 
+                   -- Stock in Return during the period @START to @END
+                SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS return_in,
+
+
                 (
                     (
                         SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
@@ -1463,6 +1452,10 @@ def legder_report():
                         SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END)
                         -
                         SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END)
+                    )
+                    +
+                    (
+                        SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) 
                     )
                 ) AS closing_balance
 
@@ -1479,6 +1472,8 @@ def legder_report():
             start_date, end_date,
             start_date, end_date,
             start_date, start_date,
+            start_date, end_date,
+            start_date, end_date,
             start_date, end_date,
             start_date, end_date
         ]
@@ -1538,12 +1533,7 @@ def invoice():
     
 
 
-def hello_world():
-    # --snip-- #
-    rendered = render_template('invoice.html')
-    html = HTML(string=rendered)
-    rendered_pdf = html.write_pdf('./static/invoice.pdf')
-    return send_file('./static/invoice.pdf')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
