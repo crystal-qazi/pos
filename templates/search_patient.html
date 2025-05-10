@@ -1,7 +1,17 @@
 {% extends 'partials/dashboard_base.html' %}
 {% block dasboard_content %}
 
+<style>
+  .table th, .table td {
+    
+      vertical-align: middle;
+      line-height: 2;
+      white-space: nowrap;
+      padding: 5px;
+      
 
+  }
+</style>
 
         <!-- partial -->
         <div class="main-panel">
@@ -70,10 +80,12 @@
             </div>
             {%if patient_record%}
             <div class="row">
-              <div class="col-md-12 grid-margin stretch-card">
+              <!-- <div class="col-md-12 grid-margin stretch-card"> -->
+              <div class="col-md-12">
                 <div class="card">
                   <div class="card-body">
-                    <table class="table">
+                    <div class="table-responsive">
+                    <table class="table "  id="item-data">
                       <thead>
                         <tr>
                           <th>MRN</th>
@@ -84,8 +96,9 @@
                           <th>Action</th>
                         </tr>
                       </thead>
-                      {%for result in patient_record%}
+                      
                       <tbody>
+                        {%for result in patient_record%}
                         <tr>
                           <td>{{result.MRN}}</td>
                           <td>{{result.first_name}}</td>
@@ -104,11 +117,12 @@
                           <td>
                             <a href="/create_order?mrn={{result.MRN}}">Continue</a>
                           </td>
-                        </tr>                     
+                        </tr>  
+                        {%endfor%}                   
                       </tbody>
-                      {%endfor%}
+                     
                     </table>
-
+                  </div>
                   </div>
                 </div>
                
@@ -120,7 +134,7 @@
               <div class="col-md-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <table class="table">
+                    <table class="table" id="item-data">
                       <thead>
                         <tr>
                           <th>Visit</th>
@@ -154,5 +168,20 @@
             {%endif%}
           </div>
           <!-- content-wrapper ends -->
+
+
+
+          <script>
+            new DataTable('#item-data', {
+              layout: {
+                  bottomEnd: {
+                      paging: {
+                          type: 'simple'
+                          
+                      }
+                  }
+              }
+          });
+          </script>
         
 {%endblock%}

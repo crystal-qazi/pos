@@ -21,10 +21,15 @@
     {% endif %}
   {% endwith %}
   
+
+
+
+  
     <div class="card">
       <div class="card-body position-relative">
-        <h4 class="card-title">Add Items</h4>
-        <form action="/create_item" method="POST">
+        <h4 class="card-title">Update Item</h4>
+        <form action="/update_item" method="POST">
+          <input type="hidden" name="item_id" value="{{item_record.b_item_id}}">
           <p class="card-description">
             Search item not Exit then create here
           </p>
@@ -33,7 +38,7 @@
               <div class="form-group">
                 <label class="">Item Code</label>
                 <div>
-                  <input type="text" class="form-control form-control-sm" name="item_code">
+                  <input type="text" class="form-control form-control-sm" name="item_code" value="{{item_record.b_Item_code}}">
                 </div>
               </div>
             </div>
@@ -41,7 +46,7 @@
               <div class="form-group">
                 <label class="">Item Name</label>
                 <div>
-                  <input type="text" class="form-control form-control-sm" name="item_name">
+                  <input type="text" class="form-control form-control-sm" name="item_name" value="{{item_record.b_item_name}}">
                 </div>
               </div>
             </div>
@@ -52,6 +57,7 @@
                 <div>
                   
                   <select class="form-select" name="cat">
+                    <option value="{{item_record.b_cat}}">{{item_record.b_cat}}</option>
                     <option>Tablet</option>
                     <option>Injection</option>
                     <option>Syrup</option>
@@ -76,6 +82,7 @@
                 <div class="col-sm-9">
                   
                   <select class="form-select" name="oum">
+                    <option value="{{item_record.uom}}">{{item_record.uom}}</option>
                     <option>pcs</option>
                     <option>ml</option>
                     <option>mg</option>
@@ -94,7 +101,7 @@
               <div class="form-group">
                 <label class="">Pieces per Unit</label>
                 <div class="col-sm-9">
-                  <input class="form-control form-control-sm" type="number" name="pieces-per-unit">
+                  <input class="form-control form-control-sm" type="number" name="pieces-per-unit" value="{{item_record.pieces_per_pack}}">
                 </div>
               </div>
             </div>
@@ -102,8 +109,17 @@
               <div class="form-group">
                 <label class="">Pack per unit</label>
                 <div class="col-sm-9">
-                  <input class="form-control form-control-sm" type="number" name="pack-per-unit">
+                  <input class="form-control form-control-sm" type="number" name="pack-per-unit" value="{{item_record.packs_per_unit}}">
                 </div>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-check">
+                <label class="form-check-label text-muted">
+                  <input type="checkbox" class="form-check-input"  value="1" name="is_active" {%if item_record.is_active == 1 %} checked{%else%}{%endif%}>
+                  <a href="#">Active</a>
+                  <i class="input-helper"></i><i class="input-helper"></i></label>
               </div>
             </div>
 
@@ -121,7 +137,7 @@
 
   </div>
 
-
+<!-- 
   <div class="content-wrapper">
     <div class="card">
       <div class="card-body">
@@ -153,10 +169,9 @@
                 <td>{{item_record.pieces_per_pack}}</td>
                 <td>{{item_record.packs_per_unit}}</td>
                 <td>{{item_record.created_at}}</td>
-               
                 <td>{%if item_record.is_active == 0 %}<label class="badge bg-danger">Deactive</label>{%else%}<label
                     class="badge bg-success">Active</label>{%endif%}</td>
-                <td><a href="/update_item?itemid={{item_record.b_item_id}}"><i class="ti-more-alt"></i></a></td>
+                <td><a href=""><i class="ti-more-alt"></i></a></td>
 
 
 
@@ -167,7 +182,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
   <!-- content-wrapper ends -->
 
 

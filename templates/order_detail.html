@@ -97,13 +97,12 @@
     </style>
 
 
-
     <div class="row">
       <div class="col-md-4">
         <div class="bg-white" style="height: 60vh;">
           <div class="">
 
-
+            
             {%if order_detail[0].order_status == 'Pending'%}
             
             <form id="returnForm" action="/cancel_order?mrn={{patient_record[0]['MRN']}}&OrderNumber={{OrderNumber}}" method="POST">
@@ -167,7 +166,7 @@
                   {% for item in order_detail %}
                                   
                   
-                  <tr {%if item.return_item_id%}  style="text-decoration: line-through;" class="disabled-row"  {%else%}{%endif%}>
+                  <tr {%if item.item_id == item.o_item_id %}  style="text-decoration: line-through;" class="disabled-row"  {%else%}{%endif%}>
                     <td>
                       <input class="check" type="checkbox" data-id="{{ item.oitem_id }}">
                     </td>
@@ -387,7 +386,7 @@
 
           <br>
 
-          {% if order_detail[0]['order_status'] in ['Complete', 'Cancel'] %}
+          {% if order_detail[0]['order_status'] in ['Complete', 'Cancel', 'Return'] %}
           {%else%}
           <div id="payment" class="">
             <div>

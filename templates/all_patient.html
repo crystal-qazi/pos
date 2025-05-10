@@ -26,9 +26,11 @@
        
             <div class="row">
               <div class="col-md-12">
-                <div class="table-responsive">
+                <div class="card">
+                  <div class="card-body">
+              
                   
-                  <table class="table">
+                  <table class="table " id="item-data">
                     <thead>
                       <tr>
                         <th>MRN</th>
@@ -44,8 +46,9 @@
                         <th>Action</th>
                       </tr>
                     </thead>
-                    {%for result in patient_record%}
+                    
                     <tbody>
+                      {%for result in patient_record%}
                       <tr>
                         <td>{{result.MRN}}</td>
                         <td>{{result.first_name}}</td>
@@ -69,16 +72,30 @@
                         <!-- <td>edit</td> -->
                         <td><a href="/create_order?mrn={{result.MRN}}">continue</a></td>
                       </tr>
-                     
+                      {%endfor%}
                     </tbody>
-                    {%endfor%}
+                    
                   </table>
                   
-                </div>
-               
+              
+               </div>
+               </div>
               </div>
             </div>
           </div>
           <!-- content-wrapper ends -->
+
+
+          <script>
+            new DataTable('#item-data', {
+              layout: {
+                  bottomEnd: {
+                      paging: {
+                          type: 'simple'
+                      }
+                  }
+              }
+          });
+          </script>
         
 {%endblock%}
