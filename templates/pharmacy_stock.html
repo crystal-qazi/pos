@@ -1,6 +1,23 @@
 {% extends 'partials/dashboard_base.html' %}
 {% block dasboard_content %}
 
+
+
+
+<style>
+  .table th, .table td {
+    
+      vertical-align: middle;
+      line-height: 2;
+      white-space: nowrap;
+      padding: 5px;
+      
+
+  }
+</style>
+
+
+
 <!-- partial -->
 <div class="main-panel">
   <div class="content-wrapper">
@@ -327,13 +344,7 @@
                     <div id="order-listing_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                       <div class="row">
                         <div class="col-sm-12 col-md-6">
-                          <div class="dataTables_length" id="order-listing_length"><label>Show <select name="order-listing_length" aria-controls="order-listing"
-                                class="form-select form-select-sm">
-                                <option value="5">5</option>
-                                <option value="10">10</option>
-                                <option value="15">15</option>
-                                <option value="-1">All</option>
-                              </select></label></div>
+                          
                         </div>
                         <div class="col-sm-12 col-md-6">
                   
@@ -341,7 +352,7 @@
                       <!-- {{medicines}} -->
                       <div class="row dt-row">
                         <div class="col-sm-12">
-                          <table id="order-listing" class="table dataTable no-footer"
+                          <table id="item-data" class="table dataTable no-footer"
                             aria-describedby="order-listing_info">
                             <thead>
                               <tr>
@@ -370,17 +381,15 @@
                                   aria-label="Purchased Price: activate to sort column ascending"
                                   style="width: 112.609px;">Retail</th>
                                 <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Status: activate to sort column ascending" style="width: 71.5px;">Status
+                                  aria-label="Status: activate to sort column ascending" style="width: 71.5px;">Last Updated
                                 </th>
-                                <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Actions: activate to sort column ascending" style="width: 68.9219px;">
-                                  Actions</th>
+                               
                               </tr>
                             </thead>
                             <tbody>
                               {%for medicine in medicines%}
                               <tr class="odd">
-                                <td class="_1">1</td>
+                                <td class="_1">{{loop.index}}</td>
                                 <td>{{medicine.item_name}}</td>
                                 <td>{{medicine.item_code}}</td>
                                 <td>{{medicine.category}}</td>
@@ -388,39 +397,15 @@
                                 <td>{{medicine.stock_quantity}}</td>
                                 <td>{{medicine.purchase_price}}</td>
                                 <td>{{medicine.selling_price}}</td>
-                                <td>
-                                  <label class="badge badge-info">On hold</label>
-                                </td>
-                                <td>
-                                  <button class="btn btn-outline-primary">Config</button>
-                                </td>
+                                <td>{{medicine.created_at}}</td>
+                               
                               </tr> 
                               {%endfor%}                             
                             </tbody>
                           </table>
                         </div>
                       </div>
-                      <div class="row">
-                        <div class="col-sm-12 col-md-5">
-                          <div class="dataTables_info" id="order-listing_info" role="status" aria-live="polite">Showing
-                            1 to 10 of 10 entries</div>
-                        </div>
-                        <div class="col-sm-12 col-md-7">
-                          <div class="dataTables_paginate paging_simple_numbers" id="order-listing_paginate">
-                            <ul class="pagination">
-                              <li class="paginate_button page-item previous disabled" id="order-listing_previous"><a
-                                  aria-controls="order-listing" aria-disabled="true" role="link" data-dt-idx="previous"
-                                  tabindex="-1" class="page-link">Previous</a></li>
-                              <li class="paginate_button page-item active"><a href="#" aria-controls="order-listing"
-                                  role="link" aria-current="page" data-dt-idx="0" tabindex="0" class="page-link">1</a>
-                              </li>
-                              <li class="paginate_button page-item next disabled" id="order-listing_next"><a
-                                  aria-controls="order-listing" aria-disabled="true" role="link" data-dt-idx="next"
-                                  tabindex="-1" class="page-link">Next</a></li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
+                     
                     </div>
                   </div>
                 </div>
@@ -436,5 +421,19 @@
 
   </div>
   <!-- content-wrapper ends -->
+
+
+
+   <script>
+            new DataTable('#item-data', {
+              layout: {
+                  bottomEnd: {
+                      paging: {
+                          type: 'simple'
+                      }
+                  }
+              }
+          });
+          </script>
 
   {%endblock%}

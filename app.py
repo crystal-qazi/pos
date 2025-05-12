@@ -580,7 +580,7 @@ def create_order():
 
     except Exception as e:
         app.logger.error(f"Error in some_route: {str(e)}")
-        flash("An error occurred", "error")
+        # flash("An error occurred", "error")
         return redirect(url_for('search_patient'))
 
 @app.route('/payment_calculaton', methods=['GET','POST'])
@@ -1237,8 +1237,10 @@ def update_item():
             `pieces_per_pack`=%s, 
             `packs_per_unit`=%s, 
             `is_active`=%s 
+            
             WHERE  `b_item_id`=%s;
                                     """
+            
             cur.execute(sql,(item_code,item_name,cat,oum,pieces,pack,item_status,item_id2,))
             conn.commit()
             cur.close()
@@ -1260,7 +1262,7 @@ def search_item():
         conn = connect()
         cur = conn.cursor(dictionary=True)
         sql = "SELECT  items.*, stock.stock_quantity, stock.reorder_level FROM items\
-                LEFT JOIN stock ON stock.b_item_id = items.b_item_id where b_item_name like %s"
+                LEFT JOIN stock ON stock.b_item_id = items.b_item_id where b_item_name like %s AND  items.is_active = 1"
         cur.execute(sql, (f"%{search_item}%",))
         result = cur.fetchall()
         cur.close()
@@ -1345,14 +1347,16 @@ def pharmacy_stock():
                        
                         
                         purchase_price = %s,
-                        selling_price = %s
+                        selling_price = %s,
+                        created_at = %s
                         
                     WHERE b_item_id = %s
                     """
+                    today = datetime.now()
                     cursor.execute(update_sql, (
                         item_code, item_name, cat, stock_quantity,
                         reorder_level_int,  
-                        purchase_price_float, selling_price_float,
+                        purchase_price_float, selling_price_float,today,
                         item_id
                     ))
                     action = "updated"
