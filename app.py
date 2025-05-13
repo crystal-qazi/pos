@@ -13,25 +13,67 @@ import io
 from datetime import datetime, date, time
 
 
+
+
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+app.config['SECRET_KEY']=b'o8UKgXYZVKfTmU_1N0mcVqb6ZpM5qvUfleVzFJXQhv0='
+
+from auth import *
 
 
-@app.route('/', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        conn = connect() 
-        cursor = conn.cursor()      
-        cursor.execute("SELECT * FROM users WHERE username=%s AND password=%s", (username, password))
-        user = cursor.fetchone()
-        if user:
-            session['user_id'] = user[0]
-            return redirect('/dashboard')
-    return render_template('login.html')
+from mysql.connector import Error
+    
+def check_user_permission(self, user_id, permission_name):
+        """Check if a user has a specific permission"""
+        query = """
+        SELECT COUNT(*) FROM users u
+        JOIN user_roles ur ON u.user_id = ur.user_id
+        JOIN role_permissions rp ON ur.role_id = rp.role_id
+        JOIN permissions p ON rp.permission_id = p.permission_id
+        WHERE u.user_id = %s AND p.permission_name = %s
+        """
+        conn = connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(query, (user_id, permission_name))
+            result = cursor.fetchone()
+            return result[0] > 0
+        except Error as e:
+            print(f"Error checking user permission: {e}")
+            return False
+        finally:
+            cursor.close()
 
-@app.route('/dashboard')
+@app.route('/test')
+def usertest():
+     
+     user = 1
+     perms = 'read'
+
+     perm  = check_user_permission(1,1,perms)
+     print(perm)
+     return perm
+
+
+
+
+
+# @app.route('/', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         password = request.form['password']
+#         conn = connect() 
+#         cursor = conn.cursor()      
+#         cursor.execute("SELECT * FROM users WHERE username=%s AND password=%s", (username, password))
+#         user = cursor.fetchone()
+#         if user:
+#             session['user_id'] = user[0]
+#             return redirect('/dashboard')
+#     return render_template('login.html')
+
+@app.route('/')
+@login_req
 def dashboard():
 
     return render_template('index.html')
@@ -64,6 +106,7 @@ def get_cookie():
  
 
 @app.route('/all_patient')
+@login_req
 def all_patient():
     conn = connect()
     cur = conn.cursor(dictionary=True)
@@ -78,6 +121,7 @@ def all_patient():
     return render_template('all_patient.html', patient_record = patient_record)
 
 @app.route('/search_patient', methods=['GET','POST'])
+@login_req
 def search_patient():
     if request.method == 'GET':
         patient_name = request.args.get('patient_name') or ''
@@ -169,6 +213,7 @@ def MRN():
 
 
 @app.route('/add_patient',  methods=['GET','POST'])
+@login_req
 def add_patient():
      if request.method == 'POST':
         patient_fname = request.form.get('patient_fname')
@@ -200,6 +245,7 @@ def add_patient():
      
 
 @app.route('/cart_item_search')
+@login_req
 def cart_item_search():
     if request.method == 'GET':
         search_item = request.args.get('query')
@@ -421,11 +467,14 @@ def RVouchernumber():
     o_number = f"v{year}{serial:04d}" 
     return o_number
 
-@app.route('/r')
-def r():
-    rvouchernumber= RVouchernumber()
-    return(rvouchernumber)
+# @app.route('/r')
+# def r():
+#     rvouchernumber= RVouchernumber()
+#     return(rvouchernumber)
+
+
 @app.route("/all_order")
+@login_req
 def all_order():
  
     conn= connect()
@@ -439,6 +488,7 @@ def all_order():
     return render_template("all_orders.html" , result = result)
     
 @app.route('/create_order', methods=['GET','POST'] )
+@login_req
 def create_order(): 
     try:
     
@@ -584,6 +634,7 @@ def create_order():
         return redirect(url_for('search_patient'))
 
 @app.route('/payment_calculaton', methods=['GET','POST'])
+@login_req
 def payment():
         mrn = request.args.get('mrn')
         order_number = request.args.get('order')
@@ -695,6 +746,7 @@ def payment():
 
 
 @app.route("/order_detail")
+@login_req
 def order_detail():
     session["cart"] = []
     mrn = request.args.get('mrn')        
@@ -794,6 +846,7 @@ def order_detail():
 
 
 @app.route("/return_order", methods=['GET','POST'])
+@login_req
 def return_detail():
     session["cart"] = []
     mrn = request.args.get('mrn')        
@@ -960,6 +1013,7 @@ def return_detail():
 
     
 @app.route("/cancel_order", methods=['GET','POST'])
+@login_req
 def cancel_order():
     cart = session.get("cart", [])
     order_id = request.args.get('OrderNumber')
@@ -981,6 +1035,7 @@ def cancel_order():
     return redirect("order_detail?mrn="+mrn+"&order="+order_id)
     
 @app.route('/Searchitem', methods=['GET','POST'] )
+@login_req
 def searchitem():    
     if request.method == 'GET':
         order_number = 2001
@@ -1002,6 +1057,7 @@ def searchitem():
 
 
 @app.route('/PO_request')
+@login_req
 def PO_reqeust():
     medicines="s"
     return render_template('PO_create_reqeust.html', medicines=medicines)
@@ -1011,6 +1067,7 @@ def PO_reqeust():
 
 
 @app.route('/cash_invoice/<order_number>')
+@login_req
 def cash_invoice(order_number): 
 
     conn = connect()
@@ -1057,6 +1114,7 @@ def cash_invoice(order_number):
 
 
 @app.route('/return_invoice/<rvouchernumber>')
+@login_req
 def return_invoice(rvouchernumber): 
     print(rvouchernumber)
 
@@ -1131,6 +1189,7 @@ def return_invoice(rvouchernumber):
 
 
 @app.route('/create_item', methods=['GET','POST'])
+@login_req
 def create_items():
     conn = connect()
     cur = conn.cursor(dictionary=True)
@@ -1199,6 +1258,7 @@ def create_items():
     return render_template('/create_item.html', item_record=item_record)
 
 @app.route('/update_item', methods=['GET','POST'])
+@login_req
 def update_item():
     try:
         if request.method == 'GET':
@@ -1255,6 +1315,7 @@ def update_item():
 
 
 @app.route('/search_item')
+@login_req
 def search_item():
     if request.method == 'GET':
         search_item = request.args.get('query')
@@ -1277,6 +1338,7 @@ def search_item():
 
 
 @app.route('/pharmacy_stock', methods=['GET', 'POST'])
+@login_req
 def pharmacy_stock():
     try:
         # Establish connection
@@ -1436,6 +1498,7 @@ def pharmacy_stock():
 
 
 @app.route('/legder_report', methods=['GET', 'POST'])
+@login_req
 def legder_report():
     if request.method == 'GET':
         
@@ -1553,6 +1616,7 @@ def legder_report():
 
 
 @app.route('/invoice')
+@login_req
 def invoice(): 
     import io
     name = "qazi"  
@@ -1567,10 +1631,306 @@ def invoice():
     #print(rendered)
     return send_file(io.BytesIO(rendered_pdf), download_name='invoice.pdf')
 
+
+## Setup Section
+#user Section
+
+@app.route('/user_list')
+def all_users():
+    if request.method == 'GET':
+        conn = connect()
+        cur = conn.cursor(dictionary=True)
+        sql = """SELECT 
+    u.user_id,
+    u.username, 
+    u.email,  -- or other user details you need
+    r.role_name,
+    u.active,
+    GROUP_CONCAT(p.permission_name) AS permissions  -- assuming permissions are in another table
+FROM 
+    users u
+LEFT JOIN 
+    user_roles ur ON u.user_id = ur.user_id
+LEFT JOIN 
+    roles r ON ur.role_id = r.role_id
+LEFT JOIN 
+    role_permissions rp ON r.role_id = rp.role_id
+LEFT JOIN 
+    permissions p ON rp.permission_id = p.permission_id
+GROUP BY 
+    u.user_id, u.username, u.email"""
+        cur.execute(sql)
+        result = cur.fetchall()
+        cur.close()
+        conn.close()
+
+
+        return render_template('/user_list.html', data = result)
+    
+
+   
+
+class UsernameValidation(object):
+    def __init__(self, username = ''):
+        self.username = username
+    
+    def __space(self):
+        space = any(c.isspace() for c in self.username)
+        return space       
+
+    def validate(self):
+        # lower = self.__lower()
+        # upper = self.__upper()
+        # digit = self.__digit()
+        space = self.__space()
+        length = len(self.username)
+        # report =  lower and upper and digit and length >= 6
+        if space == True:
+            print("do not use space")
+            return True  
+        else:
+            pass    
+
+class PasswordValidation(object):
+    def __init__(self, username = ''):
+        self.username = username
+
+    def __lower(self):
+        lower = any(c.islower() for c in self.username)
+        return lower
+
+    def __upper(self):
+        upper = any(c.isupper() for c in self.username)
+        return upper
+
+    def __digit(self):
+        digit = any(c.isdigit() for c in  self.username)
+        return digit
+    
+    def __space(self):
+        space = any(c.isspace() for c in self.username)
+        return space
+       
+
+    def validate(self):
+        lower = self.__lower()
+        upper = self.__upper()
+        digit = self.__digit()
+        space = self.__space()
+
+        length = len(self.username)
+
+        report =  lower and upper and digit and length >= 6
+        if space == True:
+            print("do not use space")
+            return True
+        
+        elif report:
+            print("Username passed all checks ")
+            return True
+
+        elif not lower:
+            print("You didnt use Lower case letter")
+            return False
+
+        elif not upper:
+            print("You didnt userUpper case letter")
+            return False
+
+        elif length <6:
+            print("username should Atleast have 6 character")
+            return False
+
+        elif not digit:
+            print("You didnt use Digit")
+            return False  
+        else:
+            pass
+
+
+
+@app.route('/create_user', methods=['POST', 'GET'])
+def create_user():
+    if request.method == 'GET':
+
+ 
+        conn = connect()
+        cur = conn.cursor(dictionary=True ,buffered=True)
+        sql = "select * from roles;"
+        cur.execute(sql)
+        result = cur.fetchall()
+        cur.close()
+        conn.close()
+        return render_template('/create_user.html', result = result)
+    
+    else:
+        username = request.form.get('username')
+        email = request.form.get('email')
+        user_passowrd = request.form.get('password')
+        role = request.form.get('role') or None
+        
+        
+        conn = connect()
+        cur = conn.cursor(dictionary=True, buffered=True)
+        sql = "SELECT * FROM users WHERE username = %s;"
+        cur.execute(sql,(username,))
+        username_exit = cur.rowcount
+        
+        
+        cur.close()
+        conn.close()
+        print(username)
+
+        conn = connect()
+        cur = conn.cursor(dictionary=True, buffered=True)
+        sql = "SELECT * FROM users WHERE email = %s;"
+        cur.execute(sql,(email,))
+        email_exit = cur.rowcount
+        cur.close()
+        conn.close()
+        print(username)
+
+        if email_exit > 0:
+            flash("Email already Exist")
+            return render_template('/create_user.html')
+        
+        if username_exit > 0:
+            flash("User name already Exist")
+            return render_template('/create_user.html')            
+        
+        username_check = UsernameValidation(username)
+        password_check = PasswordValidation(user_passowrd)
+
+        if password_check.validate():
+                
+                ph = argon2.PasswordHasher()
+                hasshed = ph.hash(user_passowrd)
+                
+                conn = connect()
+                cur = conn.cursor()
+                sql = """INSERT INTO `pharma`.`users` (`username`, `password`, `email`) 
+                        VALUES (%s, %s, %s);"""
+                cur.execute(sql,(username,hasshed,email_exit))
+                conn.commit()
+                cur.close()
+                user_id_get = cur.lastrowid
+                conn.close()
+                print(user_id_get)
+                
+                
+
+                
+
+                
+                return redirect('update_user?user_id='+str(user_id_get))
+                
+
+        else:
+            flash("Please Follow the password Rule")
+            return render_template('/create_user.html')
+
     
 
 
+@app.route('/update_user',methods=['GET', 'POST'])
+def update_user():
+            try:
+                if request.method =='GET':
+                    
+                    user_id = request.args.get('user_id')
+                    conn = connect()
+                    cur = conn.cursor(dictionary=True ,buffered=True)
+                    sql = """SELECT * FROM users u                           
+                            WHERE u.user_id = %s; """
+                    cur.execute(sql, (user_id,))
+                    result = cur.fetchall()
+                    cur.close()
 
+                    cur = conn.cursor(dictionary=True ,buffered=True)
+                    sql = """SELECT * FROM users u 
+                            JOIN user_roles ur ON ur.user_id = u.user_id                          
+                            WHERE u.user_id = %s; """
+                    cur.execute(sql, (user_id,))
+                    user_role = cur.fetchall()
+                    cur.close()
+
+                    cur = conn.cursor(dictionary=True, buffered=True)
+                    sql2 = "select * from roles;"
+                    cur.execute(sql2)
+                    roles = cur.fetchall()
+                    conn.close()               
+                    
+
+                    return render_template('/update_user.html',result = result, roles= roles, user_role=user_role)
+                else:
+
+                    from itertools import zip_longest
+                    user_id = request.form.get('user_id')
+                    user_password    = request.form.get('password')
+                    role    = request.form.getlist('role') or None
+
+                    if user_password and not role:
+                            password_check = PasswordValidation(user_password)
+                            
+                            if password_check.validate():                       
+                                ph = argon2.PasswordHasher()
+                                hasshed = ph.hash(user_password) 
+                                
+                                    
+                            
+                                conn = connect()
+                                cur = conn.cursor(dictionary=True, buffered=True)
+                                sql = "UPDATE `pharma`.`users` SET `password`=%s WHERE  `user_id`=%s;"
+                                cur.execute(sql,(hasshed,user_id))
+                                conn.commit()
+                                cur.close()
+                                conn.close()
+                                result = cur.rowcount
+                                flash(f"Password updated {user_id}")
+                                return redirect("update_user?user_id="+user_id) 
+                            else:
+                                flash("Please Follow the Password Rules")
+                                return redirect("update_user?user_id="+user_id)
+                    else:
+
+                        print(user_id)
+                        print(role)
+                        conn = connect()
+                        cur = conn.cursor()   
+                        sql3 = """DELETE FROM `pharma`.`user_roles` WHERE  `user_id`=%s;"""   
+                        cur.execute(sql3,(user_id,)) 
+                        conn.commit()
+                        cur.close()
+                        conn.close()
+                        if role != None:
+                            for  user_id_,role_ in zip_longest(user_id,role,fillvalue=user_id):            
+                                val = [
+                                        (user_id_, role_)                    
+                                        ]
+                    
+                                print(f"loop value {val}") 
+
+                                    
+
+                                conn = connect()
+                                cur = conn.cursor()
+                                sql2 = "INSERT INTO user_roles (user_id, role_id) VALUES  (%s, %s)  as new \
+                                        ON DUPLICATE KEY UPDATE user_id = new.user_id,  role_id = new.role_id"                
+                                cur.executemany(sql2, val)
+                                conn.commit()
+                                conn.close()  
+                        flash('Permission Updated')
+                            
+                        return redirect("update_user?user_id="+user_id)  
+            finally:
+                pass
+
+
+
+               
+                
+
+                
 
 if __name__ == '__main__':
     app.run(debug=False)

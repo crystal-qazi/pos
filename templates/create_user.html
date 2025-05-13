@@ -1,0 +1,59 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+        <!-- partial -->
+        <div class="main-panel">
+       {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    
+      {% for category, message in messages  %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong> {{ message }} </strong> {{ category }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       
+      {% endfor %}
+    </div>
+
+    {% endif %}
+  {% endwith %}
+          <div class="content-wrapper">
+              <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Create form</h4>
+                  
+                  <form class="forms-sample" action="/create_user" method="POST">
+                    <div class="form-group">
+                      <label for="exampleInputUsername1">Username</label>
+                      <input type="text" name="username" class="form-control" id="exampleInputUsername1" placeholder="Username" required> 
+                    </div>
+                    <div class="form-group">
+                      <label for="exampleInputEmail1">Email address</label>
+                      <input type="email" name="email" class="form-control" id="exampleInputEmail1" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="exampleInputPassword1">Password</label>
+                      <input type="text" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" required>
+                    </div>
+                   
+                    <div>
+                    <!-- <div class="p-5">
+                      {%for result in result%}
+                    <div class="form-check">                                                              
+                        <label>{{result.role_name |title()}}</label>
+                        <input type="checkbox" class="form-check-input" value="{{role_id}}">                       
+                    </div> 
+                    {%endfor%}
+                    
+                    </div> -->
+                    </div>
+                    <button type="submit" class="btn btn-primary me-2">Submit</button>
+                    <button class="btn btn-light">Cancel</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- content-wrapper ends -->
+        
+{%endblock%}
