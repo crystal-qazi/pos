@@ -1360,6 +1360,7 @@ def pharmacy_stock():
         medicines = cursor.fetchall()
         
         
+        
         if request.method == 'POST':
             # Get form data with proper defaults and validation
             item_id = request.form.get('item_id')
@@ -1367,8 +1368,9 @@ def pharmacy_stock():
             item_name = request.form.get('item_name', '').strip()
             cat = request.form.get('cat', '').strip()
             measurment = request.form.get('measurment', '').strip()
+            packsize = request.form.get('packsize', '').strip()
             # cat = request.form.get('cat', '').strip()
-            quantity = request.form.get('quantity', '0')
+            quantity = request.form.get('quantity')
             purchase_price = request.form.get('purchase_price', '0')
             selling_price = request.form.get('selling_price', '0')
             # expiry_date = request.form.get('expiry_date')
@@ -1376,12 +1378,39 @@ def pharmacy_stock():
             reorder_level = request.form.get('reorder_level', '0')
 
             print(f"measurment {measurment}")
-            # print(expiry_date)
+            print(f"pack size {packsize}")
+            if measurment.isdigit() and packsize.isdigit():
+
+                #unit
+                if  int(measurment) != int(packsize):                
+                        stock_insert = int(measurment) * int(quantity)                 
+                        print(f"unit insert {stock_insert}")
+
+                # pack
+                if int(measurment) == int(packsize):
+                    print("yes")
+                    conn = connect()
+                    cursor = conn.cursor(dictionary=True)
+                    
+                    # Get all medicines for display
+                    
+                    cursor.execute("SELECT * FROM items where b_item_id = %s;",(item_id,))
+                    medicines = cursor.fetchall()
+                
+                    size = medicines[0]['pieces_per_pack']
+                    print(f"peace per pack {size}")
+                    print(f"insert quanty per pack {int(size) / int(measurment)}")
+                    stock_insert = int(size) / int(measurment)
+                # unit
+           
             
-            if measurment != 'Pieces':
-                stock_insert = int(measurment) * int(quantity) 
             else:
+            # if measurment == 'Pieces':
+                print(f"in pece func")
+                
                 stock_insert = int(quantity) 
+                print(f" peice {stock_insert}")
+               
             print(f"stock insert {stock_insert}")
             # Validate required fields
             if not all([item_id, item_code, item_name, quantity]):

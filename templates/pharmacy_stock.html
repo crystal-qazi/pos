@@ -94,12 +94,12 @@
                   <select class="form-control form-control-sm" name="measurment" id="">
                     <option id="pieces_per_pack">Unit</option>
                     <option id="packs_per_unit">Pack</option>
-                    <option id="Pieces">Pieces</option>
+                    <option value="Pieces">Pieces</option>
                   </select>
                  
                 </div>
               </div>
-
+              <input type="hidden" name="packsize" id="packsize">
               
 
               <div class="col-md-2">
@@ -194,6 +194,8 @@
     const currentStock = $(this).data('stock');
     const packs_per_unit = $(this).data('packs_per_unit');
     const pieces_per_pack = $(this).data('pieces_per_pack');
+    const Pieces = 1;
+    const packsize =  $(this).data('packs_per_unit');
     const cat = $(this).data('cat');
     const reorder_level = $(this).data('reorder_level');
     
@@ -204,6 +206,8 @@
     $('#currentStock').val(currentStock);
     $('#packs_per_unit').val(packs_per_unit);
     $('#pieces_per_pack').val(pieces_per_pack);
+    $('#Pieces').val(Pieces);
+    $('#packsize').val(packsize);
     $('#cat').val(cat);
     $('#reorder_level').val(reorder_level);
     
