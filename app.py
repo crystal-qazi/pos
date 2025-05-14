@@ -1534,50 +1534,57 @@ def legder_report():
         # Base SQL
         sql = """
             SELECT 
-                items.b_Item_code, 
-                items.b_item_name, 
-                stock.item_code,
-                stock.item_name,
-                stock.reorder_level,
+    items.b_Item_code, 
+    items.b_item_name, 
+    stock.item_code,
+    stock.item_name,
+    stock.reorder_level,
 
-                (
-                    SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
-                    -
-                    SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
-                ) AS op_balance,
-                
-                SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS stock_in,
-                
-                SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS stock_out,
+    -- Debug info: Count of transactions included
+    COUNT(st.transaction_id) AS transaction_count,
+    
+    -- Opening Balance
+    (
+        SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
+        -
+        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
+    ) AS op_balance,
+    
+    -- Current period transactions
+    SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS stock_in,
+    SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS stock_out,
+    SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS return_in,
 
-                   -- Stock in Return during the period @START to @END
-                SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS return_in,
+    -- Closing Balance
+  
+    (  
+	 	
+       ( SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
+        -
+        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END))
+        +
+        
+        (SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
+        -
+        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END))
+       
+    		-(
+			 SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
+        -
+        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
+			 )
+    	
+		  
+       
+		  
+    ) AS closing_balance
 
+FROM items
+JOIN stock ON stock.b_item_id = items.b_item_id
+LEFT JOIN stock_transactions st ON st.item_id = stock.item_id
+    AND st.transaction_date <= %s
+    
 
-                (
-                    (
-                        SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
-                        -
-                        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
-                    )
-                    +
-                    (
-                        SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END)
-                        -
-                        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END)
-                    )
-                    +
-                    (
-                        SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) 
-                    )
-                ) AS closing_balance
-
-            FROM 
-                items
-            JOIN 
-                stock ON stock.b_item_id = items.b_item_id
-            JOIN 
-                stock_transactions st ON st.item_id = stock.item_id
         """
 
         params = [
@@ -1585,10 +1592,10 @@ def legder_report():
             s_date, e_date,
             s_date, e_date,
             s_date, s_date,
-            s_date, e_date,
-            s_date, e_date,
-            s_date, e_date,
-            s_date, e_date
+            e_date, e_date,
+            s_date, s_date,
+            s_date, s_date,           
+            e_date
         ]
 
         # 🔥 Add WHERE condition dynamically
@@ -1598,6 +1605,7 @@ def legder_report():
 
         # 🔥 Always add GROUP BY
         sql += """
+        
             GROUP BY 
                 items.b_Item_code, 
                 items.b_item_name, 
