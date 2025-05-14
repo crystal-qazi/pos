@@ -44,39 +44,49 @@ def check_user_permission(self, user_id, permission_name):
         finally:
             cursor.close()
 
-@app.route('/test')
-def usertest():
-     
-     user = 1
-     perms = 'read'
 
-     perm  = check_user_permission(1,1,perms)
-     print(perm)
-     return perm
-
-
-
-
-
-# @app.route('/', methods=['GET', 'POST'])
-# def login():
-#     if request.method == 'POST':
-#         username = request.form['username']
-#         password = request.form['password']
-#         conn = connect() 
-#         cursor = conn.cursor()      
-#         cursor.execute("SELECT * FROM users WHERE username=%s AND password=%s", (username, password))
-#         user = cursor.fetchone()
-#         if user:
-#             session['user_id'] = user[0]
-#             return redirect('/dashboard')
-#     return render_template('login.html')
 
 @app.route('/')
 @login_req
 def dashboard():
 
-    return render_template('index.html')
+    conn = connect()
+    cur = conn.cursor(dictionary=True, buffered=True)
+    sql = """SELECT COUNT(*) AS total  from patients;"""
+    cur.execute(sql)
+    patients = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    conn = connect()
+    cur = conn.cursor(dictionary=True, buffered=True)
+    sql = """SELECT COUNT(*) AS total  from orders;"""
+    cur.execute(sql)
+    orders = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    conn = connect()
+    cur = conn.cursor(dictionary=True, buffered=True)
+    sql = """SELECT count(*) as total FROM sales 
+            WHERE CAST(transaction_date AS date) = CURRENT_DATE() AND transection_type = 'sale';"""
+    cur.execute(sql)
+    total_sale = cur.fetchall()
+    cur.close()
+    conn.close()
+    conn = connect()
+    cur = conn.cursor(dictionary=True, buffered=True)
+    sql = """SELECT count(*) as today_return FROM sales 
+            WHERE CAST(transaction_date AS date) = CURRENT_DATE() AND transection_type = 'Return';"""
+    cur.execute(sql)
+    today_return = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    
+
+   
+    return render_template('index.html', patients=patients, orders=orders, total_sale=total_sale, today_return=today_return)
 
 
 @app.route('/session2', methods=['get','post'])
@@ -1511,7 +1521,10 @@ def legder_report():
         # end_date = '2025-04-26'
 
         start_date = request.form.get('s-date')
+        s_date = start_date+' 00:00:00'
         end_date = request.form.get('e-date')
+        e_date = end_date+' '+datetime.now().strftime("%H:%M:%S")
+        print(end_date+' '+datetime.now().strftime("%H:%M:%S"))
         item_code = request.form.get('item_code') or None
         # item_code = None  # Or you can set like 'ITEM001'
 
@@ -1568,14 +1581,14 @@ def legder_report():
         """
 
         params = [
-            start_date, start_date,
-            start_date, end_date,
-            start_date, end_date,
-            start_date, start_date,
-            start_date, end_date,
-            start_date, end_date,
-            start_date, end_date,
-            start_date, end_date
+            s_date, s_date,
+            s_date, e_date,
+            s_date, e_date,
+            s_date, s_date,
+            s_date, e_date,
+            s_date, e_date,
+            s_date, e_date,
+            s_date, e_date
         ]
 
         # 🔥 Add WHERE condition dynamically
@@ -1858,6 +1871,7 @@ def update_user():
                     sql2 = "select * from roles;"
                     cur.execute(sql2)
                     roles = cur.fetchall()
+                    cur.close()
                     conn.close()               
                     
 
@@ -1868,8 +1882,19 @@ def update_user():
                     user_id = request.form.get('user_id')
                     user_password    = request.form.get('password')
                     role    = request.form.getlist('role') or None
+                    active_status    = request.form.get('active','0') 
+                    
+
+                    print(active_status)
+
+                     
+
 
                     if user_password and not role:
+                        
+                         
+                        
+                  
                             password_check = PasswordValidation(user_password)
                             
                             if password_check.validate():                       
@@ -1886,42 +1911,52 @@ def update_user():
                                 cur.close()
                                 conn.close()
                                 result = cur.rowcount
-                                flash(f"Password updated {user_id}")
+                                flash(f"Password updated ")
                                 return redirect("update_user?user_id="+user_id) 
                             else:
                                 flash("Please Follow the Password Rules")
                                 return redirect("update_user?user_id="+user_id)
-                    else:
-
-                        print(user_id)
-                        print(role)
-                        conn = connect()
-                        cur = conn.cursor()   
-                        sql3 = """DELETE FROM `pharma`.`user_roles` WHERE  `user_id`=%s;"""   
-                        cur.execute(sql3,(user_id,)) 
-                        conn.commit()
-                        cur.close()
-                        conn.close()
-                        if role != None:
-                            for  user_id_,role_ in zip_longest(user_id,role,fillvalue=user_id):            
-                                val = [
-                                        (user_id_, role_)                    
-                                        ]
-                    
-                                print(f"loop value {val}") 
-
-                                    
-
-                                conn = connect()
-                                cur = conn.cursor()
-                                sql2 = "INSERT INTO user_roles (user_id, role_id) VALUES  (%s, %s)  as new \
-                                        ON DUPLICATE KEY UPDATE user_id = new.user_id,  role_id = new.role_id"                
-                                cur.executemany(sql2, val)
-                                conn.commit()
-                                conn.close()  
-                        flash('Permission Updated')
                             
-                        return redirect("update_user?user_id="+user_id)  
+                    else:
+                            conn = connect()
+                            cur = conn.cursor()
+                            sql = """UPDATE `pharma`.`users` SET `active`=%s WHERE  `user_id`=%s;"""
+                            cur.execute(sql,(active_status,user_id,))
+                            conn.commit()
+                            cur.close()
+                            conn.close()
+                        
+
+                            print(f"role update {user_id}")
+                            print(role)
+                            conn = connect()
+                            cur = conn.cursor()   
+                            sql3 = """DELETE FROM `pharma`.`user_roles` WHERE  `user_id`=%s;"""   
+                            cur.execute(sql3,(user_id,)) 
+                            conn.commit()
+                            cur.close()
+                            conn.close()
+                            if role != None:
+                                for  user_id_,role_ in zip_longest(user_id,role,fillvalue=user_id):            
+                                    val = [
+                                            (user_id_, role_)                    
+                                            ]
+                        
+                                    print(f"loop value {val}") 
+
+                                        
+
+                                    conn = connect()
+                                    cur = conn.cursor()
+                                    sql2 = "INSERT INTO user_roles (user_id, role_id) VALUES  (%s, %s)  as new \
+                                            ON DUPLICATE KEY UPDATE user_id = new.user_id,  role_id = new.role_id"                
+                                    cur.executemany(sql2, val)
+                                    conn.commit()
+                                    cur.close()
+                                    conn.close()  
+                            flash('Permission Updated')
+                                
+                            return redirect("update_user?user_id="+user_id)  
             finally:
                 pass
 

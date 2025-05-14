@@ -129,7 +129,7 @@ def login():
                                 else:                                                   
                                     return render_template("signin.html" )
                             except argon2.exceptions.VerifyMismatchError as err:
-                                    flash(err)                  
+                                    flash('Login Alert','User or Password incorrect')                  
                                     return render_template("signin.html" )
                             except jwt.exceptions.DecodeError as errjwt:
                                     flash(errjwt)

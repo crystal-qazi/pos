@@ -19,12 +19,32 @@
     <div class="container-scroller">
       <div class="container-fluid page-body-wrapper full-page-wrapper">
         <div class="content-wrapper d-flex align-items-center auth px-0">
+
+                 
+
+
           <div class="row w-100 mx-0">
             <div class="col-lg-4 mx-auto">
+              {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    
+      {% for category, message in messages  %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong> {{ message }} </strong> {{ category }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       
+      {% endfor %}
+    </div>
+
+    {% endif %}
+  {% endwith %}
               <div class="auth-form-light text-left py-5 px-4 px-sm-5">
+                
                 <div class="brand-logo">
                   <img src="{{url_for('static', filename=('assets/images/logo-dark.png'))}}" alt="logo">
                 </div>
+
+                
                 <h4 style="text-align: center;">Hello! let's get started</h4>
                 <br>
                 <h6 class="font-weight-light">Sign in to continue.</h6>

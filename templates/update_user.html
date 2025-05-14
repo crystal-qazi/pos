@@ -41,7 +41,11 @@
                       <label for="exampleInputPassword1">Password</label>
                       <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
                     </div>
-                   
+
+                    <div class="form-check px-5">
+                      <label for="">Active</label>
+                      <!-- <input type="hidden" name="active" value="0"> -->
+                      <input type="checkbox" name="active" id="active" value="1" {% if result.0.active %}checked{% endif %}>
                     <div>
                     <div class="p-5">
                         
