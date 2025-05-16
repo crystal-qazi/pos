@@ -286,6 +286,7 @@ function addToCart(stock_quantity, packs_per_unit, pieces_per_pack, item_id, ite
   console.log('Stock Qty:', stock_quantity);
   console.log('Packs per Unit:', packs_per_unit);
   console.log('Pieces per Pack:', pieces_per_pack);
+  console.log('price:', price);
 
   let cart_qty;
   
@@ -297,10 +298,10 @@ function addToCart(stock_quantity, packs_per_unit, pieces_per_pack, item_id, ite
   }
 
   if (mode === 'pack') {
-    cart_qty = (pieces_per_pack / packs_per_unit) * qty;
+    cart_qty = ( pieces_per_pack) * qty;
     console.log('Cart Qty (Pack):', cart_qty);
   } else if (mode === 'unit') {
-    cart_qty = qty * pieces_per_pack;
+    cart_qty = qty * pieces_per_pack * packs_per_unit;
     console.log('Cart Qty (Unit):', cart_qty);
   } else if (mode === 'single-piece') {
     cart_qty = qty;
@@ -337,6 +338,7 @@ function addToCart(stock_quantity, packs_per_unit, pieces_per_pack, item_id, ite
       alert(data.message);
       updateCartUI();
       console.log("Item added to cart.");     
+      console.log("Item price .", price);     
       
     })
     .catch(error => {

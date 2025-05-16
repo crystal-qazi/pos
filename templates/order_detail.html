@@ -97,6 +97,14 @@
     </style>
 
 
+  
+
+
+ 
+
+
+
+
     <div class="row">
       <div class="col-md-4">
         <div class="bg-white" style="height: 60vh;">
@@ -153,7 +161,7 @@
               <table id="cartTable" class="table table-bordered table-sm table-responsive-sm">
                 <thead>
                   <tr>
-                    <th><input id="checkAll" type="checkbox"></th>
+                    <th><input id="checkAll" type="checkbox" disabled></th>
                     <th>Item Code</th>
                     <th>Description</th>                
                     <th>Price</th>
@@ -163,10 +171,10 @@
                 </thead>
                 <tbody>
                   
-                  {% for item in order_detail %}
-                                  
-                  
-                  <tr {%if item.item_id == item.o_item_id %}  style="text-decoration: line-through;" class="disabled-row"  {%else%}{%endif%}>
+
+                  {%if ri_count[0].returned_items == 0 %}
+                  {%for item in order_detail%}
+                  <tr>
                     <td>
                       <input class="check" type="checkbox" data-id="{{ item.oitem_id }}">
                     </td>
@@ -179,6 +187,53 @@
                     <td>{{ (item.qty * item.selling_price) | round(2)}}</td>
                   </tr>
                   {% endfor %}
+              
+                  
+        
+                  
+                  {% elif od_count[0]['total_items'] == ri_count[0].returned_items %}
+
+                  {%for item in order_detail%}
+                  {%for return in return_detail%} 
+                  
+                  <tr {%if return.item_id|string() == item.o_item_id|string() %}class="disabled-row"  style="text-decoration: line-through;" {%else%} style="display: none;"  {%endif%}>
+                    <td>
+                      <input class="check" type="checkbox" data-id="{{ item.oitem_id }}">
+                    </td>
+                    <td >{{ item.item_code }}</td>
+                    <td>{{ item.oitem_name }}</td>               
+                    <td data-id="{{ item.oitem_id }}" class="price-input">{{item.selling_price}}</td>
+                    <td>
+                      <input style="width: 60px;" type="number" class="qty-input" data-id="{{ item.oitem_id }}" value="{{ item.qty }}" disabled>
+                    </td>
+                    <td>{{ (item.qty * item.selling_price) | round(2)}}</td>
+                  </tr>
+                  {% endfor %}
+                  {% endfor %}
+
+                  {%else%}
+
+
+                  {%for item in order_detail%}
+                  {%for return in return_detail%} 
+                  
+                  <tr {%if return.item_id|string() == item.o_item_id|string() %}class="disabled-row"  style="text-decoration: line-through;" {%else%} {%endif%}>
+                    <td>
+                      <input class="check" type="checkbox" data-id="{{ item.oitem_id }}">
+                    </td>
+                    <td >{{ item.item_code }}</td>
+                    <td>{{ item.oitem_name }}</td>               
+                    <td data-id="{{ item.oitem_id }}" class="price-input">{{item.selling_price}}</td>
+                    <td>
+                      <input style="width: 60px;" type="number" class="qty-input" data-id="{{ item.oitem_id }}" value="{{ item.qty }}" disabled>
+                    </td>
+                    <td>{{ (item.qty * item.selling_price) | round(2)}}</td>
+                  </tr>
+                  {% endfor %}
+                  {% endfor %}
+
+
+                  {%endif%}
                 </tbody>
               </table>
                       
@@ -274,7 +329,7 @@
                       <td>{{Slip.transaction_date}}</td>                     
                                          
                       
-                      <td><a href="/cash_invoice/{{OrderNumber}}"><i class="fa fa-print"></i></a></td>
+                      <td><a href="/cash_invoice/{{OrderNumber}}" target="_blank"><i class="fa fa-print"></i></a></td>
                     </tr>
                    {%endfor%}
                    
@@ -316,7 +371,7 @@
                       <td>{{Slip.return_date}}</td>                     
                                          
                    
-                      <td><a href="/return_invoice/{{Slip.return_number}}"><i class="fa fa-print"></i></a></td>
+                      <td><a href="/return_invoice/{{Slip.return_number}}" target="_blank"><i class="fa fa-print"></i></a></td>
                     </tr>
                    {%endfor%}
                    
@@ -343,7 +398,17 @@
         
           <div class="p-3 bg-body-tertiary">
             <span class="fw-bold">Order Recap</span>
+            
+            {%if ri_count[0].returned_items == 0 %}
             <span class="float-end">{{order_detail[0]['order_status']}}</span>
+            {% elif od_count[0]['total_items'] == ri_count[0].returned_items %}
+            <span class="float-end">{{order_detail[0]['order_status']}}</span>
+
+            {%else%}
+            <span class="float-end"> Partial Return</span>
+            
+            {%endif%}
+            
             <div class="d-flex justify-content-between mt-2">
               <span>Total Price</span> <span>{{total | round(2)}}</span>
             </div>

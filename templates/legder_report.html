@@ -68,23 +68,21 @@
                       </tr>
                     </thead>
                     <tbody>
+                      
                       {%if data%}
                       {%for data in data%}
+              
                       <tr>
                         <td>{{ loop.index }} </td>
                         <td>{{data['item_code']}}</td>
                         <td>{{data['item_name']}}</td>
-                        <td>{{data['op_balance']}}</td>
+                        <td>{{data['opening_balance']}}</td>
                         <td>{{data['stock_in']}}</td>
                         <td>{{data['stock_out']}}</td>
-                        <td>{{data['return_in']}}</td>
-                        {%if data['reorder_level'] > data['closing_balance']%}
-                        <td class="text-danger"> {{data['closing_balance']}} <i class="ti-arrow-down"></i></td>
-                        {%elif data['reorder_level'] == data['closing_balance']%}
-                        <td class="text-info"> {{data['closing_balance']}} <i class="ti-arrows-vertical"></i></td>
-                        {%else%}
-                        <td class="text-success"> {{data['closing_balance']}} <i class="ti-arrow-up"></i></td>
-                        {%endif%}
+                        <td>{{data['returns_in']}}</td>                        
+                        <td> {{data['closing_balance']}}</td>
+                        
+                      
                         
                       </tr>
                       {%endfor%}

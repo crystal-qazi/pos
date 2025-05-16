@@ -318,7 +318,7 @@ def add_to_cart():
     print(f"result {result_qty[0]['pieces_per_pack']}")
     print(f"this is cartui {cart_qty}")
 
-    price_per_peice = price / result_qty[0]['pieces_per_pack']
+    price_per_peice = price / (result_qty[0]['pieces_per_pack'] * result_qty[0]['packs_per_unit'] )
     
     print(f"price per piece {price_per_peice}")
 
@@ -771,17 +771,44 @@ def order_detail():
     
     conn = connect()
     cur = conn.cursor(dictionary=True)
-    sql = """SELECT * FROM order_detail
-            LEFT JOIN orders o ON o.order_id = order_detail.order_id
-            LEFT JOIN returns r ON r.original_sale_id = order_detail.order_id
-            LEFT JOIN return_items ri ON ri.original_sale_item_id = o.order_number
-            LEFT JOIN patient_visit pv ON pv.visit_id = o.visit_id
-            WHERE o.order_number = %s;"""
+    sql = """SELECT * FROM orders o
+                LEFT JOIN order_detail od ON od.order_id = o.order_id
+                LEFT JOIN patient_visit pv ON pv.visit_id = o.visit_id
+                WHERE o.order_number = %s;"""
     cur.execute(sql,(OrderNumber,))
     order_detail = cur.fetchall()
     conn.close()
     visitnumber = order_detail[0]['visit_number'] 
     # print(order_detail)
+
+    conn = connect()
+    cur = conn.cursor(dictionary=True, buffered=True)
+    sql = """SELECT * FROM return_items ri 
+            LEFT JOIN stock s ON s.item_id = ri.item_id
+            WHERE ri.original_sale_item_id = %s;"""
+    cur.execute(sql,(OrderNumber,))
+    return_detail = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    conn = connect()
+    cur = conn.cursor(dictionary=True, buffered=True)
+    sql = """SELECT  COUNT(od.oitem_id) AS total_items FROM order_detail od
+LEFT JOIN orders o ON o.order_id = od.order_id
+WHERE o.order_number = %s;"""
+    cur.execute(sql,(OrderNumber,))
+    od_count = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    conn = connect()
+    cur = conn.cursor(dictionary=True, buffered=True)
+    sql = """SELECT COUNT(ri.return_item_id) AS returned_items FROM return_items ri
+WHERE ri.original_sale_item_id = %s;"""
+    cur.execute(sql,(OrderNumber,))
+    ri_count = cur.fetchall()
+    cur.close()
+    conn.close()
 
 
     #calculation section
@@ -851,7 +878,7 @@ def order_detail():
     session["cart"] = cart  
 
 
-    return render_template('/order_detail.html',patient_record=result, visit_number = visitnumber,OrderNumber=OrderNumber,order_detail=order_detail, total=total, round_amount=round_amount,round_def=round_def,Slip_detail=Slip_detail,vSlip_detail=vSlip_detail)
+    return render_template('/order_detail.html',patient_record=result, visit_number = visitnumber,OrderNumber=OrderNumber,order_detail=order_detail, return_detail=return_detail, od_count= od_count, ri_count=ri_count,total=total, round_amount=round_amount,round_def=round_def,Slip_detail=Slip_detail,vSlip_detail=vSlip_detail)
 
 
 
@@ -1368,7 +1395,7 @@ def pharmacy_stock():
             item_name = request.form.get('item_name', '').strip()
             cat = request.form.get('cat', '').strip()
             measurment = request.form.get('measurment', '').strip()
-            packsize = request.form.get('packsize', '').strip()
+            packsize = request.form.get('packsize').strip()
             # cat = request.form.get('cat', '').strip()
             quantity = request.form.get('quantity')
             purchase_price = request.form.get('purchase_price', '0')
@@ -1383,7 +1410,7 @@ def pharmacy_stock():
 
                 #unit
                 if  int(measurment) != int(packsize):                
-                        stock_insert = int(measurment) * int(quantity)                 
+                        stock_insert = int(measurment) * int(quantity) * int(packsize)                
                         print(f"unit insert {stock_insert}")
 
                 # pack
@@ -1399,8 +1426,8 @@ def pharmacy_stock():
                 
                     size = medicines[0]['pieces_per_pack']
                     print(f"peace per pack {size}")
-                    print(f"insert quanty per pack {int(size) / int(measurment)}")
-                    stock_insert = int(size) / int(measurment)
+                    print(f"insert quanty per pack {int(size) * int(quantity) }")
+                    stock_insert =  int(size) * int(quantity)
                 # unit
            
             
@@ -1551,9 +1578,11 @@ def legder_report():
 
         start_date = request.form.get('s-date')
         s_date = start_date+' 00:00:00'
+        print(s_date)
         end_date = request.form.get('e-date')
-        e_date = end_date+' '+datetime.now().strftime("%H:%M:%S")
-        print(end_date+' '+datetime.now().strftime("%H:%M:%S"))
+        # e_date = end_date+' '+datetime.now().strftime("%H:%M:%S")
+        e_date = end_date+' '+'23:59:59'
+        print(e_date)
         item_code = request.form.get('item_code') or None
         # item_code = None  # Or you can set like 'ITEM001'
 
@@ -1561,86 +1590,88 @@ def legder_report():
         cur = conn.cursor(dictionary=True)
 
         # Base SQL
-        sql = """
-            SELECT 
-    items.b_Item_code, 
-    items.b_item_name, 
-    stock.item_code,
-    stock.item_name,
-    stock.reorder_level,
-
-    -- Debug info: Count of transactions included
-    COUNT(st.transaction_id) AS transaction_count,
-    
-    -- Opening Balance
-    (
-        SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
-        -
-        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
-    ) AS op_balance,
-    
-    -- Current period transactions
-    SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS stock_in,
-    SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS stock_out,
-    SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date BETWEEN %s AND %s THEN st.quantity ELSE 0 END) AS return_in,
-
-    -- Closing Balance
-  
-    (  
-	 	
-       ( SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
-        -
-        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END))
-        +
-        
-        (SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
-        -
-        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END))
-       
-    		-(
-			 SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
-        -
-        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < %s THEN st.quantity ELSE 0 END)
-			 )
-    	
-		  
-       
-		  
-    ) AS closing_balance
-
-FROM items
-JOIN stock ON stock.b_item_id = items.b_item_id
-LEFT JOIN stock_transactions st ON st.item_id = stock.item_id
-    AND st.transaction_date <= %s
-    
+        sql = """            
+                SELECT  i.b_item_id AS item_id, i.b_Item_code AS item_code, i.b_item_name AS item_name, i.b_cat AS category, i.uom,
+                    
+                    -- Opening balance (stock at beginning of period)
+                    (SELECT COALESCE(SUM(CASE 
+                        WHEN st.transaction_type = 'Stock In' THEN st.quantity 
+                        WHEN st.transaction_type = 'Stock Out' THEN -st.quantity 
+                        WHEN st.transaction_type = 'Return' THEN st.quantity
+                        ELSE 0 
+                    END), 0)
+                    FROM stock_transactions st
+                    WHERE st.item_id = s.item_id 
+                    AND st.transaction_date < %s) AS opening_balance,
+                    
+                    -- Stock In during period
+                    (SELECT COALESCE(SUM(st.quantity), 0)
+                    FROM stock_transactions st
+                    WHERE st.item_id = s.item_id 
+                    AND st.transaction_type = 'Stock In'
+                    AND st.transaction_date BETWEEN %s AND %s) AS stock_in,
+                    
+                    -- Stock Out during period (sales)
+                    (SELECT COALESCE(SUM(st.quantity), 0)
+                    FROM stock_transactions st
+                    WHERE st.item_id = s.item_id 
+                    AND st.transaction_type = 'Stock Out'
+                    AND st.transaction_date BETWEEN %s AND %s) AS stock_out,
+                    
+                    -- Returns during period
+                    (SELECT COALESCE(SUM(st.quantity), 0)
+                    FROM stock_transactions st
+                    WHERE st.item_id = s.item_id 
+                    AND st.transaction_type = 'Return'
+                    AND st.transaction_date BETWEEN %s AND %s) AS returns_in,
+                    
+                    -- Closing balance (opening + stock in - stock out + returns)
+                    ((SELECT COALESCE(SUM(CASE 
+                        WHEN st.transaction_type = 'Stock In' THEN st.quantity 
+                        WHEN st.transaction_type = 'Stock Out' THEN -st.quantity 
+                        WHEN st.transaction_type = 'Return' THEN st.quantity
+                        ELSE 0 
+                    END), 0)
+                    FROM stock_transactions st
+                    WHERE st.item_id = s.item_id 
+                    AND st.transaction_date < %s)
+                    +
+                    (SELECT COALESCE(SUM(CASE 
+                        WHEN st.transaction_type = 'Stock In' THEN st.quantity 
+                        WHEN st.transaction_type = 'Stock Out' THEN -st.quantity 
+                        WHEN st.transaction_type = 'Return' THEN st.quantity
+                        ELSE 0 
+                    END), 0)
+                    FROM stock_transactions st
+                    WHERE st.item_id = s.item_id 
+                    AND st.transaction_date BETWEEN %s AND %s)) AS closing_balance
+                    
+                FROM items i
+                JOIN stock s ON i.b_item_id = s.b_item_id
+                WHERE i.is_active = 1
+                 
 
         """
 
         params = [
-            s_date, s_date,
+            s_date, 
             s_date, e_date,
             s_date, e_date,
-            s_date, s_date,
-            e_date, e_date,
-            s_date, s_date,
-            s_date, s_date,           
-            e_date
+            s_date, e_date,           
+            s_date, 
+            s_date, e_date,           
+           
         ]
 
         # 🔥 Add WHERE condition dynamically
         if item_code is not None:
-            sql += " WHERE stock.item_code = %s"
+            sql += " AND s.item_code = %s"
             params.append(item_code)
 
         # 🔥 Always add GROUP BY
         sql += """
         
-            GROUP BY 
-                items.b_Item_code, 
-                items.b_item_name, 
-                stock.item_code,
-                stock.item_name,
-                stock.reorder_level
+            ORDER BY i.b_cat, i.b_item_name;  
         """
 
         # Execute
@@ -1651,10 +1682,6 @@ LEFT JOIN stock_transactions st ON st.item_id = stock.item_id
         cur.close()
 
         print(data)
-
-
-
-
 
 
         return render_template('legder_report.html', data = data)
@@ -1860,10 +1887,11 @@ def create_user():
                 cur = conn.cursor()
                 sql = """INSERT INTO `pharma`.`users` (`username`, `password`, `email`) 
                         VALUES (%s, %s, %s);"""
-                cur.execute(sql,(username,hasshed,email_exit))
+                cur.execute(sql,(username,hasshed,email))
                 conn.commit()
                 cur.close()
                 user_id_get = cur.lastrowid
+                cur.close()
                 conn.close()
                 print(user_id_get)
                 
@@ -1895,7 +1923,9 @@ def update_user():
                     cur.execute(sql, (user_id,))
                     result = cur.fetchall()
                     cur.close()
+                    conn.close()
 
+                    conn = connect()
                     cur = conn.cursor(dictionary=True ,buffered=True)
                     sql = """SELECT * FROM users u 
                             JOIN user_roles ur ON ur.user_id = u.user_id                          
@@ -1903,7 +1933,9 @@ def update_user():
                     cur.execute(sql, (user_id,))
                     user_role = cur.fetchall()
                     cur.close()
+                    conn.close()
 
+                    conn = connect()
                     cur = conn.cursor(dictionary=True, buffered=True)
                     sql2 = "select * from roles;"
                     cur.execute(sql2)
@@ -1922,7 +1954,7 @@ def update_user():
                     active_status    = request.form.get('active','0') 
                     
 
-                    print(active_status)
+                    
 
                      
 
@@ -1963,9 +1995,9 @@ def update_user():
                             cur.close()
                             conn.close()
                         
-
-                            print(f"role update {user_id}")
-                            print(role)
+                            
+                            print(f"user id {user_id}")
+                            print(f"role id {role}")
                             conn = connect()
                             cur = conn.cursor()   
                             sql3 = """DELETE FROM `pharma`.`user_roles` WHERE  `user_id`=%s;"""   
@@ -1973,29 +2005,25 @@ def update_user():
                             conn.commit()
                             cur.close()
                             conn.close()
-                            if role != None:
-                                for  user_id_,role_ in zip_longest(user_id,role,fillvalue=user_id):            
-                                    val = [
-                                            (user_id_, role_)                    
-                                            ]
-                        
-                                    print(f"loop value {val}") 
+                            user_id_int = int(user_id)
+                            # if role_id != None:
+                            user_id_val = user_id  # assuming this is a single value
+                            for role_id in role:  # assuming roles is a list of role IDs
+                                val = (user_id_val, role_id)
 
-                                        
-
-                                    conn = connect()
-                                    cur = conn.cursor()
-                                    sql2 = "INSERT INTO user_roles (user_id, role_id) VALUES  (%s, %s)  as new \
-                                            ON DUPLICATE KEY UPDATE user_id = new.user_id,  role_id = new.role_id"                
-                                    cur.executemany(sql2, val)
-                                    conn.commit()
-                                    cur.close()
-                                    conn.close()  
-                            flash('Permission Updated')
-                                
+                                conn = connect()
+                                cur = conn.cursor()
+                                sql2 = "INSERT INTO user_roles (user_id, role_id) VALUES  (%s, %s)  as new \
+                                        ON DUPLICATE KEY UPDATE user_id = new.user_id,  role_id = new.role_id"                
+                                cur.execute(sql2, val,)
+                                conn.commit()
+                                cur.close()
+                                conn.close()  
+                            flash('Permission Updated') 
                             return redirect("update_user?user_id="+user_id)  
             finally:
-                pass
+                cur.close()
+                conn.close() 
 
 
 
