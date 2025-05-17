@@ -1,0 +1,135 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+        <!-- partial -->
+        <div class="main-panel">
+          <div class="content-wrapper">
+              {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    
+      {% for category, message in messages  %}
+      <div class="alert alert-warning alert-dismissible fade show" id="success-alert" role="alert">
+        <strong> {{ message }} </strong> {{ category }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       
+      {% endfor %}
+    </div>
+
+    {% endif %}
+  {% endwith %}
+          
+            <div class="row">
+             
+                <div class="col-md-4 grid-margin grid-margin-md-0 stretch-card">
+               <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Item Detail</h4>
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th class="pt-1 ps-0">
+                            Product
+                          </th>
+                          <th class="pt-1">
+                            Current Stock
+                          </th>
+                          
+                          
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {%for product in result%}
+                        <tr>
+                          <td class="py-1 ps-0">
+                            <div class="d-flex align-items-center">
+                              <div class="ms-3">
+                                <p class="mb-0 text-muted text-small">{{product.item_code}}</p>
+                                <p class="mb-0">{{product.item_name}}</p>                                
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            {{product.stock_quantity}}
+                          </td>
+                          
+                        </tr>
+                        {%endfor%}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+             <div class="col-md-8 grid-margin grid-margin-md-0 stretch-card">
+               <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Return Qty</h4>
+
+                  <div>
+                    <form action="/stock_return" method="POST">
+                      {%for product in result%}
+                      <input type="hidden" name="item_id" value="{{product.item_id}}">
+                      <input type="hidden" name="current_stock" value="{{product.stock_quantity}}">
+                      {%endfor%}
+                      <div class="row">                      
+                        <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Qty</label>
+                          <div class="col-sm-9">
+                            <input type="number" class="form-control form-control-sm" name="r_qty">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Type</label>
+                          <div class="col-sm-9">
+                            <select name="r_type" id="" class="form-select" style="color: black;">
+                              <option value="">-- Select a transaction --</option>                              
+                              <option value="Stock In">Positive Adjustment</option>
+                              <option value="Stock Out">Negative Adjustment</option>                      
+                              <option value="Expiry">Expiry</option>
+                              <option value="Damage">Damage</option>                              
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      </div>
+                      <div class="row">
+                        <div class="col-md-12">
+                        <div class="form-group row">
+                          
+                          <label class="col-sm-2 col-form-label">Reason</label>
+                          <div class="col-sm-10">
+                            <input type="text" name="r_reason" class="form-control form-control-sm" value="">
+                          </div>
+                         
+                        </div>
+                      </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-12">
+                          <button type="submit" class="btn btn-primary float-end">Submit</button>
+                        </div>
+                      </div>
+
+                    </form>
+                  </div>
+                 
+                </div>
+              </div>
+            </div>
+              </div>
+
+
+           
+               
+         
+           
+          </div>
+          <!-- content-wrapper ends -->
+        
+{%endblock%}

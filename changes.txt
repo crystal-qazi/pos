@@ -1,0 +1,8 @@
+DB:
+
+- Legder report table Removed (extra table)
+- Stock Transaction altered 'transaction_type' as ('Stock In','Stock Out','Positive adjustment','Negative adjustment','Reserve','Return','Expiry','Damage','Reverse')
+- Stock Transaction altered added new column as 'mode'
+- Stock Transaction altered added new column as 'remarks'
+
+

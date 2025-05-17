@@ -477,10 +477,6 @@ def RVouchernumber():
     o_number = f"v{year}{serial:04d}" 
     return o_number
 
-# @app.route('/r')
-# def r():
-#     rvouchernumber= RVouchernumber()
-#     return(rvouchernumber)
 
 
 @app.route("/all_order")
@@ -649,14 +645,10 @@ def payment():
         mrn = request.args.get('mrn')
         order_number = request.args.get('order')
 
-        # print(mrn)
-        # print(order_number)
         #Insert Order Detail along items into db
         item = session.get("cart", [])
-        # print(item)
-        for items in item:
-            # print(f"order items: {items['description']}")
-            # item_id = items['item_id']
+   
+        for items in item:      
             item_code = items['item_code']
             item_name = items['description']
             quantity = items['quantity']
@@ -688,9 +680,9 @@ def payment():
             #transection Record
             conn = connect()
             cur = conn.cursor(dictionary=True)
-            sql = "INSERT INTO stock_transactions(item_id,transaction_type,transaction_date,quantity) VALUES (%s,%s,%s,%s) "
+            sql = "INSERT INTO stock_transactions(item_id,transaction_type,transaction_date,quantity,reference,mode) VALUES (%s,%s,%s,%s,%s,%s) "
                     
-            cur.execute(sql,(int(item_d),'Stock Out',today,quantity))
+            cur.execute(sql,(int(item_d),'Stock Out',today,quantity,order_number,'Sale'))
             conn.commit()
             conn.close()
             cur.close()
@@ -761,7 +753,7 @@ def order_detail():
     session["cart"] = []
     mrn = request.args.get('mrn')        
     OrderNumber = request.args.get('order') 
-    # search_item = request.args.get('search-item')
+
     conn = connect()
     cur = conn.cursor(dictionary=True)
     sql = "select * from patients where MRN = %s LIMIT 1"
@@ -953,14 +945,15 @@ def return_detail():
             cur.close()
             # process each item
             stock_item_id = stock_item_detail[0]['o_item_id']
+            stock_item_name = stock_item_detail[0]['oitem_name']
             
 
             print(f"{OrderNumber} Returning first {qty} units of item ID {item_id} price per pice {price_per_pice} stock id {stock_item_id}")
 
             conn = connect()
             cur  = conn.cursor()
-            sql = "INSERT INTO return_items (return_id, original_sale_item_id, item_id, quantity, original_price) VALUES (%s, %s, %s, %s,%s);"
-            cur.execute(sql,(rvouchernumber,OrderNumber,stock_item_id,qty,price_per_pice))
+            sql = "INSERT INTO return_items (return_id, original_sale_item_id, item_id,ritem_name, quantity, original_price,refund_amount) VALUES (%s, %s, %s, %s,%s,%s,%s);"
+            cur.execute(sql,(rvouchernumber,OrderNumber,stock_item_id,stock_item_name,qty,price_per_pice,price_per_pice))
             conn.commit()
             cur.close()
 
@@ -1001,8 +994,8 @@ def return_detail():
                 
             conn = connect()
             cur = conn.cursor(dictionary=True)
-            s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`,`reference`) \
-                    VALUES (%s, 'Return', %s, %s, %s);"
+            s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`,`reference`,`mode`) \
+                    VALUES (%s, 'Return', %s, %s, %s, 'Patient Return');"
             cur.execute(s_trans,(stock_item_id,today,qty,rvouchernumber))
             conn.commit()
             conn.close()
@@ -1091,15 +1084,11 @@ def searchitem():
 
     
 
-
-
 @app.route('/PO_request')
 @login_req
 def PO_reqeust():
     medicines="s"
     return render_template('PO_create_reqeust.html', medicines=medicines)
-
-
 
 
 
@@ -1158,15 +1147,7 @@ def return_invoice(rvouchernumber):
     conn = connect()
     cursor = conn.cursor(dictionary=True,buffered=True)
 
-    # 🔵 **Fetch Order Details**
-
-    
-    # cursor.execute("""
-    #                 SELECT * FROM return_items
-    #                 JOIN returns ON returns.return_number = return_items.return_id
-    #                 JOIN orders ON orders.order_id = returns.original_sale_id  
-    #                 LEFT JOIN sales s ON s.s_order_id = returns.return_id                  
-    #                 WHERE returns.return_number = %s;""", (rvouchernumber,))
+  
     cursor.execute("""
                     SELECT * FROM return_items
                     JOIN returns ON returns.return_number = return_items.return_id
@@ -1218,9 +1199,6 @@ def return_invoice(rvouchernumber):
 
     rendered_pdf = html.write_pdf()  
     return send_file(io.BytesIO(rendered_pdf), download_name='return_invoice.pdf')
-
-
-
 
 
 
@@ -1343,12 +1321,18 @@ def update_item():
             cur.close()
             conn.close()
             flash('Item Updated', 'success')
+            return redirect('create_item')
             return redirect('/update_item?itemid='+item_id2)
         
     except Exception as e:
         app.logger.error(f"Error in some_route: {str(e)}")
-        # flash("An error occurred", "error")
-        return redirect('create_item')
+        if 'Cannot delete or update' in str(e):
+
+            flash("Item Used in Orders", "You Can't Change Item Code or Name Which Items are Used in Orders")
+            return redirect('/update_item?itemid='+item_id2)
+        else:
+            flash(str(e), "Alert")
+            return redirect('/update_item?itemid='+item_id2)
 
 
 @app.route('/search_item')
@@ -1369,8 +1353,6 @@ def search_item():
         return jsonify(result)
 
 
-       
-    
 
 
 
@@ -1502,8 +1484,8 @@ def pharmacy_stock():
                     print(today)
                   
 
-                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`) \
-                          VALUES (%s, 'Stock In', %s, %s);"
+                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`,`mode`) \
+                          VALUES (%s, 'Stock In', %s, %s,'Purchase');"
                     cursor.execute(s_trans,(t_id,today,quantity_int,))
 
                     
@@ -1555,14 +1537,212 @@ def pharmacy_stock():
         flash(f'System error: {str(e)}', 'error')
         return redirect(url_for('pharmacy_stock'))
     finally:
-        if 'cursor' in locals():
+        if 'cur' in locals():
             cursor.close()
         if 'conn' in locals():
             conn.close()
     
-    return render_template('pharmacy_stock.html', medicines=medicines)
+        return render_template('pharmacy_stock.html', medicines=medicines)
 
 
+
+
+@app.route('/stock_return', methods=['POST','GET'])
+def stock_return():
+    # try:
+        if request.method == 'GET':
+            item_id = request.args.get('item_id')
+            conn = connect()
+            cur = conn.cursor(dictionary=True, buffered=True)
+            sql = """select * from stock where item_id = %s"""
+            cur.execute(sql, (item_id,))
+            result = cur.fetchall()
+            cur.close()
+            conn.close()
+            # print(locals())
+
+            return render_template('/stock_return.html', result=result)
+        else:
+            item_id = request.form.get('item_id')
+            r_qty = request.form.get('r_qty')
+            current_stock = request.form.get('current_stock')
+            r_type = request.form.get('r_type')
+            r_reason = request.form.get('r_reason')
+
+       
+            if not all([item_id,r_qty,current_stock,r_type,r_reason]):
+                  flash('All fields are required!', 'Alert')
+                  return redirect(url_for('stock_return')+'?item_id=' + item_id)
+            try:
+                # Convert quantity to integer (with validation)
+                r_qty = int(r_qty)
+                if r_qty <= 0:
+                    flash('Quantity must be positive!', 'error')
+                    return redirect(url_for('stock_return')+'?item_id=' + item_id)
+                else:
+                    # Check Current stock at post request for safty
+                    conn = connect()
+                    cur = conn.cursor(dictionary=True)
+                    sql = """select * from stock where item_id = %s"""
+                    cur.execute(sql, (item_id,))
+                    checked_current_stock = cur.fetchall()
+                    cur.close()
+                    conn.close()
+
+                    checked_current_stock = int(checked_current_stock[0]['stock_quantity'])                    
+                    today = datetime.now()
+
+                    print(f"stock transaction  qty {r_qty}")
+                    print(f"stock transaction type {r_type}")
+                    print(f"stock transaction date {today}")
+
+                    if r_type == 'Stock Out':                        
+                        
+                        less_stock = checked_current_stock - r_qty
+
+                        print(f"Current Stock {current_stock}")
+                        print(f"less stock {less_stock}")
+
+                        conn = connect()
+                        cur = conn.cursor()
+                        sql = """UPDATE `pharma`.`stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
+                        cur.execute(sql,(less_stock,item_id,))
+                        conn.commit()
+                        cur.close()
+                        conn.close()
+
+                        ## Stock Less Transection 
+                        
+                        
+                        conn = connect()
+                        cur = conn.cursor()
+                        sql = """INSERT INTO `pharma`.`stock_transactions` 
+                                (`item_id`, `transaction_type`, `quantity`, `transaction_date`, `mode`,`remarks`) 
+                                VALUES 
+                                (%s, %s, %s, %s, %s,%s);"""
+                        cur.execute(sql,(item_id,'Stock Out',r_qty,today,'Adjustment',r_reason,))
+                        conn.commit()
+                        cur.close()
+                        conn.close()
+                
+                    
+                        flash('Stock Less successfully!', 'success')
+                        return redirect(url_for('stock_return')+'?item_id=' + item_id)
+                    elif r_type == 'Stock In':
+                        less_stock = checked_current_stock + r_qty
+                        
+                        print(f"Current Stock {current_stock}")
+                        print(f"less stock {less_stock}")
+
+                        conn = connect()
+                        cur = conn.cursor()
+                        sql = """UPDATE `pharma`.`stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
+                        cur.execute(sql,(less_stock,item_id,))
+                        conn.commit()
+                        cur.close()
+                        conn.close()
+
+                        ## Stock Less Transection 
+                        
+                        
+                        conn = connect()
+                        cur = conn.cursor()
+                        sql = """INSERT INTO `pharma`.`stock_transactions` 
+                                (`item_id`, `transaction_type`, `quantity`, `transaction_date`, `mode`,`remarks`) 
+                                VALUES 
+                                (%s, %s, %s, %s, %s,%s);"""
+                        cur.execute(sql,(item_id,'Stock In',r_qty,today,'Adjustment',r_reason,))
+                        conn.commit()
+                        cur.close()
+                        conn.close()
+
+                        
+                        
+                        flash('Stock Added successfully!', 'success')
+                        return redirect(url_for('stock_return')+'?item_id=' + item_id)
+
+                    elif r_type == 'Expiry':
+                        less_stock = checked_current_stock - r_qty
+                        
+                        print(f"Current Stock {current_stock}")
+                        print(f"less stock {less_stock}")
+
+                        conn = connect()
+                        cur = conn.cursor()
+                        sql = """UPDATE `pharma`.`stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
+                        cur.execute(sql,(less_stock,item_id,))
+                        conn.commit()
+                        cur.close()
+                        conn.close()
+
+                        ## Stock Less Transection 
+                        
+                        
+                        conn = connect()
+                        cur = conn.cursor()
+                        sql = """INSERT INTO `pharma`.`stock_transactions` 
+                                (`item_id`, `transaction_type`, `quantity`, `transaction_date`, `mode`,`remarks`) 
+                                VALUES 
+                                (%s, %s, %s, %s, %s,%s);"""
+                        cur.execute(sql,(item_id,'Stock Out',r_qty,today,'Expiry',r_reason,))
+                        conn.commit()
+                        cur.close()
+                        conn.close()
+
+                        flash('Expiry Less from Stock successfully!', 'success')
+                        return redirect(url_for('stock_return')+'?item_id=' + item_id)
+                    
+                    elif r_type == 'Damage':
+                        less_stock = checked_current_stock - r_qty
+                        
+                        print(f"Current Stock {current_stock}")
+                        print(f"less stock {less_stock}")
+
+                        conn = connect()
+                        cur = conn.cursor()
+                        sql = """UPDATE `pharma`.`stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
+                        cur.execute(sql,(less_stock,item_id,))
+                        conn.commit()
+                        cur.close()
+                        conn.close()
+
+                        ## Stock Less Transection 
+                        
+                        
+                        conn = connect()
+                        cur = conn.cursor()
+                        sql = """INSERT INTO `pharma`.`stock_transactions` 
+                                (`item_id`, `transaction_type`, `quantity`, `transaction_date`, `mode`,`remarks`) 
+                                VALUES 
+                                (%s, %s, %s, %s, %s,%s);"""
+                        cur.execute(sql,(item_id,'Stock Out',r_qty,today,'Damage',r_reason,))
+                        conn.commit()
+                        cur.close()
+                        conn.close()
+
+                 
+
+                        flash('Damage Less from Stock successfully!', 'success')
+                        return redirect(url_for('stock_return')+'?item_id=' + item_id)
+                    else:
+                        flash('No Operation Done', 'success')
+                        return redirect(url_for('stock_return')+'?item_id=' + item_id)
+
+            except ValueError:
+                flash('Invalid quantity format!', 'error')
+                return redirect(url_for('stock_return')+'?item_id=' + item_id)
+    # except Exception as e:
+    #     flash(f'System error: {str(e)}', 'error')
+    #     return redirect(url_for('stock_return')+'?item_id=' + item_id)
+    # finally:
+    #     if 'cur' in locals():
+    #         cur.close()
+    #     if 'conn' in locals():
+    #         conn.close()
+
+
+
+    
 @app.route('/legder_report', methods=['GET', 'POST'])
 @login_req
 def legder_report():
@@ -1573,8 +1753,6 @@ def legder_report():
         return render_template('legder_report.html', data = data)
     else:
 
-        # start_date = '2025-04-25'
-        # end_date = '2025-04-26'
 
         start_date = request.form.get('s-date')
         s_date = start_date+' 00:00:00'
@@ -1686,10 +1864,62 @@ def legder_report():
 
         return render_template('legder_report.html', data = data)
 
+@app.route('/sale_report', methods=['GET','POST'])
+def sale_report():
+    if request.method == 'GET':
+        sale_data =None
+        return render_template('/sale_report.html', sale_data = sale_data)
+    else:
+
+        s_date = request.form.get('s-date')
+        e_date = request.form.get('e-date')
+
+        start_date = str(s_date) +' 00:00:00'
+        end_date = str(e_date) +' 23:59:59'
+
+        print(f"s date {start_date}")
+        print(f"s date {end_date}")
+        conn = connect()
+        cur = conn.cursor(dictionary=True, buffered=True)
+        sql = """SELECT * FROM sales
+                left JOIN order_detail od  ON od.order_id = sales.s_order_id
+                LEFT JOIN return_items ri ON ri.return_id = sales.invoice_number
+                left JOIN orders o ON o.order_id = sales.s_order_id
+                WHERE sales.transaction_date BETWEEN %s AND %s
+                """
+        cur.execute(sql,(start_date,end_date,))
+        sale_data = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        conn = connect()
+        cur = conn.cursor(dictionary=True, buffered=True)
+        sql = """SELECT 
+                    count(sales.total_amount) AS total_orders,
+                    count(case when sales.transection_type = 'Sale' then sales.id  END) AS total_sale,
+
+                    count(case when sales.transection_type = 'return' then sales.id  END) AS total_return,
+
+                    SUM(case when sales.transection_type = 'sale' then sales.total_amount ELSE 0 END) AS sale_orders,
+                    SUM(case when sales.transection_type = 'return' then sales.total_amount ELSE 0 END) AS return_orders,
+
+                    (
+                    SUM(case when sales.transection_type = 'sale' then sales.total_amount ELSE 0 END) 
+                    -
+                    SUM(case when sales.transection_type = 'return' then sales.total_amount ELSE 0 END) 
+                    ) AS Total_sale
+                    FROM sales 
+                WHERE sales.transaction_date BETWEEN %s AND %s
+                """
+        cur.execute(sql,(start_date,end_date,))
+        sale_summary = cur.fetchall()
+        cur.close()
+        conn.close()
 
 
 
 
+        return render_template('/sale_report.html', sale_data = sale_data, sale_summary=sale_summary)
 
 
 @app.route('/invoice')

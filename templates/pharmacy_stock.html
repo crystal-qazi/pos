@@ -236,96 +236,7 @@
             </script>
             
 
-            <!-- <form action="/search_item" method="POST">
-              <p class="card-description">
-                Search item not Exit then create here
-              </p>
-              <div class="row">
-                <div class="col-md-2">
-                  <div class="form-group">
-                    <label class="">Item Code</label>
-                    <div>
-                      <input type="text" class="form-control form-control-sm" name="item_code">
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="form-group">
-                    <label class="">Item Name</label>
-                    <div>
-                      <input type="text" class="form-control form-control-sm" name="item_name">
-                    </div>
-                  </div>
-                </div> -->
-    
-                <!-- <div class="col-md-2">
-                  <div class="form-group">
-                    <label class="">Category</label>
-                    <div>
-                      
-                      <select class="form-select" name="cat">
-                        <option>Tablet</option>
-                        <option>Injection</option>
-                        <option>Syrup</option>
-                        <option>Capsule</option>
-                        <option>Ointment</option>
-                        <option>Misc</option>
-                        <option>Drops</option>
-                        <option>Inhaler</option>
-                        <option>Suppository</option>
-                        <option>Gel</option>
-                        <option>Cream</option>
-                        <option>Lotion</option>
-                        <option>Spray</option>
-                        <option>Powder</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="form-group">
-                    <label class="">Measurment</label>
-                    <div class="col-sm-9">
-                      
-                      <select class="form-select" name="oum">
-                        <option>pcs</option>
-                        <option>ml</option>
-                        <option>mg</option>
-                        <option>g</option>
-                        <option>l</option>
-                        <option>kg</option>
-    
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md-2">
-                  <div class="form-group">
-                    <label class="">Pieces per Unit</label>
-                    <div class="col-sm-9">
-                      <input class="form-control form-control-sm" type="number" name="pieces-per-unit">
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="form-group">
-                    <label class="">Pack per unit</label>
-                    <div class="col-sm-9">
-                      <input class="form-control form-control-sm" type="number" name="pack-per-unit">
-                    </div>
-                  </div>
-                </div> -->
-<!--     
-              </div>
            
-    
-              <button type="submit" class="btn btn-facebook ">Create Item</button>
-             
-    
-            </form>
-        
-          </div> -->
           <div class="col-12 col-xl-4">
             <div class="justify-content-end d-flex">
              
@@ -387,6 +298,10 @@
                                 <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
                                   aria-label="Status: activate to sort column ascending" style="width: 71.5px;">Last Updated
                                 </th>
+
+                              <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                  aria-label="Status: activate to sort column ascending" style="width: 71.5px;">Action
+                                </th>
                                
                               </tr>
                             </thead>
@@ -402,6 +317,17 @@
                                 <td>{{medicine.purchase_price}}</td>
                                 <td>{{medicine.selling_price}}</td>
                                 <td>{{medicine.created_at}}</td>
+                                <td>
+                                <div class="dropdown">
+  <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+    Edit
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+    <li><a class="dropdown-item" href="/stock_return?item_id={{medicine.item_id}}" target="_blank">Update Rate</a></li>
+    <li><a class="dropdown-item" href="/stock_return?item_id={{medicine.item_id}}" target="_blank">Stock Return</a></li>
+  </ul>
+</div>
+</td>
                                
                               </tr> 
                               {%endfor%}                             
@@ -421,12 +347,20 @@
     </div>
 
 
-
+   {{medicines}}
 
   </div>
   <!-- content-wrapper ends -->
 
 
+
+
+<script>
+  var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
+var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+  return new bootstrap.Dropdown(dropdownToggleEl)
+})
+</script>
 
    <script>
             new DataTable('#item-data', {
