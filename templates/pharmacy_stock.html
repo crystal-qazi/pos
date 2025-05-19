@@ -115,7 +115,7 @@
                   <input type="number" step="0.01" class="form-control form-control-sm" id="purchase_price" name="purchase_price" min="1" required>
                 </div>
               </div>
-
+              
               <div class="col-md-2">
                 <div class="form-group">
                   <label for="quantity">Selling Price: *</label>
@@ -323,13 +323,56 @@
     Edit
   </button>
   <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-    <li><a class="dropdown-item" href="/stock_return?item_id={{medicine.item_id}}" target="_blank">Update Rate</a></li>
+    <!-- <li><a class="dropdown-item" href="/stock_return?item_id={{medicine.item_id}}" target="_blank">Update Rate</a></li> -->
+    <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleModal-3{{medicine.item_id}}"  data-item-sale="{{medicine.selling_price}}">Update Rate</a></li>
     <li><a class="dropdown-item" href="/stock_return?item_id={{medicine.item_id}}" target="_blank">Stock Return</a></li>
   </ul>
 </div>
 </td>
                                
                               </tr> 
+
+
+                              <!-- Rate Update Modal starts -->
+                 
+                  <div class="modal fade" id="exampleModal-3{{medicine.item_id}}" tabindex="-1" aria-labelledby="exampleModalLabel-3" aria-hidden="true" style="display: none;">
+                    <div class="modal-dialog modal-sm" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel-3">Rate Update</h5>
+                      
+                          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                          
+                          <div>
+                            <form action="/stock_price_udpate" method="POST">
+                              <input type="hidden" name="item_id" value="{{medicine.item_id}}">
+                              <div  class="form-group">
+                            <label for="" class="">Purchase Price</label>
+                            <input type="Number" step="0.01" min="1" required class="form-control-sm form-control" name="p_udpate_reate" value="{{medicine.purchase_price}}">
+                              </div>
+                              <div  class="form-group">
+                            <label for="">Selling Price</label>
+                            <input type="number" step="0.01" min="1" required class="form-control-sm form-control" name="s_update_rate" value="{{medicine.selling_price}}">
+                            </div>
+                            <div class="modal-footer">
+                          <button type="submit" class="btn btn-success">Update</button>
+                          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                          </form>
+                        </div>
+                        </div>
+                        
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Modal Ends -->
+
+
+
                               {%endfor%}                             
                             </tbody>
                           </table>
@@ -347,20 +390,22 @@
     </div>
 
 
-   {{medicines}}
+    
+
+   
 
   </div>
   <!-- content-wrapper ends -->
 
 
 
-
+<!-- 
 <script>
   var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
 var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
   return new bootstrap.Dropdown(dropdownToggleEl)
 })
-</script>
+</script> -->
 
    <script>
             new DataTable('#item-data', {

@@ -1,50 +1,54 @@
-{% extends 'partials/front_base.html' %}
-{% block front_content %}
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
 
-  <!-- HEADER MENU END -->
 
-        <!-- HERO BANNER START -->
-        <section class="title-banner mb-80">
-            <div class="container-fluid">
-                <h3 class="justify-content-center text-center medium-black">Person Detail</h3>
-            </div>
-        </section>
-        <!-- HERO BANNER END -->
-        <div class="float-end w-25">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                  {% for category, message in messages %}
-                      {% if category == 'message' %}
-                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                         
-                      {% else %}
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+<div class="main-panel">
+          <div class="content-wrapper">
+
+
+   
+                
+                 
+                  
+                  <!-- Rate Update Modal starts -->
+                  <div class="text-center">
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal-3">Click for demo<i class="ti-arrow-circle-right ms-1"></i></button>
+                  </div>
+                  <div class="modal fade" id="exampleModal-3" tabindex="-1" aria-labelledby="exampleModalLabel-3" aria-hidden="true" style="display: none;">
+                    <div class="modal-dialog modal-sm" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel-3">Rate Update</h5>
+                          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
                           
-                      {% endif %}
-                        <strong>{{category}}:</strong>{{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                          <div>
+                            <form action="">
+                              <div  class="form-group">
+                            <label for="" class="">Purchase Price</label>
+                            <input type="Number" class="form-control-sm form-control">
+                              </div>
+                              <div  class="form-group">
+                            <label for="">Selling Price</label>
+                            <input type="number" class="form-control-sm form-control">
+                            </div>
+                          </form>
+                        </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-success">Submit</button>
+                          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        </div>
                       </div>
-                  {% endfor %}
-                {% endif %}
-            {% endwith %}
-          </div>
+                    </div>
+                  </div>
+                  <!-- Modal Ends -->
+                
 
-        <section class="mb-80">
-            <div class="container-fluid">
-                <form action="/img_upload" method="post" enctype=multipart/form-data>
-                    
-                      <div class="mb-3">
-                        <label for="formFile" class="form-label">Default file input example</label>
-                        <input class="form-control" type="file" name="file">
-                      </div>
-                      <!-- <button type="submit">submit</button> -->
-                      <input type=submit value=Upload>
-                    
-                </form>
-             
+
             </div>
-        </section>
-    
-
 
         {%endblock%}

@@ -16,7 +16,7 @@
 
 
 -- Dumping database structure for pharma
-CREATE DATABASE IF NOT EXISTS `pharma` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE IF NOT EXISTS `pharma` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `pharma`;
 
 -- Dumping structure for table pharma.issued_items
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `issued_items` (
   `issued_by` varchar(100) DEFAULT NULL,
   `issue_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`issue_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.issued_items: ~0 rows (approximately)
 DELETE FROM `issued_items`;
@@ -36,10 +36,10 @@ DELETE FROM `issued_items`;
 -- Dumping structure for table pharma.items
 CREATE TABLE IF NOT EXISTS `items` (
   `b_item_id` int NOT NULL AUTO_INCREMENT,
-  `b_Item_code` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `b_item_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `b_cat` enum('Tablet','Injection','Syrup','Capsule','Ointment','Misc','Drops','Inhaler','Suppository','Gel','Cream','Lotion','Spray','Powder') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `uom` enum('pcs','ml','mg','g','l','kg') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `b_Item_code` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `b_item_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `b_cat` enum('Tablet','Injection','Syrup','Capsule','Ointment','Misc','Drops','Inhaler','Suppository','Gel','Cream','Lotion','Spray','Powder') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `uom` enum('pcs','ml','mg','g','l','kg') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `pieces_per_pack` int DEFAULT '1' COMMENT 'Number of pieces per pack (0 if sold loose)',
   `packs_per_unit` int DEFAULT '0' COMMENT 'Number of packs per unit/box (0 if N/A)',
   `current_stock` int DEFAULT '0' COMMENT 'Total quantity in pieces',
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `items` (
   PRIMARY KEY (`b_item_id`),
   UNIQUE KEY `b_item_name` (`b_item_name`),
   UNIQUE KEY `b_Item_code` (`b_Item_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.items: ~4 rows (approximately)
 DELETE FROM `items`;
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `ledger` (
   PRIMARY KEY (`ledger_id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `ledger_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.ledger: ~0 rows (approximately)
 DELETE FROM `ledger`;
@@ -87,15 +87,15 @@ DELETE FROM `ledger`;
 -- Dumping structure for table pharma.orders
 CREATE TABLE IF NOT EXISTS `orders` (
   `order_id` int NOT NULL AUTO_INCREMENT,
-  `order_uuid` char(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT (uuid()),
+  `order_uuid` char(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT (uuid()),
   `visit_id` int DEFAULT NULL,
   `order_number` varchar(50) DEFAULT NULL,
-  `order_status` enum('Pending','Complete','Return','Cancel') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'Pending',
+  `order_status` enum('Pending','Complete','Return','Cancel') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Pending',
   `created_date` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`order_id`),
   KEY `FK_orders_patient_visit` (`visit_id`),
   CONSTRAINT `FK_orders_patient_visit` FOREIGN KEY (`visit_id`) REFERENCES `patient_visit` (`visit_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=237 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=237 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.orders: ~0 rows (approximately)
 DELETE FROM `orders`;
@@ -109,15 +109,15 @@ CREATE TABLE IF NOT EXISTS `order_detail` (
   `order_id` int DEFAULT NULL,
   `o_item_id` int DEFAULT NULL,
   `item_code` varchar(50) DEFAULT NULL,
-  `oitem_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `oitem_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `qty` int DEFAULT NULL,
   `selling_price` float DEFAULT NULL,
-  `oi_status` enum('Sale','Return','Cancel','Pending') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'Pending',
+  `oi_status` enum('Sale','Return','Cancel','Pending') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Pending',
   `Column 4` int DEFAULT NULL,
   PRIMARY KEY (`oitem_id`) USING BTREE,
   KEY `FK_order_items_orders` (`order_id`),
   CONSTRAINT `FK_order_items_orders` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=213 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=213 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.order_detail: ~0 rows (approximately)
 DELETE FROM `order_detail`;
@@ -131,17 +131,17 @@ INSERT INTO `order_detail` (`oitem_id`, `order_id`, `o_item_id`, `item_code`, `o
 -- Dumping structure for table pharma.patients
 CREATE TABLE IF NOT EXISTS `patients` (
   `patient_id` int NOT NULL AUTO_INCREMENT,
-  `p_uuid` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'uuid()',
-  `MRN` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `first_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `last_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `p_uuid` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'uuid()',
+  `MRN` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `first_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `last_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `age` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `cnic` bigint DEFAULT NULL,
   `Mobile` bigint DEFAULT NULL,
-  `address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`patient_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.patients: ~3 rows (approximately)
 DELETE FROM `patients`;
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS `patient_bills` (
   PRIMARY KEY (`bill_id`),
   KEY `patient_bills_ibfk_1` (`patient_id`),
   CONSTRAINT `patient_bills_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.patient_bills: ~0 rows (approximately)
 DELETE FROM `patient_bills`;
@@ -173,11 +173,11 @@ CREATE TABLE IF NOT EXISTS `patient_visit` (
   `visit_number` varchar(50) DEFAULT NULL,
   `patient_id` int DEFAULT NULL,
   `p_visit_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`visit_id`),
   KEY `FK_patient_visit_patients` (`patient_id`),
   CONSTRAINT `FK_patient_visit_patients` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=225 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=225 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.patient_visit: ~0 rows (approximately)
 DELETE FROM `patient_visit`;
@@ -192,7 +192,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   `description` text,
   PRIMARY KEY (`permission_id`),
   UNIQUE KEY `permission_name` (`permission_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.permissions: ~4 rows (approximately)
 DELETE FROM `permissions`;
@@ -212,7 +212,7 @@ CREATE TABLE IF NOT EXISTS `purchase_orders` (
   PRIMARY KEY (`po_id`),
   KEY `vendor_id` (`vendor_id`),
   CONSTRAINT `purchase_orders_ibfk_1` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`vendor_id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.purchase_orders: ~0 rows (approximately)
 DELETE FROM `purchase_orders`;
@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS `purchase_order_items` (
   KEY `purchase_order_items_ibfk_2` (`item_id`),
   CONSTRAINT `purchase_order_items_ibfk_1` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`po_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `purchase_order_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `stock` (`item_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.purchase_order_items: ~0 rows (approximately)
 DELETE FROM `purchase_order_items`;
@@ -241,10 +241,10 @@ CREATE TABLE IF NOT EXISTS `returns` (
   `return_number` varchar(50) NOT NULL,
   `original_sale_id` int NOT NULL,
   `return_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `reason_code` enum('DAMAGED','EXPIRED','WRONG ITEM','PATIENT RETURN','OTHER') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `reason_code` enum('DAMAGED','EXPIRED','WRONG ITEM','PATIENT RETURN','OTHER') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `restocking_fee` decimal(10,2) NOT NULL DEFAULT '0.00',
   `total_refund` decimal(12,2) DEFAULT NULL,
-  `payment_method` enum('CASH','CREDIT','ADJUSTMENT') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `payment_method` enum('CASH','CREDIT','ADJUSTMENT') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `status` enum('COMPLETED','PENDING','REJECTED') NOT NULL DEFAULT 'COMPLETED',
   `processed_by` int DEFAULT NULL,
   `approved_by` int DEFAULT NULL,
@@ -253,7 +253,7 @@ CREATE TABLE IF NOT EXISTS `returns` (
   UNIQUE KEY `return_number` (`return_number`),
   KEY `FK_returns_orders` (`original_sale_id`),
   CONSTRAINT `FK_returns_orders` FOREIGN KEY (`original_sale_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=199 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=199 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.returns: ~0 rows (approximately)
 DELETE FROM `returns`;
@@ -264,7 +264,7 @@ CREATE TABLE IF NOT EXISTS `return_items` (
   `return_id` varchar(50) NOT NULL DEFAULT '',
   `original_sale_item_id` varchar(50) NOT NULL DEFAULT '0',
   `item_id` int NOT NULL,
-  `batch_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `batch_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `quantity` int DEFAULT NULL,
   `original_price` decimal(10,2) DEFAULT NULL,
   `refund_amount` decimal(10,2) DEFAULT NULL,
@@ -273,7 +273,7 @@ CREATE TABLE IF NOT EXISTS `return_items` (
   PRIMARY KEY (`return_item_id`),
   KEY `FK_return_items_returns` (`return_id`),
   KEY `FK_return_items_order_detail` (`original_sale_item_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=171 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=171 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.return_items: ~0 rows (approximately)
 DELETE FROM `return_items`;
@@ -285,7 +285,7 @@ CREATE TABLE IF NOT EXISTS `roles` (
   `description` text,
   PRIMARY KEY (`role_id`),
   UNIQUE KEY `role_name` (`role_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.roles: ~6 rows (approximately)
 DELETE FROM `roles`;
@@ -305,7 +305,7 @@ CREATE TABLE IF NOT EXISTS `role_permissions` (
   KEY `permission_id` (`permission_id`),
   CONSTRAINT `role_permissions_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`) ON DELETE CASCADE,
   CONSTRAINT `role_permissions_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`permission_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.role_permissions: ~8 rows (approximately)
 DELETE FROM `role_permissions`;
@@ -334,7 +334,7 @@ CREATE TABLE IF NOT EXISTS `sales` (
   `remarks` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=176 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=176 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.sales: ~0 rows (approximately)
 DELETE FROM `sales`;
@@ -348,8 +348,8 @@ CREATE TABLE IF NOT EXISTS `stock` (
   `b_item_id` int DEFAULT NULL,
   `item_code` varchar(20) NOT NULL,
   `item_name` varchar(100) NOT NULL,
-  `category` enum('Tablet','Injection','Syrup','Capsule','Ointment','Misc','Drops','Inhaler','Suppository','Gel','Cream','Lotion','Spray','Powder') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `unit` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `category` enum('Tablet','Injection','Syrup','Capsule','Ointment','Misc','Drops','Inhaler','Suppository','Gel','Cream','Lotion','Spray','Powder') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `unit` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `stock_quantity` int DEFAULT '0',
   `reorder_level` int DEFAULT NULL,
   `batch_no` varchar(50) DEFAULT NULL,
@@ -364,7 +364,7 @@ CREATE TABLE IF NOT EXISTS `stock` (
   CONSTRAINT `FK_stock_items` FOREIGN KEY (`item_code`) REFERENCES `items` (`b_Item_code`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_stock_items_2` FOREIGN KEY (`item_name`) REFERENCES `items` (`b_item_name`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_stock_items_3` FOREIGN KEY (`b_item_id`) REFERENCES `items` (`b_item_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.stock: ~3 rows (approximately)
 DELETE FROM `stock`;
@@ -377,14 +377,14 @@ INSERT INTO `stock` (`item_id`, `b_item_id`, `item_code`, `item_name`, `category
 CREATE TABLE IF NOT EXISTS `stock_transactions` (
   `transaction_id` int NOT NULL AUTO_INCREMENT,
   `item_id` int DEFAULT NULL,
-  `transaction_type` enum('Stock In','Stock Out','Adjustment','Reserve','Return') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `transaction_type` enum('Stock In','Stock Out','Adjustment','Reserve','Return') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `quantity` int NOT NULL,
   `transaction_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `reference` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`transaction_id`),
   KEY `FK_stock_transactions_stock` (`item_id`),
   CONSTRAINT `FK_stock_transactions_stock` FOREIGN KEY (`item_id`) REFERENCES `stock` (`item_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=450 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=450 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.stock_transactions: ~7 rows (approximately)
 DELETE FROM `stock_transactions`;
@@ -408,7 +408,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `active` int DEFAULT '1',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.users: ~9 rows (approximately)
 DELETE FROM `users`;
@@ -429,7 +429,7 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
   `role_id` int NOT NULL,
   PRIMARY KEY (`user_id`,`role_id`),
   KEY `role_id` (`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.user_roles: ~5 rows (approximately)
 DELETE FROM `user_roles`;
@@ -450,7 +450,7 @@ CREATE TABLE IF NOT EXISTS `vendors` (
   `address` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`vendor_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table pharma.vendors: ~0 rows (approximately)
 DELETE FROM `vendors`;

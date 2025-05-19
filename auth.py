@@ -1,18 +1,9 @@
-# from py_config.db import *
-from conn import *
-from flask import Flask, render_template, request, redirect , flash, jsonify, session, make_response, url_for,redirect, sessions
+from app import *
 from functools import wraps
 import jwt
 import argon2
-# from log import *
-# from log import *
-# import requests
-# from cryptography.fernet import Fernet
-# import mysql.connector
-# from flask_jwt_extended import get_jwt
-from app import app
-import logging
-from logging.config import dictConfig
+
+
 
 
 

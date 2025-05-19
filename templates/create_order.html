@@ -177,16 +177,16 @@
                               </div>
                         
                               <!-- Quantity Input -->
-                              <div class="quantity-input">
+                              <div class="quantity-box">
                                 <label for="quantity">Qty:</label>
-                                <input type="number" id="quantity" min="1" value="1">
+                                <input type="number" id="quantity" min="1" value="1" class="quantity-input"> 
                               </div>
                         
                               </div>
                             
                           </div>  
                                               
-                          <button class="btn" onclick="addToCart('${item.stock_quantity}','${item.packs_per_unit}','${item.pieces_per_pack}','${item.item_id}','${item.item_code}', '${item.item_name}', '${item.batch_no}', '${item.expiry_date}', ${item.selling_price})">🛒 Add to Cart</button>
+                          <button class="btn" onclick="addToCart(this, '${item.stock_quantity}','${item.packs_per_unit}','${item.pieces_per_pack}','${item.item_id}','${item.item_code}', '${item.item_name}', '${item.batch_no}', '${item.expiry_date}', ${item.selling_price})">🛒 Add to Cart</button>
                         </div>                     
                        
                         `;
@@ -199,91 +199,27 @@
     }
 
 
-    /** 🟡 Add to Cart */
-
-    /*
-    function addToCart(stock_quantity,packs_per_unit,pieces_per_pack,item_id,item_code, item_name, batch_no, expiry_date, price) {
-      // let unit = document.getElementById("unit").value;
-      let mode = document.getElementById("mode").value;
-      let qty = document.getElementById("quantity").value;
-
-      console.log('mode '+mode)
-      console.log('qty '+qty)
-      console.log('stock qty '+stock_quantity)
-      console.log('pack in unit size' + packs_per_unit)
-      console.log('pieces per pack size ' + pieces_per_pack)
-      console.log('item unit size calculation ' + packs_per_unit * qty)
-      console.log('item pack size calculation ' + pieces_per_pack * qty)   
-
-      
-      if (mode === 'pack' ) {
-          console.log('pack calucation ' + pieces_per_pack /packs_per_unit * qty )
-          let cart_qty = pieces_per_pack /packs_per_unit * qty
-          console.log(cart_qty)   
-               
-          
-          fetch("/add_to_cart", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            // body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price,unit })
-            body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price,cart_qty })
-          })
-            .then(response => response.json())
-            .then(data => updateCartUI());
-        } 
-
-        else if (mode === 'unit' ) {
-          console.log('unit calucation ' + qty *  pieces_per_pack )
-          let cart_qty = qty *  pieces_per_pack
-          console.log(cart_qty)    
-         
-         
-          fetch("/add_to_cart", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            // body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price,unit })
-            body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price,cart_qty })
-          })
-            .then(response => response.json())
-            .then(data => updateCartUI());       
-        }
-
-        else if (mode === 'single-piece') {
-          console.log('unit calucation ' + qty  )         
-          
-          let cart_qty = qty 
-          console.log('cart qty '+cart_qty)  
-
-          if (stock_quantity < cart_qty){
-            console.log("low stock");            
-            alert("s");
-              }
-              else{ 
-                fetch("/add_to_cart", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ item_id,item_code, item_name, batch_no, expiry_date, price,cart_qty })
-              })
-                .then(response => response.json())
-                .then(data => updateCartUI());
-                console.log("go");
-              }
-        }
-      }
-    
-  */
-
 
 
 
   /** 🟡 Add to Cart */
-function addToCart(stock_quantity, packs_per_unit, pieces_per_pack, item_id, item_code, item_name, batch_no, expiry_date, price) {
+function addToCart(buttonElement,stock_quantity, packs_per_unit, pieces_per_pack, item_id, item_code, item_name, batch_no, expiry_date, price) {
+ /*
   let mode = document.getElementById("mode").value;
   let qty = parseFloat(document.getElementById("quantity").value);
+*/
+
+  let card = buttonElement.closest('.card');
+  let mode = card.querySelector(".mode-dropdown").value;
+  let qtyInput = card.querySelector(".quantity-input");
+  console.log('qtyInput:', qtyInput);
+  let qty = parseFloat(qtyInput.value);
+  let stockQty = parseFloat(stock_quantity);
 
   console.log('Mode:', mode);
+  console.log('All mode options:', document.querySelectorAll('#mode option'));
   console.log('Qty:', qty);
-  console.log('Stock Qty:', stock_quantity);
+  console.log('Stock Qty:', stockQty);
   console.log('Packs per Unit:', packs_per_unit);
   console.log('Pieces per Pack:', pieces_per_pack);
   console.log('price:', price);
@@ -309,7 +245,7 @@ function addToCart(stock_quantity, packs_per_unit, pieces_per_pack, item_id, ite
     
     
 
-              if (stock_quantity < cart_qty) {
+              if (stockQty < cart_qty) {
                 console.log("Low stock");
                 alert("Not enough stock for the selected quantity.");
                 return;
@@ -320,7 +256,7 @@ function addToCart(stock_quantity, packs_per_unit, pieces_per_pack, item_id, ite
                 }
 
   // Optional: Do a stock check in all modes (if required)
-  if (stock_quantity < cart_qty  ) {
+  if (stockQty < cart_qty  ) {
     alert("Stock too low for the selected quantity.");
     return;
   }
@@ -363,9 +299,7 @@ function addToCart(stock_quantity, packs_per_unit, pieces_per_pack, item_id, ite
           <thead>
             <tr>
                 <th scope="col">Item Code</th>
-                <th scope="col">Description</th>
-                <!-- <th>Batch</th> -->
-                <!-- <th>Expiry</th> -->
+                <th scope="col">Description</th>             
                 <th scope="col">Price</th>
                 <th scope="col">Quantity</th>
                 <th scope="col">Total</th>
@@ -378,9 +312,7 @@ function addToCart(stock_quantity, packs_per_unit, pieces_per_pack, item_id, ite
             <tbody>
                 <tr>
                     <td scope="row">${item.item_code}</td>
-                    <td>${item.description}</td>
-                    <!-- <td>${item.batch_number}</td>
-                    <td>${item.expiry_date}</td> -->
+                    <td>${item.description}</td>                   
                     <td>${item.price}</td>
                     <td id="cart_ui_qty">${item.quantity}</td>
                     <td>${item.total}</td>
@@ -390,6 +322,39 @@ function addToCart(stock_quantity, packs_per_unit, pieces_per_pack, item_id, ite
               </tbody>
             `;
           });
+
+         /* let tbody = document.querySelector("#cartTable tbody");
+if (!tbody) {
+  cartTable.innerHTML = `
+    <thead>
+      <tr>
+                <th scope="col">Item Code</th>
+                <th scope="col">Description</th>                
+                <th scope="col">Price</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Total</th>
+                <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  `;
+  tbody = document.querySelector("#cartTable tbody");
+} else {
+  tbody.innerHTML = ""; // Clear existing rows
+}
+
+cart.forEach(item => {
+  let row = tbody.insertRow();
+  row.insertCell(0).textContent = item.item_code;
+  row.insertCell(1).textContent = item.description;
+  row.insertCell(2).textContent = item.price;
+  row.insertCell(3).textContent = item.quantity;
+  row.insertCell(4).textContent = item.total;
+  let actionCell = row.insertCell(5);
+  actionCell.innerHTML = `<a onclick="removeFromCart('${item.item_code}', '${item.batch_number}')">Remove</a>`;
+});
+*/
+
         });
     }
 

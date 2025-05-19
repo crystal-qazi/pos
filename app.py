@@ -3,7 +3,6 @@ from flask import Flask, render_template, request, redirect, flash, g, jsonify,s
 import yaml
 import datetime
 import mysql.connector
-import requests
 import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -15,9 +14,10 @@ from datetime import datetime, date, time
 
 
 
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY']=b'o8UKgXYZVKfTmU_1N0mcVqb6ZpM5qvUfleVzFJXQhv0='
-
 from auth import *
 
 
@@ -45,6 +45,10 @@ def check_user_permission(self, user_id, permission_name):
             cursor.close()
 
 
+@app.route('/test')
+def test():
+
+    return render_template('/test.html')
 
 @app.route('/')
 @login_req
@@ -147,7 +151,7 @@ def search_patient():
 
         
         
-        print(patient_mobile)
+       
         if v_number == None:
 
             if patient_name:
@@ -155,15 +159,15 @@ def search_patient():
                 params.extend(['%' + patient_name + '%', '%' + patient_name + '%'])
 
             if patient_mrn:
-                conditions.append("mrn = %s")
-                params.append(patient_mrn)
+                conditions.append("mrn LIKE %s")
+                params.append('%' + patient_mrn + '%')
 
             if patient_mobile:
-                conditions.append("Mobile LIKE %s")
+                conditions.append('Mobile LIKE %s')
                 params.append('%' + patient_mobile + '%')
 
             if patient_cnic:
-                conditions.append("cnic = %s")
+                conditions.append('cnic = %s')
                 params.append(patient_cnic)
 
      
@@ -171,7 +175,8 @@ def search_patient():
             conn = connect()
             cur = conn.cursor(dictionary=True)
             if conditions:
-                sql = "SELECT * FROM patients where" + ' or' .join(conditions)
+                sql = "SELECT * FROM patients WHERE " + ' AND '.join(conditions)  # Changed OR to AND
+           
             else:
                 sql = "SELECT * FROM patients " 
             print(conditions)    
@@ -994,7 +999,7 @@ def return_detail():
                 
             conn = connect()
             cur = conn.cursor(dictionary=True)
-            s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`,`reference`,`mode`) \
+            s_trans = "INSERT INTO `stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`,`reference`,`mode`) \
                     VALUES (%s, 'Return', %s, %s, %s, 'Patient Return');"
             cur.execute(s_trans,(stock_item_id,today,qty,rvouchernumber))
             conn.commit()
@@ -1032,7 +1037,7 @@ def return_detail():
 
             conn = connect()
             cur  = conn.cursor()
-            sql = "UPDATE `pharma`.`orders` SET `order_status`='Return' WHERE  `order_number` = %s"
+            sql = "UPDATE `orders` SET `order_status`='Return' WHERE  `order_number` = %s"
             cur.execute(sql,(OrderNumber,))
             conn.commit()
             cur.close()
@@ -1304,7 +1309,7 @@ def update_item():
 
             conn  = connect()
             cur = conn.cursor()
-            sql = """UPDATE `pharma`.`items` SET 
+            sql = """UPDATE `items` SET 
             `b_Item_code`=%s, 
             `b_item_name`=%s, 
             `b_cat`=%s, 
@@ -1484,7 +1489,7 @@ def pharmacy_stock():
                     print(today)
                   
 
-                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`,`mode`) \
+                    s_trans = "INSERT INTO `stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`,`mode`) \
                           VALUES (%s, 'Stock In', %s, %s,'Purchase');"
                     cursor.execute(s_trans,(t_id,today,quantity_int,))
 
@@ -1514,8 +1519,8 @@ def pharmacy_stock():
                     print(today)
                   
 
-                    s_trans = "INSERT INTO `pharma`.`stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`) \
-                          VALUES (%s, 'Stock In', %s, %s);"
+                    s_trans = "INSERT INTO `stock_transactions` (`item_id`, `transaction_type`, `transaction_date`, `quantity`,`mode`) \
+                          VALUES (%s, 'Stock In', %s, %s,'Purchase');"
                     cursor.execute(s_trans,(t_id,today,quantity_int,))
                 
                 conn.commit()
@@ -1605,7 +1610,7 @@ def stock_return():
 
                         conn = connect()
                         cur = conn.cursor()
-                        sql = """UPDATE `pharma`.`stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
+                        sql = """UPDATE `stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
                         cur.execute(sql,(less_stock,item_id,))
                         conn.commit()
                         cur.close()
@@ -1616,7 +1621,7 @@ def stock_return():
                         
                         conn = connect()
                         cur = conn.cursor()
-                        sql = """INSERT INTO `pharma`.`stock_transactions` 
+                        sql = """INSERT INTO `stock_transactions` 
                                 (`item_id`, `transaction_type`, `quantity`, `transaction_date`, `mode`,`remarks`) 
                                 VALUES 
                                 (%s, %s, %s, %s, %s,%s);"""
@@ -1636,7 +1641,7 @@ def stock_return():
 
                         conn = connect()
                         cur = conn.cursor()
-                        sql = """UPDATE `pharma`.`stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
+                        sql = """UPDATE `stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
                         cur.execute(sql,(less_stock,item_id,))
                         conn.commit()
                         cur.close()
@@ -1647,7 +1652,7 @@ def stock_return():
                         
                         conn = connect()
                         cur = conn.cursor()
-                        sql = """INSERT INTO `pharma`.`stock_transactions` 
+                        sql = """INSERT INTO `stock_transactions` 
                                 (`item_id`, `transaction_type`, `quantity`, `transaction_date`, `mode`,`remarks`) 
                                 VALUES 
                                 (%s, %s, %s, %s, %s,%s);"""
@@ -1669,7 +1674,7 @@ def stock_return():
 
                         conn = connect()
                         cur = conn.cursor()
-                        sql = """UPDATE `pharma`.`stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
+                        sql = """UPDATE `stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
                         cur.execute(sql,(less_stock,item_id,))
                         conn.commit()
                         cur.close()
@@ -1680,7 +1685,7 @@ def stock_return():
                         
                         conn = connect()
                         cur = conn.cursor()
-                        sql = """INSERT INTO `pharma`.`stock_transactions` 
+                        sql = """INSERT INTO `stock_transactions` 
                                 (`item_id`, `transaction_type`, `quantity`, `transaction_date`, `mode`,`remarks`) 
                                 VALUES 
                                 (%s, %s, %s, %s, %s,%s);"""
@@ -1700,7 +1705,7 @@ def stock_return():
 
                         conn = connect()
                         cur = conn.cursor()
-                        sql = """UPDATE `pharma`.`stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
+                        sql = """UPDATE `stock` SET `stock_quantity`=%s WHERE  `item_id`=%s"""
                         cur.execute(sql,(less_stock,item_id,))
                         conn.commit()
                         cur.close()
@@ -1711,7 +1716,7 @@ def stock_return():
                         
                         conn = connect()
                         cur = conn.cursor()
-                        sql = """INSERT INTO `pharma`.`stock_transactions` 
+                        sql = """INSERT INTO `stock_transactions` 
                                 (`item_id`, `transaction_type`, `quantity`, `transaction_date`, `mode`,`remarks`) 
                                 VALUES 
                                 (%s, %s, %s, %s, %s,%s);"""
@@ -1739,6 +1744,26 @@ def stock_return():
     #         cur.close()
     #     if 'conn' in locals():
     #         conn.close()
+
+
+@app.route('/stock_price_udpate', methods=['GET','POST'])
+def stock_price_update():
+
+    if request.method == 'POST':
+        item_id = request.form.get('item_id')
+        p_udpate_reate = request.form.get('p_udpate_reate')
+        s_update_rate = request.form.get('s_update_rate')
+
+        conn = connect()
+        cur = conn.cursor()
+        sql = """UPDATE stock SET purchase_price=%s, selling_price=%s WHERE  item_id=%s;"""
+        cur.execute(sql,(p_udpate_reate,s_update_rate,item_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for('pharmacy_stock'))
+    else:
+        return redirect(url_for('stock_return'))
 
 
 
@@ -1881,7 +1906,10 @@ def sale_report():
         print(f"s date {end_date}")
         conn = connect()
         cur = conn.cursor(dictionary=True, buffered=True)
-        sql = """SELECT * FROM sales
+        sql = """SELECT * ,
+                        ROUND(od.qty * od.selling_price, 2) AS sale_total,
+                        ROUND(ri.quantity * ri.original_price, 2) AS return_total
+                        FROM sales
                 left JOIN order_detail od  ON od.order_id = sales.s_order_id
                 LEFT JOIN return_items ri ON ri.return_id = sales.invoice_number
                 left JOIN orders o ON o.order_id = sales.s_order_id
@@ -2115,7 +2143,7 @@ def create_user():
                 
                 conn = connect()
                 cur = conn.cursor()
-                sql = """INSERT INTO `pharma`.`users` (`username`, `password`, `email`) 
+                sql = """INSERT INTO `users` (`username`, `password`, `email`) 
                         VALUES (%s, %s, %s);"""
                 cur.execute(sql,(username,hasshed,email))
                 conn.commit()
@@ -2204,7 +2232,7 @@ def update_user():
                             
                                 conn = connect()
                                 cur = conn.cursor(dictionary=True, buffered=True)
-                                sql = "UPDATE `pharma`.`users` SET `password`=%s WHERE  `user_id`=%s;"
+                                sql = "UPDATE `users` SET `password`=%s WHERE  `user_id`=%s;"
                                 cur.execute(sql,(hasshed,user_id))
                                 conn.commit()
                                 cur.close()
@@ -2219,7 +2247,7 @@ def update_user():
                     else:
                             conn = connect()
                             cur = conn.cursor()
-                            sql = """UPDATE `pharma`.`users` SET `active`=%s WHERE  `user_id`=%s;"""
+                            sql = """UPDATE `users` SET `active`=%s WHERE  `user_id`=%s;"""
                             cur.execute(sql,(active_status,user_id,))
                             conn.commit()
                             cur.close()
@@ -2230,7 +2258,7 @@ def update_user():
                             print(f"role id {role}")
                             conn = connect()
                             cur = conn.cursor()   
-                            sql3 = """DELETE FROM `pharma`.`user_roles` WHERE  `user_id`=%s;"""   
+                            sql3 = """DELETE FROM `user_roles` WHERE  `user_id`=%s;"""   
                             cur.execute(sql3,(user_id,)) 
                             conn.commit()
                             cur.close()
@@ -2243,8 +2271,7 @@ def update_user():
 
                                 conn = connect()
                                 cur = conn.cursor()
-                                sql2 = "INSERT INTO user_roles (user_id, role_id) VALUES  (%s, %s)  as new \
-                                        ON DUPLICATE KEY UPDATE user_id = new.user_id,  role_id = new.role_id"                
+                                sql2 = "INSERT INTO user_roles (user_id, role_id) VALUES  (%s, %s) ON DUPLICATE KEY UPDATE user_id = VALUES(user_id),  role_id = VALUES(role_id)"                
                                 cur.execute(sql2, val,)
                                 conn.commit()
                                 cur.close()
