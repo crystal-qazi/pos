@@ -1950,21 +1950,50 @@ def sale_report():
         return render_template('/sale_report.html', sale_data = sale_data, sale_summary=sale_summary)
 
 
-@app.route('/invoice')
+@app.route('/stock_report')
+def stock_report():
+
+    if request.method=='GET':
+        conn = connect()
+        cur = conn.cursor(dictionary=True)
+        sql = """SELECT stock.item_id, stock.item_code, stock.item_name, stock.stock_quantity, i.pieces_per_pack, i.packs_per_unit from stock 
+LEFT JOIN items i ON i.b_item_id = stock.b_item_id;
+SELECT * FROM items;
+"""
+        cur.execute(sql)
+        stock = cur.fetchall()
+        cur.close()
+        conn.close()
+
+
+    return render_template('/stock_report.html', stock = stock)
+
+
+@app.route('/stock_report_pdf')
 @login_req
-def invoice(): 
-    import io
-    name = "qazi"  
-    return  render_template('/invoice3.html', name = name)
+def stock_report_pdf(): 
+        conn = connect()
+        cur = conn.cursor(dictionary=True)
+        sql = """SELECT stock.item_id, stock.item_code, stock.item_name, stock.stock_quantity, i.pieces_per_pack, i.packs_per_unit ,
+i.pieces_per_pack * i.packs_per_unit AS size,
+ROUND(stock.stock_quantity /(i.pieces_per_pack * i.packs_per_unit),2) AS pack_left
+from stock 
+LEFT JOIN items i ON i.b_item_id = stock.b_item_id;
+            """
+        cur.execute(sql)
+        stock = cur.fetchall()
+        cur.close()
+        conn.close()
+        today = datetime.today()
 
-    rendered = render_template('/invoice3.html', name = name)
-    html = HTML(string=rendered)
-    # rendered_pdf = html.write_pdf('./static/invoice.pdf')
-    # return send_file('./static/invoice.pdf')
+    
+    
 
-    rendered_pdf = html.write_pdf()
-    #print(rendered)
-    return send_file(io.BytesIO(rendered_pdf), download_name='invoice.pdf')
+        rendered = render_template('/stock_report_pdf.html',  stock = stock,today=today)
+        html = HTML(string=rendered)  
+
+        rendered_pdf = html.write_pdf()  
+        return send_file(io.BytesIO(rendered_pdf), download_name='stock_report_pdf.pdf')
 
 
 ## Setup Section

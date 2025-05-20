@@ -1,0 +1,77 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+
+<style>
+  .table th, .table td {
+    
+      vertical-align: middle;
+      line-height: 2;
+      white-space: nowrap;
+      padding: 5px;
+      
+
+  }
+</style>
+        <!-- partial -->
+        <div class="main-panel">
+          <div class="content-wrapper">
+        <div class="row">
+
+           <div class="card">
+              <div class="card-body">
+               
+              
+                <div class="table-responsive" >
+                  <table class="table table-hover" id="item-data">
+                    <thead>
+                      <tr>
+                        <th>Sr</th>
+                        <th>Item Code</th>
+                        <th>Item Name</th>         
+                        <th>Item Size</th>                        
+                        <th>Qty (Piece) </th>
+                        
+                      </tr>
+                    </thead>
+                    <tbody>
+                      
+                      {%if stock%}
+                      {%for data in stock%}
+              
+                      <tr>
+                        <td>{{ loop.index }} </td>
+                        <td>{{data['item_code']}}</td>
+                        <td>{{data['item_name']}}</td>
+                        <td>{{data['pieces_per_pack']}} x {{data['packs_per_unit']}}</td>
+                        
+                        <td>{{data['stock_quantity']}}</td>
+                        
+                        
+                      
+                        
+                      </tr>
+                      {%endfor%}
+                      {%endif%}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+        </div>
+            
+          </div>
+          <!-- content-wrapper ends -->
+          <script>
+              new DataTable('#item-data', {
+                layout: {
+                    bottomEnd: {
+                        paging: {
+                            type: 'simple'
+                        }
+                    }
+                }
+            });
+            </script>
+
+{%endblock%}
