@@ -1,0 +1,222 @@
+## item wise sale
+
+
+
+SET @START = '2025-05-19 00:00:00';
+SET @END = '2025-05-21 23:59:59';
+
+SELECT 
+    i.b_cat AS category,
+    COUNT(DISTINCT od.qty) AS number_of_sales,
+    SUM(od.qty) AS total_quantity,
+    SUM(od.qty * od.selling_price) AS total_sales,
+    SUM(COALESCE(ri.quantity * ri.original_price,0)) AS total_returns,
+    (SUM(od.qty * od.selling_price) - SUM(COALESCE(ri.quantity * ri.original_price,0))) AS net_sales
+FROM 
+    sales s
+JOIN 
+    orders o ON s.s_order_id = o.order_id
+JOIN 
+    order_detail od ON o.order_id = od.order_id
+JOIN 
+    items i ON od.item_code = i.b_Item_code
+LEFT JOIN 
+    returns r ON o.order_id = r.original_sale_id
+LEFT JOIN 
+    return_items ri ON (r.return_number = ri.return_id AND o.order_number = ri.original_sale_item_id)
+WHERE 
+    s.transaction_date BETWEEN @start AND @end
+GROUP BY 
+    i.b_cat
+ORDER BY 
+    net_sales DESC;
+    
+    
+    
+
+
+
+    
+## order status full return partial return 
+
+    SELECT 
+    o.order_id,
+    o.order_number,
+    o.order_status,
+    COUNT(od.oitem_id) AS total_items,
+    COUNT(ri.return_item_id) AS returned_items,
+    CASE 
+        WHEN COUNT(ri.return_item_id) = 0 THEN 'Complete'
+        WHEN COUNT(od.oitem_id) = COUNT(ri.return_item_id) THEN 'Fully Returned'
+        ELSE 'Partially Returned'
+    END AS return_status
+FROM 
+    orders o
+LEFT JOIN 
+    order_detail od ON od.order_id = o.order_id
+    
+LEFT JOIN 
+    returns r ON r.original_sale_id = o.order_id
+LEFT JOIN 
+    return_items ri ON ri.return_id = r.return_number AND o.order_id = od.order_id
+WHERE 
+    o.order_number = 'o20250001'
+GROUP BY 
+    o.order_id, o.order_number, o.order_status;
+    
+
+SELECT  COUNT(od.oitem_id) AS total_items FROM order_detail od
+LEFT JOIN orders o ON o.order_id = od.order_id
+WHERE o.order_number = 'o20250001';
+
+
+SELECT COUNT(ri.return_item_id) AS returned_items FROM return_items ri
+WHERE ri.original_sale_item_id = 'o20250001';
+
+
+    							
+
+
+### LEgder Report 
+
+# variation one
+
+SET @START = '2025-05-19 00:00:00';
+SET @END = '2025-05-21 23:59:59';
+SELECT 
+
+    items.b_Item_code, 
+    items.b_item_name, 
+    stock.item_code,
+    stock.item_name,
+    stock.reorder_level,
+
+    -- Opening Balance (before @START)
+    (
+        SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < @START THEN st.quantity ELSE 0 END)
+        -
+        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date = @END THEN st.quantity ELSE 0 END)
+    ) AS op_balance,
+    
+    -- Stock In during the period @START to @END
+    SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date BETWEEN @START AND @END THEN st.quantity ELSE 0 END) AS stock_in,
+    
+    -- Stock Out during the period @START to @END
+    SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN @START AND @END THEN st.quantity ELSE 0 END) AS stock_out,
+    
+      -- Stock in Return during the period @START to @END
+    -- SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date BETWEEN @START AND @END THEN st.quantity ELSE 0 END) AS return_in,
+    SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date  BETWEEN @START AND @END THEN st.quantity ELSE 0 END) AS return_in,
+
+    -- Closing Balance
+    (
+        (
+            SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < @START THEN st.quantity ELSE 0 END)
+            -
+            SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < @START THEN st.quantity ELSE 0 END)
+        )
+        +
+        (
+            SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date BETWEEN @START AND @END THEN st.quantity ELSE 0 END)
+            -
+            SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN @START AND @END THEN st.quantity ELSE 0 END)
+        )
+        +
+        (
+        	--	SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date BETWEEN @START AND @END THEN st.quantity ELSE 0 END)
+        	SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date < @end THEN st.quantity ELSE 0 END)
+		  )
+    ) AS closing_balance
+
+FROM 
+    items
+JOIN 
+    stock ON stock.b_item_id = items.b_item_id
+JOIN 
+    stock_transactions st ON st.item_id = stock.item_id
+
+-- WHERE    st.transaction_date <= @end
+    
+--    WHERE st.transaction_date BETWEEN @START AND @END
+-- WHERE                 stock.item_code = 'TAB-004'  -- 🔥 filter by item code
+
+
+
+GROUP BY 
+    items.b_Item_code, 
+    items.b_item_name, 
+    stock.item_code,
+    stock.item_name,
+    stock.reorder_level;
+
+
+
+# variation 2
+SET @START = '2025-05-19 00:00:00';
+SET @END = '2025-05-21 23:59:59';
+
+SELECT 
+    items.b_Item_code, 
+    items.b_item_name, 
+    stock.item_code,
+    stock.item_name,
+    stock.reorder_level,
+
+    -- Debug info: Count of transactions included
+    COUNT(st.transaction_id) AS transaction_count,
+    
+    -- Opening Balance
+    (
+        SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < @START THEN st.quantity ELSE 0 END)
+        -
+        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < @START THEN st.quantity ELSE 0 END)
+    ) AS op_balance,
+    
+    -- Current period transactions
+    SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date BETWEEN @START AND @END THEN st.quantity ELSE 0 END) AS stock_in,
+    SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date BETWEEN @START AND @END THEN st.quantity ELSE 0 END) AS stock_out,
+    SUM(CASE WHEN st.transaction_type = 'Return' AND st.transaction_date BETWEEN @START AND @END THEN st.quantity ELSE 0 END) AS return_in,
+
+    -- Closing Balance
+  
+    (  
+	 	
+       ( SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < @END THEN st.quantity ELSE 0 END)
+        -
+        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < @END THEN st.quantity ELSE 0 END))
+        +
+        
+        (SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < @START THEN st.quantity ELSE 0 END)
+        -
+        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < @START THEN st.quantity ELSE 0 END))
+       
+    		-(
+			 SUM(CASE WHEN st.transaction_type = 'Stock In' AND st.transaction_date < @START THEN st.quantity ELSE 0 END)
+        -
+        SUM(CASE WHEN st.transaction_type = 'Stock Out' AND st.transaction_date < @START THEN st.quantity ELSE 0 END)
+			 )
+    	
+		  
+       
+		  
+    ) AS closing_balance
+
+FROM items
+JOIN stock ON stock.b_item_id = items.b_item_id
+LEFT JOIN stock_transactions st ON st.item_id = stock.item_id
+    AND st.transaction_date <= @END
+    
+    
+   
+    
+GROUP BY 
+    items.b_Item_code, 
+    items.b_item_name, 
+    stock.item_code,
+    stock.item_name,
+    stock.reorder_level
+
+
+
+
+    

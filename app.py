@@ -1006,22 +1006,22 @@ def return_detail():
             conn.close()
             cur.close()
 
+        print(f"before sale entry {sale_d}")
+        for item in sale_d:
+            print(item['original_price'])
+            print(item['quantity'])
+            total = float(item['original_price']) * int(item['quantity'])
 
-            for item in sale_d:
-                print(item['original_price'])
-                print(item['quantity'])
-                total += float(item['original_price']) * int(item['quantity'])
-
-       
-                
-                round_amount = round(total)
-                round_def = round(round_amount -  total, 1)
-                print(f"round amount {round_amount}")
+    
+            
+            round_amount = round(total,1)
+            round_def = round(round_amount -  total, 1)
+            print(f"round amount {round_amount}")
 
                 
             # Sale Record
 
-    
+
             conn = connect()
             cur = conn.cursor(dictionary=True)
             sql = "INSERT INTO sales(invoice_number,transection_type,s_order_id,total_amount,amount_paid,payment_method,status) \
@@ -1031,16 +1031,17 @@ def return_detail():
             conn.commit()
             conn.close()
             cur.close()
+            print(f"sale entry pass {rvouchernumber} {order_id} {round_amount}")
 
 
-            ##Update order Status
+        ##Update order Status
 
-            conn = connect()
-            cur  = conn.cursor()
-            sql = "UPDATE `orders` SET `order_status`='Return' WHERE  `order_number` = %s"
-            cur.execute(sql,(OrderNumber,))
-            conn.commit()
-            cur.close()
+        conn = connect()
+        cur  = conn.cursor()
+        sql = "UPDATE `orders` SET `order_status`='Return' WHERE  `order_number` = %s"
+        cur.execute(sql,(OrderNumber,))
+        conn.commit()
+        cur.close()
 
         return redirect('/order_detail?mrn='+str(mrn)+"&order="+str(OrderNumber))
     flash("no items selected")
@@ -1929,13 +1930,13 @@ def sale_report():
                     count(case when sales.transection_type = 'return' then sales.id  END) AS total_return,
 
                     SUM(case when sales.transection_type = 'sale' then sales.total_amount ELSE 0 END) AS sale_orders,
-                    SUM(case when sales.transection_type = 'return' then sales.total_amount ELSE 0 END) AS return_orders,
+                    ROUND(SUM(case when sales.transection_type = 'return' then sales.total_amount ELSE 0 END),0) AS return_orders,
 
-                    (
+                    ROUND((
                     SUM(case when sales.transection_type = 'sale' then sales.total_amount ELSE 0 END) 
                     -
                     SUM(case when sales.transection_type = 'return' then sales.total_amount ELSE 0 END) 
-                    ) AS Total_sale
+                    ),0) AS Total_sale
                     FROM sales 
                 WHERE sales.transaction_date BETWEEN %s AND %s
                 """
