@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pharmacy Cash Slip</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0.5cm;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            margin: 0;
+            padding: 0px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cash-slip {
+            /*flex: 1 0 auto; /* Allows footer to stay at bottom */
+            /* max-width: 500px; */
+            /* margin: 20px auto; */
+            padding: 10px;
+            background: rgb(255, 255, 255);
+            /* border: 1px solid #ddd; */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            
+
+
+        }
+
+        .header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 1px;
+            margin-bottom: 1px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: #007bff;
+            font-size: 14px;
+           
+        }
+
+        .header p {
+            margin: 2px 0;
+            font-size: 10px;
+            color: #333;
+        }
+
+        .customer-info {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+        }
+
+
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 10px;
+
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #ddd;
+            padding: 5px 5px;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+        }
+
+        .totals {
+            text-align: right;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .total-row {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .total-cus {
+            margin: 10px 0;
+
+            display: flex;
+            justify-content: flex-end;
+            font-size: 10px;
+            /* width: 100%; */
+        }
+
+        /* .payment-method {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            font-size: 10px;
+            text-align: end;
+        } */
+
+        .payment-method2 {
+            margin: 10px 0;
+            display: flex;
+            justify-content: flex-end;
+
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            font-size: 10px;
+
+            /* width: 100%; */
+        }
+
+        /* .footer {
+            flex-shrink: 0; 
+            margin-top: 25px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }  */
+        .footer {
+
+            font-size: 12px;
+            color: #666;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div class="cash-slip">
+        <div class="header">
+            <h2>Premier Health Centre</h2>
+            <p>Bangalow No. 235-C masjid-e-Tayyaba street</p>
+            <p>Behind Anjum plaza, P.E.C.H.S., Karachi</p>
+            <p>Tel: (+92) 309-3182950 </p>
+
+        </div>
+
+        <!-- {{order_detail}} -->
+
+        <div class="customer-info">
+            <div style="display: flex;">
+            <div  style="padding-right: 10px;">
+                <h2>Sale Report:</h2> <br>
+              
+            </div>
+            
+        </div>
+        <div style="display: flex;">
+            <div style="padding-right: 10px;">
+                <strong>Reporting Date:</strong> <br>
+                <strong>Selection Date</strong>
+                
+            </div>
+            <div >
+                <div>{{ today}}</div>
+                <div>From:{{dates['s-date']}}  To:{{dates['e-date']}}</div>
+                <div></div>
+            </div>
+        </div>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sr</th>
+                    <th>Date</th>
+                    <th>Order Number</th>
+                    <th>Inv Number</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+             
+                {%for data in sale_data%}
+                <tr>
+                    <td>{{loop.index}}</td>
+                    <td>{{data['transaction_date'].strftime('%Y-%m-%d')}}</td>
+                    <td>{{data['original_sale_item_id'] or data['order_number']}}</td>
+                    <td>{{data['invoice_number']}}</td>
+                    <td>{{data['transection_type']}}</td>
+                    <td>{{data['sale_total'] or data['return_total']}}</td>
+                 
+                </tr>
+                {%endfor%}
+
+            </tbody>
+
+        </table>
+
+
+        <br>
+       
+
+        <div class="">
+           
+           <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <h3>Summary</h3>
+                <tr>
+                  <th>Total Orders</th>
+                  <th>Total Sale</th>
+                  <th>Total Return</th>
+                  <th>Sale Sum</th>
+                  <th>Return Order Sum</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                {%if sale_summary%}
+                {%for summary in sale_summary%}
+
+                <tr>
+                
+                  <td>{{summary['total_orders']}}</td>
+                  <td>{{summary['total_sale']}}</td>
+                  <td>{{summary['total_return']}}</td>
+                  <td>{{summary['sale_orders']}}</td>
+                  <td>{{summary['return_orders']}}</td>
+                  <td>{{summary['Total_sale']}}</td>
+                 
+
+
+
+                </tr>
+                {%endfor%}
+                {%endif%}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+    </div>
+
+</body>
+
+</html>

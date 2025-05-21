@@ -1903,6 +1903,9 @@ def sale_report():
         start_date = str(s_date) +' 00:00:00'
         end_date = str(e_date) +' 23:59:59'
 
+        dates = {"s-date":start_date,
+                 "e-date": end_date}
+
         print(f"s date {start_date}")
         print(f"s date {end_date}")
         conn = connect()
@@ -1915,6 +1918,7 @@ def sale_report():
                 LEFT JOIN return_items ri ON ri.return_id = sales.invoice_number
                 left JOIN orders o ON o.order_id = sales.s_order_id
                 WHERE sales.transaction_date BETWEEN %s AND %s
+                GROUP BY sales.id;
                 """
         cur.execute(sql,(start_date,end_date,))
         sale_data = cur.fetchall()
@@ -1939,6 +1943,7 @@ def sale_report():
                     ),0) AS Total_sale
                     FROM sales 
                 WHERE sales.transaction_date BETWEEN %s AND %s
+                
                 """
         cur.execute(sql,(start_date,end_date,))
         sale_summary = cur.fetchall()
@@ -1948,7 +1953,70 @@ def sale_report():
 
 
 
-        return render_template('/sale_report.html', sale_data = sale_data, sale_summary=sale_summary)
+        return render_template('/sale_report.html', sale_data = sale_data, sale_summary=sale_summary, dates=dates)
+
+
+@app.route('/sale_report_pdf')
+@login_req
+def sale_report_pdf(): 
+        if request.method == 'GET':
+            start_date = request.args.get('s-date')
+            end_date = request.args.get('e-date')
+
+            dates = {"s-date":start_date,
+                 "e-date": end_date}
+            conn = connect()
+            cur = conn.cursor(dictionary=True, buffered=True)
+            sql = """SELECT * ,
+                            ROUND(od.qty * od.selling_price, 2) AS sale_total,
+                            ROUND(ri.quantity * ri.original_price, 2) AS return_total
+                            FROM sales
+                    left JOIN order_detail od  ON od.order_id = sales.s_order_id
+                    LEFT JOIN return_items ri ON ri.return_id = sales.invoice_number
+                    left JOIN orders o ON o.order_id = sales.s_order_id
+                    WHERE sales.transaction_date BETWEEN %s AND %s
+                    GROUP BY sales.id;
+                    """
+            cur.execute(sql,(start_date,end_date,))
+            sale_data = cur.fetchall()
+            cur.close()
+            conn.close()
+
+            conn = connect()
+            cur = conn.cursor(dictionary=True, buffered=True)
+            sql = """SELECT 
+                        count(sales.total_amount) AS total_orders,
+                        count(case when sales.transection_type = 'Sale' then sales.id  END) AS total_sale,
+
+                        count(case when sales.transection_type = 'return' then sales.id  END) AS total_return,
+
+                        SUM(case when sales.transection_type = 'sale' then sales.total_amount ELSE 0 END) AS sale_orders,
+                        ROUND(SUM(case when sales.transection_type = 'return' then sales.total_amount ELSE 0 END),0) AS return_orders,
+
+                        ROUND((
+                        SUM(case when sales.transection_type = 'sale' then sales.total_amount ELSE 0 END) 
+                        -
+                        SUM(case when sales.transection_type = 'return' then sales.total_amount ELSE 0 END) 
+                        ),0) AS Total_sale
+                        FROM sales 
+                    WHERE sales.transaction_date BETWEEN %s AND %s
+                    
+                    """
+            cur.execute(sql,(start_date,end_date,))
+            sale_summary = cur.fetchall()
+            cur.close()
+            conn.close()
+            today = datetime.today()
+
+        
+        
+
+            rendered = render_template('/sale_report_pdf.html',  sale_data = sale_data, sale_summary=sale_summary, dates=dates,today=today)
+            html = HTML(string=rendered)  
+
+            rendered_pdf = html.write_pdf()  
+            return send_file(io.BytesIO(rendered_pdf), download_name='sale_report_pdf.pdf')
+
 
 
 @app.route('/stock_report')
