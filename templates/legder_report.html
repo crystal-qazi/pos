@@ -54,7 +54,7 @@
                
               
                 <div class="table-responsive">
-                  <table class="table table-hover">
+                  <table class="table table-hover" id="item-data">
                     <thead>
                       <tr>
                         <th>Sr</th>
@@ -95,6 +95,19 @@
             
            </div>
           </div>
+
+          
+            <script>
+              new DataTable('#item-data', {
+                layout: {
+                    bottomEnd: {
+                        paging: {
+                            type: 'simple'
+                        }
+                    }
+                }
+            });
+            </script>
           <!-- content-wrapper ends -->
         
 {%endblock%}

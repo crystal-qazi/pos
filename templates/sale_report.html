@@ -6,7 +6,9 @@
   <div class="content-wrapper">
     <div class="">
       <div class="row">
-        <a href="/sale_report_pdf?s-date={{dates['s-date']}}&e-date={{dates['e-date']}}">report</a>
+        {%if dates%}
+        <a href="/sale_report_pdf?s-date={{dates['s-date']}}&e-date={{dates['e-date']}}" target="_blank"><button type="button" class="btn btn-behance float-end">Print Report</button></a>
+        {%endif%}
       </div>
       <div class="row">
         <h4>Sale Report</h4>

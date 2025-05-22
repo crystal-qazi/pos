@@ -172,8 +172,10 @@
                 
             </div>
             <div >
-                <div>{{ today}}</div>
-                <div>From:{{dates['s-date']}}  To:{{dates['e-date']}}</div>
+                <div>{{ today.strftime('%Y-%m-%d')}}</div>
+                {% set sdate = dates['s-date'] %}
+                {% set edate = dates['e-date'] %}
+                <div>From:{{sdate}}  To:{{dates['e-date']}}</div>
                 <div></div>
             </div>
         </div>
