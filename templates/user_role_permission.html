@@ -1,0 +1,182 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+
+
+<!-- content start -->
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<!-- Success alert -->
+<div class="alert alert-success" role="alert">
+  <strong>{{ category }} :</strong> {{ message }}
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+
+
+<!-- partial -->
+<div class="main-panel">
+  <div class="content-wrapper">
+
+
+   
+    <form action="role_permission" method="POST">
+      <input type="hidden" name="role_id" value="{{request.args['role_id']}}">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="" class="form-label text-uppercase"><strong>Orders</strong></label><br>
+            <div class="form-check">
+              <label class="">
+                
+                <input type="checkbox" class="form-check-input" name="order_view_route" value="/all_order" 
+                {%for perm in data%} 
+                {%if  perm.permission_id == 2  and perm.route is not none %}  checked{%else%}{%endif%}
+                {%endfor%}
+                />
+                <input type="hidden" value="2" name="order_view_perm">
+                View Orders
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                
+                <input type="checkbox" class="form-check-input" name="order_create_route" value="/create_order" 
+                {%for perm in data%} 
+                {%if  perm.permission_id == 1  and perm.route is not none %}  checked{%else%}{%endif%}
+                {%endfor%}
+                >
+                <input type="hidden" value="1" name="order_create_perm">
+                
+                Create Orders
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input">
+                Return Orders
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input">
+                Cancel Orders
+                <i class="input-helper"></i></label>
+            </div>
+
+          </div>
+
+
+        </div>
+
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="" class="form-label text-uppercase"><strong>Stock</strong></label><br>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input">
+                View Stock
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input">
+                Add Stock
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input">
+                Update Rate
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input">
+                Return Stock
+                <i class="input-helper"></i></label>
+            </div>
+
+          </div>
+
+
+        </div>
+
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="" class="form-label text-uppercase"><strong>Report</strong></label><br>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input">
+                Sale Report
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input">
+                Stock
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input">
+                Legder Report
+                <i class="input-helper"></i></label>
+            </div>
+
+          </div>
+
+
+
+
+        </div>
+
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="" class="form-label text-uppercase"><strong>User Managment</strong></label><br>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input">
+                Default
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input" checked="">
+                Checked
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input" disabled="">
+                Disabled
+                <i class="input-helper"></i></label>
+            </div>
+            <div class="form-check">
+              <label class="">
+                <input type="checkbox" class="form-check-input" disabled="" checked="">
+                Disabled checked
+                <i class="input-helper"></i></label>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Next Section  -->
+
+
+
+      </div>
+
+
+      <button type="submit" class="btn btn-behance float-end"> Submit</button>
+    </form>
+    <!-- content-wrapper ends -->
+</div>
+    {% endblock %}

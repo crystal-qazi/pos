@@ -1,0 +1,31 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+       <div class="content-wrapper">
+              <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Add New role</h4>
+                  
+                  <form class="forms-sample" action="/add_role" method="POST">
+                    <div class="form-group">
+                      <label for="">Role Name</label>
+                      <input type="text" name="role_name" class="form-control"  required> 
+                    </div>
+                    <div class="form-group">
+                      <label for="">Description</label>
+                      <input type="text" name="role_des" class="form-control"  required>
+                    </div>
+                    
+                    <div>
+          
+                    </div>
+                    <button type="submit" class="btn btn-primary me-2">Submit</button>
+                  
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+{%endblock%}

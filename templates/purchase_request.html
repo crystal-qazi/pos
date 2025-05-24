@@ -1,0 +1,218 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+<!-- partial -->
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="row">
+      <div>
+        <div class="d-flex">
+          <div class="col-5">
+            <h3>PR Create</h3>
+            <form action="">
+              <div class="form-group col-10">
+                <label for="itemSearch">Search Items:</label>
+                <input type="text" class="form-control" id="itemSearch" placeholder="Start typing item name or code...">
+                <div id="searchResults" class="list-group"></div>
+              </div>
+            </form>
+            <form id="stockForm" method="POST" action="/purchase_request">
+              <input type="hidden" id="itemId" name="item_id">
+              <div class="card">
+                <div class="card-body">
+                  <div class="row d-flex">
+                    <div class="col-6">
+                      <div class="form-group">
+                        <label for="itemCode">Item Code:</label>
+                        <input type="text" class="form-control form-control-sm" id="itemCode" name="item_code" readonly>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="form-group">
+                        <label for="itemName">Item Name:</label>
+                        <input type="text" class="form-control form-control-sm" id="itemName" name="item_name" readonly>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row d-flex">
+                    <input type="hidden" id="cat" name="cat">
+                    <div class="col-6">
+                      <div class="form-group">
+                        <label for="quantity">Quantity to Add: *</label>
+                        <input type="number" class="form-control form-control-sm" id="quantity" name="quantity" min="1"
+                          required>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="form-group">
+                        <label for="quantity">Purchase Price: *</label>
+                        <input type="number" id="purchase_price" step="0.01" class="form-control form-control-sm"
+                          id="purchase_price" name="purchase_price" min="1" required>
+                      </div>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Add Stock</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+
+
+          <div class="col-7">
+            <h3>PR Order</h3>
+
+            <div>
+              <div class="card">
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Item Code</th>
+                          <th>Item Name</th>
+                          <th>Qty</th>
+                          <th>Exp Price</th>
+                          <th>Total</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {%for data in session['items']%}
+                        <tr>
+                          <td>{{data.item_code}}</td>
+                          <td>{{data.item_name}}</td>
+                          <td>{{data.quantity}}</td>
+                          <td>{{data.purchase_price}}</td>
+                          <td>{{data.total}}</td>
+                          <td><label class="badge"><a
+                                href="{{ url_for('remove_item', item_id=data.item_id) }}">Remove</a></label>
+
+                          </td>
+                        </tr>
+                        {%endfor%}
+                      </tbody>
+                    </table>
+                    <div>
+                      <a href="/save_purchase_reqeust"><button class="btn btn-primary float-end">Save</button></a>
+                    </div>
+                    
+                    <div>
+                      <a href="/pr_session_clear"><button class="btn btn-primary float-end">Calcel</button></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <script>
+      $(document).ready(function () {
+        // Live search functionality
+        $('#itemSearch').on('input', function () {
+          const searchTerm = $(this).val().trim();
+
+          if (searchTerm.length >= 2) { // Only search after 2 characters
+            $.ajax({
+              url: '/search_item',
+              method: 'GET',
+              data: { query: searchTerm },
+              success: function (data) {
+                const resultsContainer = $('#searchResults');
+                resultsContainer.empty();
+
+                if (data.length > 0) {
+                  data.forEach(function (item) {
+                    resultsContainer.append(`
+                                <a href="#" class="list-group-item list-group-item-action" 
+                                  data-id="${item.b_item_id}"
+                                  data-code="${item.b_Item_code}"
+                                  data-name="${item.b_item_name}"
+                                  data-cat="${item.b_cat}"
+                                  data-stock="${item.stock_quantity}"
+                                  data-pieces_per_pack="${item.pieces_per_pack}"
+                                  data-packs_per_unit="${item.packs_per_unit}"
+                                  data-reorder_level="${item.reorder_level}"
+                                  data-purchase_price="${item.purchase_price}"
+                                  >
+                                  ${item.b_Item_code} - ${item.b_item_name} (Cat: ${item.b_cat}) (Current: ${item.stock_quantity})
+                                </a>
+                              `);
+                  });
+                  resultsContainer.show();
+                } else {
+                  resultsContainer.append('<div class="list-group-item">No items found</div>');
+                  resultsContainer.show();
+                }
+              }
+            });
+          } else {
+            $('#searchResults').hide();
+          }
+        });
+
+        // Handle item selection from search results
+        $(document).on('click', '#searchResults a', function (e) {
+          e.preventDefault();
+
+          const itemId = $(this).data('id');
+          const itemName = $(this).data('name');
+          const itemCode = $(this).data('code');
+          const currentStock = $(this).data('stock');
+          const packs_per_unit = $(this).data('packs_per_unit');
+          const pieces_per_pack = $(this).data('pieces_per_pack');
+          const Pieces = 1;
+          const packsize = $(this).data('packs_per_unit');
+          const cat = $(this).data('cat');
+          const reorder_level = $(this).data('reorder_level');
+          const purchase_price = $(this).data('purchase_price');
+
+          // Fill the form
+          $('#itemId').val(itemId);
+          $('#itemName').val(itemName);
+          $('#itemCode').val(itemCode);
+          $('#currentStock').val(currentStock);
+          $('#packs_per_unit').val(packs_per_unit);
+          $('#pieces_per_pack').val(pieces_per_pack);
+          $('#Pieces').val(Pieces);
+          $('#packsize').val(packsize);
+          $('#cat').val(cat);
+          $('#reorder_level').val(reorder_level);
+          $('#purchase_price').val(purchase_price);
+
+
+          // Clear search and hide results
+          $('#itemSearch').val('');
+          $('#searchResults').hide();
+
+          // Focus on quantity field
+          $('#quantity').focus();
+        });
+
+        // Form submission
+        $('#stockForm').on('submit', function (e) {
+          e.preventDefault();
+
+          if (!$('#itemId').val()) {
+            alert('Please select an item first');
+            return;
+          }
+
+          // Submit via AJAX or standard form submission
+          this.submit();
+        });
+      });
+    </script>
+
+
+
+    <!-- content-wrapper ends -->
+
+    {%endblock%}

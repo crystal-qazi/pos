@@ -45,10 +45,132 @@ def check_user_permission(self, user_id, permission_name):
             cursor.close()
 
 
-@app.route('/test')
-def test():
+@app.route('/role_manage')
+def role_manage():
 
-    return render_template('/test.html')
+    conn = connect()
+    cur = conn.cursor(dictionary=True)
+    sql = "select * from roles;"
+    cur.execute(sql)
+    data = cur.fetchall()
+    cur.close()
+    conn.close()
+
+
+    return render_template('/role_managment.html', data=data)
+
+@app.route('/add_role', methods=['POST', 'GET'])
+def add_role():
+    if request.method=='POST':
+        role_name   = request.form.get('role_name')
+        role_des    = request.form.get('role_des')
+
+        conn = connect()
+        cur = conn.cursor()
+        sql = """insert into roles (role_name, description) values(%s,%s)
+        """
+        cur.execute(sql,(role_name, role_des))        
+        conn.commit()
+        role_id = cur.lastrowid
+        cur.close()
+        conn.close()
+        print(role_id)
+        
+        return redirect(url_for('role_permission')+'?role_id='+str(role_id))
+    else:
+    
+
+        return render_template('/add_role.html')
+@app.route('/role_permission', methods=['GET','POST'])
+def role_permission():
+    if request.method == 'POST':
+            role_id = request.form.get('role_id')
+            print(f"for delete role {role_id}")
+            
+
+            order_view_route = request.form.get('order_view_route')
+            order_view_perm = request.form.get('order_view_perm') 
+
+            order_create_route = request.form.get('order_create_route')
+            order_create_perm = request.form.get('order_create_perm') 
+
+            orders_view =   [role_id, order_view_perm, order_view_route]            
+            orders_create =   [role_id, order_create_perm, order_create_route]            
+           
+       
+            
+            val = [
+                (orders_create),
+                (orders_view)
+            ]
+            
+            # for role_id, p_id, route in val:
+            #     conn = connect()
+            #     cur = conn.cursor(dictionary=True)
+            #     sql = """SELECT rp_id FROM role_permissions
+            #             WHERE role_id = %s AND permission_id = %s"""
+            #     cur.execute(sql,(role_id, p_id))
+            #     pr_id = cur.fetchall()
+            #     cur.close()
+            #     conn.close()
+            #     pr_id2 = pr_id[0]['rp_id']
+           
+            #     print(pr_id2)
+            
+            # val.append(pr_id2,role_id, p_id, route)
+       
+            print(f"final val {val}")
+                  
+                                     
+                
+                                  
+            conn = connect()
+            cur = conn.cursor()
+            sql2 = """DELETE FROM role_permissions WHERE  role_id=%s;"""
+            cur.execute(sql2,(role_id,))
+            conn.commit()
+
+            sql = """INSERT INTO role_permissions (role_id, permission_id, route) VALUES (%s, %s,%s);"""
+            cur.executemany(sql, (val))
+            conn.commit()
+            cur.close()
+            conn.close()
+            
+            return redirect('role_permission'+'?role_id='+ role_id)
+
+
+               
+    else:
+        
+        role_id = request.args.get('role_id')
+        conn = connect()
+        cur = conn.cursor(dictionary=True)
+        sql = """SELECT * FROM role_permissions rp
+            LEFT JOIN roles r ON r.role_id = rp.role_id
+            WHERE r.role_id = %s"""
+        cur.execute(sql,(role_id,))
+        data = cur.fetchall()
+        cur.close()
+        conn.close()
+        print(data)
+
+
+    return render_template('/user_role_permission.html', data=data)
+
+
+@app.route('/test')
+@login_req
+@role_req('/test', 2)
+def test():
+    
+    perm = user_perm()
+    roles = role_req('/test', 2)
+    
+    
+    
+
+
+    return render_template('/test.html', perm = perm,role=role_req)
 
 @app.route('/')
 @login_req
@@ -486,6 +608,7 @@ def RVouchernumber():
 
 @app.route("/all_order")
 @login_req
+@role_req('/all_order', 2)
 def all_order():
  
     conn= connect()
@@ -1349,7 +1472,7 @@ def search_item():
         print(search_item)
         conn = connect()
         cur = conn.cursor(dictionary=True)
-        sql = "SELECT  items.*, stock.stock_quantity, stock.reorder_level FROM items\
+        sql = "SELECT  items.*, stock.stock_quantity, stock.reorder_level ,stock.purchase_price FROM items\
                 LEFT JOIN stock ON stock.b_item_id = items.b_item_id where b_item_name like %s AND  items.is_active = 1"
         cur.execute(sql, (f"%{search_item}%",))
         result = cur.fetchall()
@@ -1357,8 +1480,6 @@ def search_item():
         conn.close()
         print(result)
         return jsonify(result)
-
-
 
 
 
@@ -1766,6 +1887,137 @@ def stock_price_update():
     else:
         return redirect(url_for('stock_return'))
 
+@app.route('/pr_session_clear')
+def pr_session_clear():
+    session.clear()  # Clears all session data
+    return redirect(url_for('purchase_request'))
+
+@app.route('/purchase_request', methods=['GET','POST'])
+def purchase_request():
+     # Establish connection
+        conn = connect()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get all medicines for display
+        cursor.execute("SELECT * FROM stock")
+        medicines = cursor.fetchall()
+        
+        
+        saved_item = session.get('items')
+        print(f"session items {saved_item}")
+        if request.method == 'POST':
+            
+
+            # Get form data with proper defaults and validation
+            item_id = request.form.get('item_id')
+            item_code = request.form.get('item_code', '').strip()
+            item_name = request.form.get('item_name', '').strip()
+            quantity = request.form.get('quantity')
+            purchase_price = request.form.get('purchase_price', '0')            
+            today = datetime.now()   
+
+            # Save to session
+            item = {
+                'item_id': item_id,
+                'item_code': item_code,
+                'item_name': item_name,
+                'quantity': int(quantity),
+                'purchase_price': float(purchase_price),
+                'total': float(purchase_price) * int(quantity),
+                'timestamp': today
+                                }
+            
+            # Initialize items list if not exists
+            if 'items' not in session:
+                session['items'] = []
+            
+            # Try to find existing item by item_id
+            found = False
+            for items in session['items']:
+                if items['item_id'] == item_id:
+                    items['quantity'] += item['quantity']
+                    items['purchase_price'] * item['purchase_price']  # Optionally update price
+                    items['total'] += item['quantity'] * item['purchase_price']
+                    items['timestamp'] = today  # Update timestamp
+                    found = True
+                    # break
+                    session.get('items')
+                    
+
+            # If not found, append new item
+            if not found:
+                session['items'].append(item)
+
+            # Important: Mark session as modified
+            session.modified = True
+
+            
+            saved_item = session.get('items')
+            print(f"session items {saved_item}")
+            return render_template('/purchase_request.html')
+            
+        else:     
+                if 'items' not in session:
+                    session['items'] = []
+                else:
+                    found = True
+      
+        return render_template('/purchase_request.html')
+
+
+
+                
+@app.route('/save_purchase_reqeust')     
+def save_purchase_reqeust():
+
+    pr_request_items = session.get('items')
+    # print(pr_request_items)
+    conn = connect()  # Your function to get DB connection
+    cur = conn.cursor()
+    for item in pr_request_items:
+        item_id = item.get('item_id')
+        item_code = item.get('item_code')
+        item_name = item.get('item_name')
+        qty = item.get('quantity')
+        purchase_price = item.get('purchase_price')
+        create_date = item.get('timestamp')
+
+        val = (item_id, item_code, item_name, qty, purchase_price, create_date)
+        print(f"These are item values: {val}")
+
+        sql = """
+            INSERT INTO purchase_request 
+            (item_id, Item_code, Item_name, qty, purchase_price, create_date)
+            VALUES (%s, %s, %s, %s, %s, %s);
+        """
+        cur.execute(sql, val)
+
+    conn.commit()  # Commit after all inserts
+    cur.close()
+    conn.close()
+    return redirect('purchase_request')
+
+
+
+              
+     
+                
+  
+
+
+
+
+        
+
+@app.route('/remove_item_pr')
+def remove_item():
+    item_id = request.args.get('item_id')
+
+    if 'items' in session:
+        session['items'] = [item for item in session['items'] if item['item_id'] != item_id]
+        session.modified = True
+
+    return redirect(url_for('purchase_request'))
 
 
     
@@ -2354,28 +2606,41 @@ def update_user():
                             
                             print(f"user id {user_id}")
                             print(f"role id {role}")
-                            conn = connect()
-                            cur = conn.cursor()   
-                            sql3 = """DELETE FROM `user_roles` WHERE  `user_id`=%s;"""   
-                            cur.execute(sql3,(user_id,)) 
-                            conn.commit()
-                            cur.close()
-                            conn.close()
-                            user_id_int = int(user_id)
-                            # if role_id != None:
-                            user_id_val = user_id  # assuming this is a single value
-                            for role_id in role:  # assuming roles is a list of role IDs
-                                val = (user_id_val, role_id)
-
+                            if role:
                                 conn = connect()
-                                cur = conn.cursor()
-                                sql2 = "INSERT INTO user_roles (user_id, role_id) VALUES  (%s, %s) ON DUPLICATE KEY UPDATE user_id = VALUES(user_id),  role_id = VALUES(role_id)"                
-                                cur.execute(sql2, val,)
+                                cur = conn.cursor()   
+                                sql3 = """DELETE FROM `user_roles` WHERE  `user_id`=%s;"""   
+                                cur.execute(sql3,(user_id,)) 
                                 conn.commit()
                                 cur.close()
-                                conn.close()  
-                            flash('Permission Updated') 
-                            return redirect("update_user?user_id="+user_id)  
+                                conn.close()
+                                user_id_int = int(user_id)
+                                # if role_id != None:
+                                user_id_val = user_id  # assuming this is a single value
+                            
+                                for role_id in role:  # assuming roles is a list of role IDs
+                                    val = (user_id_val, role_id)
+
+                                    conn = connect()
+                                    cur = conn.cursor()
+                                    sql2 = "INSERT INTO user_roles (user_id, role_id) VALUES  (%s, %s) ON DUPLICATE KEY UPDATE user_id = VALUES(user_id),  role_id = VALUES(role_id)"                
+                                    cur.execute(sql2, val,)
+                                    conn.commit()
+                                    cur.close()
+                                    conn.close()  
+                                flash('Permission Updated') 
+                                return redirect("update_user?user_id="+user_id)  
+                            else:
+                                conn = connect()
+                                cur = conn.cursor()   
+                                sql3 = """DELETE FROM `user_roles` WHERE  `user_id`=%s;"""   
+                                cur.execute(sql3,(user_id,)) 
+                                conn.commit()
+                                cur.close()
+                                conn.close()
+                                flash('Permission Updated') 
+                                return redirect("update_user?user_id="+user_id) 
+                            
             finally:
                 cur.close()
                 conn.close() 

@@ -9,6 +9,7 @@ import argon2
 
 
 
+
 url = ""
 def user_perm():
     if 'x-access-token' in request.cookies:
@@ -17,10 +18,10 @@ def user_perm():
                 usr_id = token_decode['id']
                 conn3 = connect()
                 cur = conn3.cursor(dictionary=True, buffered=True)
-                sql = "SELECT user_permissions.up_id, user_permissions.role_id, user_permissions.p_id, user_permissions.p_url FROM user_role \
-                        Right JOIN users ON users.id = user_role.user_id \
-                        Right JOIN user_permissions ON user_permissions.role_id = user_role.role_id \
-                        WHERE users.id = %s"              
+                sql = """SELECT u.user_id, ur.role_id, rp.permission_id,rp.route FROM user_roles ur
+                            RIGHT JOIN users u ON u.user_id = ur.user_id
+                            RIGHT JOIN role_permissions rp ON rp.role_id = ur.role_id
+                            WHERE u.user_id = %s"""              
                 cur.execute(sql,(usr_id,))
                 user_perm = cur.fetchall()
                 return user_perm
@@ -148,31 +149,36 @@ def role_req(url,perm):
                 user_id = session.get('id')
                 conn = connect()
                 cur = conn.cursor()
-                sql = "SELECT role.role_name FROM users \
-                        LEFT JOIN user_role ON user_role.user_id = users.id\
-                        LEFT JOIN role ON role.r_id = user_role.role_id  where users.id = %s"
+                sql = """SELECT r.role_name FROM users 
+                        LEFT JOIN user_roles ur ON ur.user_id = users.user_id
+                        LEFT JOIN roles r ON r.role_id = ur.role_id 
+                        where users.user_id = %s"""
                 cur.execute(sql,(data['id'],))
                 user_role2 = cur.fetchall()
                 conn.close()
-                # print(f"user role {user_role2}")
+                print(f"user role {user_role2}")
                            
                 
+                print(f"url {url}")
+                print(f"p_id {perm}")
 
                 conn2 = connect()
                 cur = conn2.cursor()
-                sql = "select role.role_name from user_permissions  \
-                            left join role ON role.r_id = user_permissions.role_id \
-                            where p_url = %s AND p_id=%s"
+                sql = """SELECT roles.role_name from role_permissions  rp
+                            left join roles ON roles.role_id = rp.role_id
+                           WHERE rp.route = %s AND rp.permission_id= %s"""
                 cur.execute(sql,[url, perm])
                 allowed = cur.fetchall()
                 conn2.close()
-                # print(f"allowed role {allowed}")
+                print(f"allowed role {allowed}")
                 x = None
                 for x in allowed:
-                    x
-                    # print(f"allowed role {x}")
-                if x in user_role2 or 'superadmin':
-                    # print("yes")                 
+                    x = user_role2
+                    print(f"allowed role {x} {user_role2}")
+                    # flash("You are  Auth veiw This page Content", "Alert")
+                    
+                # if x in user_role2 or 'superadmin':
+                #     print("yes")                 
                     return func(*args, **kwargs)
                 else:
                             flash("You are not Auth veiw This page Content", "Alert")

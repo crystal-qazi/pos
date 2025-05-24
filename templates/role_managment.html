@@ -1,0 +1,85 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+
+
+
+    <!-- content start -->
+   
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <!-- Success alert -->
+    <div class="alert alert-success" role="alert">
+      <strong>{{ category }} :</strong> {{ message }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    
+ <div class="main-panel">
+          <div class="content-wrapper">
+
+             <div class="">
+    
+        <a href="/add_role">
+          <button class="btn btn-primary btn-sm float-right" role="button">Add Role</button>
+        </a>
+   
+      </div>
+
+
+      <table class="table ">
+          <th>Sr</th>
+          <th>Role</th>
+          <th>Des</th>
+          <th>Permission</th>
+          <th>Action</th>
+
+          <!-- permission check -->
+
+
+          <!-- Data from Database table -->
+
+        {%for data in data%}
+          <tr>
+            <td>{{loop.index}}</td>
+            <td>{{data.role_name}}</td>
+            <td>{{data.description}}</td>
+            <td>22</td>
+            <td class="">
+             
+
+              <a href="role_update?role_id={{data.role_id}}" ><i
+                  class=""></i>Edit</a>
+
+          ,
+
+              
+              <a href="role_permission?role_id={{data.role_id}}"><i
+                  class=""></i>Permission</a>
+
+
+
+       
+      
+
+            </td>
+          </tr>
+          {%endfor%}
+
+          <!-- permission check end -->
+
+        </table>
+
+
+           
+          </div>
+    
+
+    
+
+{% endblock %}

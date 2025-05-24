@@ -10,43 +10,20 @@
                 
                  
                   
-                  <!-- Rate Update Modal starts -->
-                  <div class="text-center">
-                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal-3">Click for demo<i class="ti-arrow-circle-right ms-1"></i></button>
-                  </div>
-                  <div class="modal fade" id="exampleModal-3" tabindex="-1" aria-labelledby="exampleModalLabel-3" aria-hidden="true" style="display: none;">
-                    <div class="modal-dialog modal-sm" role="document">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="exampleModalLabel-3">Rate Update</h5>
-                          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                          </button>
-                        </div>
-                        <div class="modal-body">
-                          
-                          <div>
-                            <form action="">
-                              <div  class="form-group">
-                            <label for="" class="">Purchase Price</label>
-                            <input type="Number" class="form-control-sm form-control">
-                              </div>
-                              <div  class="form-group">
-                            <label for="">Selling Price</label>
-                            <input type="number" class="form-control-sm form-control">
-                            </div>
-                          </form>
-                        </div>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-success">Submit</button>
-                          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Modal Ends -->
                 
+                    {%for perm in perm%}
+                    {{perm}}
+                  <br>
+                    {%endfor%}
+
+                
+                {%for perm in perm%}
+                  {%if perm['permission_id'] == 2 and perm['route']|string()=='/test' %}
+                  <button>test</button>
+                  {%else%}
+                  
+                  {%endif%}
+                {%endfor%}
 
 
             </div>

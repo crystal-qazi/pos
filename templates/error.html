@@ -1,0 +1,30 @@
+{% extends 'partials/dashboard_base.html' %}
+{% block dasboard_content %}
+
+
+
+<!-- content start -->
+
+
+
+
+
+<!-- partial -->
+<div class="main-panel">
+  <div class="content-wrapper">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<!-- Success alert -->
+<div class="alert alert-success" role="alert">
+  <strong>{{ category }} :</strong> {{ message }}
+  
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+
+</div>
+
+{% endblock %}

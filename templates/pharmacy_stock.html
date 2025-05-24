@@ -5,13 +5,14 @@
 
 
 <style>
-  .table th, .table td {
-    
-      vertical-align: middle;
-      line-height: 2;
-      white-space: nowrap;
-      padding: 5px;
-      
+  .table th,
+  .table td {
+
+    vertical-align: middle;
+    line-height: 2;
+    white-space: nowrap;
+    padding: 5px;
+
 
   }
 </style>
@@ -28,36 +29,36 @@
             <h3 class="font-weight-bold">Pharmacy Stock (Add Stock to Inventory)</h3>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    
-      {% for category, message in messages  %}
-      <div class="alert alert-warning alert-dismissible fade show" id="success-alert" role="alert">
-        <strong> {{ message }} </strong> {{ category }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-       
-      {% endfor %}
-    </div>
+            {% if messages %}
 
-    {% endif %}
-  {% endwith %}
+            {% for category, message in messages %}
+            <div class="alert alert-warning alert-dismissible fade show" id="success-alert" role="alert">
+              <strong> {{ message }} </strong> {{ category }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 
- 
+              {% endfor %}
+            </div>
+
+            {% endif %}
+            {% endwith %}
+
+
 
             <div class="container">
-           
-              
+
+
               <!-- Search Box -->
               <div class="form-group">
                 <label for="itemSearch">Search Items:</label>
                 <input type="text" class="form-control" id="itemSearch" placeholder="Start typing item name or code...">
                 <div id="searchResults" class="list-group"></div>
               </div>
-              
+
               <!-- Stock Addition Form -->
               <form id="stockForm" method="POST" action="/pharmacy_stock">
                 <input type="hidden" id="itemId" name="item_id">
 
-                
+
 
 
                 <div class="row">
@@ -69,70 +70,64 @@
                     </div>
                   </div>
 
-                <div class="col-md-2">
-                <div class="form-group">
-                  <label for="itemName">Item Name:</label>
-                  <input type="text" class="form-control form-control-sm" id="itemName" name="item_name" readonly>
-                </div>
-              </div>
-
-              <input type="hidden" id="cat" name="cat">
-              
-
-              <div class="col-md-2">
-                <div class="form-group">
-                  <label for="currentStock">Current Stock:</label>
-                  <input type="text" class="form-control form-control-sm" id="currentStock" readonly>
-                </div>
-              </div>
-
-
-             
-              <div class="col-md-2">
-                <div class="form-group">
-                  <label for="currentStock">Measurment:</label>
-                  <select class="form-control form-control-sm" name="measurment" id="">
-                    <option id="pieces_per_pack">Unit</option>
-                    <option id="packs_per_unit">Pack</option>
-                    <option value="Pieces">Pieces</option>
-                  </select>
-                 
-                </div>
-              </div>
-              <input type="hidden" name="packsize" id="packsize">
-              
-
-              <div class="col-md-2">
-                <div class="form-group">
-                  <label for="quantity">Quantity to Add: *</label>
-                  <input type="number" class="form-control form-control-sm" id="quantity" name="quantity" min="1" required>
-                </div>
-              </div>
-              
-              <div class="col-md-2">
-                <div class="form-group">
-                  <label for="quantity">Purchase Price: *</label>
-                  <input type="number" step="0.01" class="form-control form-control-sm" id="purchase_price" name="purchase_price" min="1" required>
-                </div>
-              </div>
-              
-              <div class="col-md-2">
-                <div class="form-group">
-                  <label for="quantity">Selling Price: *</label>
-                  <input type="number" step="0.01" class="form-control form-control-sm" id="selling_price" name="selling_price" min="1" required>
-                </div>
-              </div>
-           
-
-                <!-- <div class="col-md-2">
-                  <div class="form-group">
-                    <label for="notes">Reorder level: *</label>
-                    <input type="number" class="form-control form-control-sm" id="reorder_level" name="reorder_level" required>
-                    
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="itemName">Item Name:</label>
+                      <input type="text" class="form-control form-control-sm" id="itemName" name="item_name" readonly>
+                    </div>
                   </div>
-                  </div> -->
 
-              </div>
+                  <input type="hidden" id="cat" name="cat">
+
+
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="currentStock">Current Stock:</label>
+                      <input type="text" class="form-control form-control-sm" id="currentStock" readonly>
+                    </div>
+                  </div>
+
+
+
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="currentStock">Measurment:</label>
+                      <select class="form-control form-control-sm" name="measurment" id="">
+                        <option id="pieces_per_pack">Unit</option>
+                        <option id="packs_per_unit">Pack</option>
+                        <option value="Pieces">Pieces</option>
+                      </select>
+
+                    </div>
+                  </div>
+                  <input type="hidden" name="packsize" id="packsize">
+
+
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="quantity">Quantity to Add: *</label>
+                      <input type="number" class="form-control form-control-sm" id="quantity" name="quantity" min="1"
+                        required>
+                    </div>
+                  </div>
+
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="quantity">Purchase Price: *</label>
+                      <input type="number" step="0.01" class="form-control form-control-sm" id="purchase_price"
+                        name="purchase_price" min="1" required>
+                    </div>
+                  </div>
+
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="quantity">Selling Price: *</label>
+                      <input type="number" step="0.01" class="form-control form-control-sm" id="selling_price"
+                        name="selling_price" min="1" required>
+                    </div>
+                  </div>
+
+                </div>
                 <button type="submit" class="btn btn-primary">Add Stock</button>
               </form>
             </div>
@@ -142,23 +137,23 @@
 
 
             <script>
-              $(document).ready(function() {
-  // Live search functionality
-  $('#itemSearch').on('input', function() {
-    const searchTerm = $(this).val().trim();
-    
-    if (searchTerm.length >= 2) { // Only search after 2 characters
-      $.ajax({
-        url: '/search_item',
-        method: 'GET',
-        data: { query: searchTerm },
-        success: function(data) {
-          const resultsContainer = $('#searchResults');
-          resultsContainer.empty();
-          
-          if (data.length > 0) {
-            data.forEach(function(item) {
-              resultsContainer.append(`
+              $(document).ready(function () {
+                // Live search functionality
+                $('#itemSearch').on('input', function () {
+                  const searchTerm = $(this).val().trim();
+
+                  if (searchTerm.length >= 2) { // Only search after 2 characters
+                    $.ajax({
+                      url: '/search_item',
+                      method: 'GET',
+                      data: { query: searchTerm },
+                      success: function (data) {
+                        const resultsContainer = $('#searchResults');
+                        resultsContainer.empty();
+
+                        if (data.length > 0) {
+                          data.forEach(function (item) {
+                            resultsContainer.append(`
                 <a href="#" class="list-group-item list-group-item-action" 
                    data-id="${item.b_item_id}"
                    data-code="${item.b_Item_code}"
@@ -171,214 +166,232 @@
                   ${item.b_Item_code} - ${item.b_item_name} (Cat: ${item.b_cat}) (Current: ${item.stock_quantity})
                 </a>
               `);
-            });
-            resultsContainer.show();
-          } else {
-            resultsContainer.append('<div class="list-group-item">No items found</div>');
-            resultsContainer.show();
-          }
-        }
-      });
-    } else {
-      $('#searchResults').hide();
-    }
-  });
-  
-  // Handle item selection from search results
-  $(document).on('click', '#searchResults a', function(e) {
-    e.preventDefault();
-    
-    const itemId = $(this).data('id');
-    const itemName = $(this).data('name');
-    const itemCode = $(this).data('code');
-    const currentStock = $(this).data('stock');
-    const packs_per_unit = $(this).data('packs_per_unit');
-    const pieces_per_pack = $(this).data('pieces_per_pack');
-    const Pieces = 1;
-    const packsize =  $(this).data('packs_per_unit');
-    const cat = $(this).data('cat');
-    const reorder_level = $(this).data('reorder_level');
-    
-    // Fill the form
-    $('#itemId').val(itemId);
-    $('#itemName').val(itemName);
-    $('#itemCode').val(itemCode);
-    $('#currentStock').val(currentStock);
-    $('#packs_per_unit').val(packs_per_unit);
-    $('#pieces_per_pack').val(pieces_per_pack);
-    $('#Pieces').val(Pieces);
-    $('#packsize').val(packsize);
-    $('#cat').val(cat);
-    $('#reorder_level').val(reorder_level);
-    
-    
-    // Clear search and hide results
-    $('#itemSearch').val('');
-    $('#searchResults').hide();
-    
-    // Focus on quantity field
-    $('#quantity').focus();
-  });
-  
-  // Form submission
-  $('#stockForm').on('submit', function(e) {
-    e.preventDefault();
-    
-    if (!$('#itemId').val()) {
-      alert('Please select an item first');
-      return;
-    }
-    
-    // Submit via AJAX or standard form submission
-    this.submit();
-  });
-});
-            </script>
-            
+                          });
+                          resultsContainer.show();
+                        } else {
+                          resultsContainer.append('<div class="list-group-item">No items found</div>');
+                          resultsContainer.show();
+                        }
+                      }
+                    });
+                  } else {
+                    $('#searchResults').hide();
+                  }
+                });
 
-           
-          <div class="col-12 col-xl-4">
-            <div class="justify-content-end d-flex">
-             
+                // Handle item selection from search results
+                $(document).on('click', '#searchResults a', function (e) {
+                  e.preventDefault();
+
+                  const itemId = $(this).data('id');
+                  const itemName = $(this).data('name');
+                  const itemCode = $(this).data('code');
+                  const currentStock = $(this).data('stock');
+                  const packs_per_unit = $(this).data('packs_per_unit');
+                  const pieces_per_pack = $(this).data('pieces_per_pack');
+                  const Pieces = 1;
+                  const packsize = $(this).data('packs_per_unit');
+                  const cat = $(this).data('cat');
+                  const reorder_level = $(this).data('reorder_level');
+
+                  // Fill the form
+                  $('#itemId').val(itemId);
+                  $('#itemName').val(itemName);
+                  $('#itemCode').val(itemCode);
+                  $('#currentStock').val(currentStock);
+                  $('#packs_per_unit').val(packs_per_unit);
+                  $('#pieces_per_pack').val(pieces_per_pack);
+                  $('#Pieces').val(Pieces);
+                  $('#packsize').val(packsize);
+                  $('#cat').val(cat);
+                  $('#reorder_level').val(reorder_level);
+
+
+                  // Clear search and hide results
+                  $('#itemSearch').val('');
+                  $('#searchResults').hide();
+
+                  // Focus on quantity field
+                  $('#quantity').focus();
+                });
+
+                // Form submission
+                $('#stockForm').on('submit', function (e) {
+                  e.preventDefault();
+
+                  if (!$('#itemId').val()) {
+                    alert('Please select an item first');
+                    return;
+                  }
+
+                  // Submit via AJAX or standard form submission
+                  this.submit();
+                });
+              });
+            </script>
+
+
+
+            <div class="col-12 col-xl-4">
+              <div class="justify-content-end d-flex">
+
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="row">
-      <div class="col-md-12 grid-margin transparent">
-       
-        <div class="row">
-          <div class="">
+      <div class="row">
+        <div class="col-md-12 grid-margin transparent">
+
+          <div class="row">
             <div class="">
-              
-              <div class="row">
-                <div class="col-12">
-                  <div class="table-responsive">
-                    
-                    <div id="order-listing_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
-                      <div class="row">
-                        <div class="col-sm-12 col-md-6">
-                          
-                        </div>
-                        <div class="col-sm-12 col-md-6">
-                  
-                      </div>
-                      <!-- {{medicines}} -->
-                      <div class="row dt-row">
-                        <div class="col-sm-12">
-                          <table id="item-data" class="table dataTable no-footer"
-                            aria-describedby="order-listing_info">
-                            <thead>
-                              <tr>
-                                <th class=" _asc" tabindex="0" aria-controls="order-listing" rowspan="1"
-                                  colspan="1" aria-sort="ascending"
-                                  aria-label="Order #: activate to sort column descending" style="width: 55.8281px;">
-                                   #</th>
-                                <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Purchased On: activate to sort column ascending"
-                                  style="width: 98.9375px;">Item Name</th>
-                                <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Customer: activate to sort column ascending" style="width: 69.4844px;">
-                                  Item Code</th>
-                                <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Ship to: activate to sort column ascending" style="width: 62.2969px;">Cat</th>
-                                <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Base Price: activate to sort column ascending" style="width: 74.4219px;">
-                                  Unit</th>
-                                <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Purchased Price: activate to sort column ascending"
-                                  style="width: 112.609px;">Qty</th>
-                                  <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Purchased Price: activate to sort column ascending"
-                                  style="width: 112.609px;">Sale</th>
-                                  <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Purchased Price: activate to sort column ascending"
-                                  style="width: 112.609px;">Retail</th>
-                                <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Status: activate to sort column ascending" style="width: 71.5px;">Last Updated
-                                </th>
+              <div class="">
 
-                              <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
-                                  aria-label="Status: activate to sort column ascending" style="width: 71.5px;">Action
-                                </th>
-                               
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {%for medicine in medicines%}
-                              <tr class="odd">
-                                <td class="_1">{{loop.index}}</td>
-                                <td>{{medicine.item_name}}</td>
-                                <td>{{medicine.item_code}}</td>
-                                <td>{{medicine.category}}</td>
-                                <td>{{medicine.unit}}</td>
-                                <td>{{medicine.stock_quantity}}</td>
-                                <td>{{medicine.purchase_price}}</td>
-                                <td>{{medicine.selling_price}}</td>
-                                <td>{{medicine.created_at}}</td>
-                                <td>
-                                <div class="dropdown">
-  <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-    Edit
-  </button>
-  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-    <!-- <li><a class="dropdown-item" href="/stock_return?item_id={{medicine.item_id}}" target="_blank">Update Rate</a></li> -->
-    <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleModal-3{{medicine.item_id}}"  data-item-sale="{{medicine.selling_price}}">Update Rate</a></li>
-    <li><a class="dropdown-item" href="/stock_return?item_id={{medicine.item_id}}" target="_blank">Stock Return</a></li>
-  </ul>
-</div>
-</td>
-                               
-                              </tr> 
+                <div class="row">
+                  <div class="col-12">
+                    <div class="table-responsive">
+
+                      <div id="order-listing_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
+                        <div class="row">
+                          <div class="col-sm-12 col-md-6">
+
+                          </div>
+                          <div class="col-sm-12 col-md-6">
+
+                          </div>
+                          <!-- {{medicines}} -->
+                          <div class="row dt-row">
+                            <div class="col-sm-12">
+                              <table id="item-data" class="table dataTable no-footer"
+                                aria-describedby="order-listing_info">
+                                <thead>
+                                  <tr>
+                                    <th class=" _asc" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                      aria-sort="ascending" aria-label="Order #: activate to sort column descending"
+                                      style="width: 55.8281px;">
+                                      #</th>
+                                    <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                      aria-label="Purchased On: activate to sort column ascending"
+                                      style="width: 98.9375px;">Item Name</th>
+                                    <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                      aria-label="Customer: activate to sort column ascending"
+                                      style="width: 69.4844px;">
+                                      Item Code</th>
+                                    <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                      aria-label="Ship to: activate to sort column ascending" style="width: 62.2969px;">
+                                      Cat</th>
+                                    <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                      aria-label="Base Price: activate to sort column ascending"
+                                      style="width: 74.4219px;">
+                                      Unit</th>
+                                    <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                      aria-label="Purchased Price: activate to sort column ascending"
+                                      style="width: 112.609px;">Qty</th>
+                                    <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                      aria-label="Purchased Price: activate to sort column ascending"
+                                      style="width: 112.609px;">Sale</th>
+                                    <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                      aria-label="Purchased Price: activate to sort column ascending"
+                                      style="width: 112.609px;">Retail</th>
+                                    <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                      aria-label="Status: activate to sort column ascending" style="width: 71.5px;">Last
+                                      Updated
+                                    </th>
+
+                                    <th class="" tabindex="0" aria-controls="order-listing" rowspan="1" colspan="1"
+                                      aria-label="Status: activate to sort column ascending" style="width: 71.5px;">
+                                      Action
+                                    </th>
+
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {%for medicine in medicines%}
+                                  <tr class="odd">
+                                    <td class="_1">{{loop.index}}</td>
+                                    <td>{{medicine.item_name}}</td>
+                                    <td>{{medicine.item_code}}</td>
+                                    <td>{{medicine.category}}</td>
+                                    <td>{{medicine.unit}}</td>
+                                    <td>{{medicine.stock_quantity}}</td>
+                                    <td>{{medicine.purchase_price}}</td>
+                                    <td>{{medicine.selling_price}}</td>
+                                    <td>{{medicine.created_at}}</td>
+                                    <td>
+                                      <div class="dropdown">
+                                        <button class="btn btn-primary dropdown-toggle" type="button"
+                                          id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                          Edit
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                          <!-- <li><a class="dropdown-item" href="/stock_return?item_id={{medicine.item_id}}" target="_blank">Update Rate</a></li> -->
+                                          <li><a class="dropdown-item" data-bs-toggle="modal"
+                                              data-bs-target="#exampleModal-3{{medicine.item_id}}"
+                                              data-item-sale="{{medicine.selling_price}}">Update Rate</a></li>
+                                          <li><a class="dropdown-item" href="/stock_return?item_id={{medicine.item_id}}"
+                                              target="_blank">Stock Return</a></li>
+                                        </ul>
+                                      </div>
+                                    </td>
+
+                                  </tr>
 
 
-                              <!-- Rate Update Modal starts -->
-                 
-                  <div class="modal fade" id="exampleModal-3{{medicine.item_id}}" tabindex="-1" aria-labelledby="exampleModalLabel-3" aria-hidden="true" style="display: none;">
-                    <div class="modal-dialog modal-sm" role="document">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="exampleModalLabel-3">Rate Update</h5>
-                      
-                          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                          </button>
-                        </div>
-                        <div class="modal-body">
-                          
-                          <div>
-                            <form action="/stock_price_udpate" method="POST">
-                              <input type="hidden" name="item_id" value="{{medicine.item_id}}">
-                              <div  class="form-group">
-                            <label for="" class="">Purchase Price</label>
-                            <input type="Number" step="0.01" min="1" required class="form-control-sm form-control" name="p_udpate_reate" value="{{medicine.purchase_price}}">
-                              </div>
-                              <div  class="form-group">
-                            <label for="">Selling Price</label>
-                            <input type="number" step="0.01" min="1" required class="form-control-sm form-control" name="s_update_rate" value="{{medicine.selling_price}}">
+                                  <!-- Rate Update Modal starts -->
+
+                                  <div class="modal fade" id="exampleModal-3{{medicine.item_id}}" tabindex="-1"
+                                    aria-labelledby="exampleModalLabel-3" aria-hidden="true" style="display: none;">
+                                    <div class="modal-dialog modal-sm" role="document">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <h5 class="modal-title" id="exampleModalLabel-3">Rate Update</h5>
+
+                                          <button type="button" class="close" data-bs-dismiss="modal"
+                                            aria-label="Close">
+                                            <span aria-hidden="true">×</span>
+                                          </button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                          <div>
+                                            <form action="/stock_price_udpate" method="POST">
+                                              <input type="hidden" name="item_id" value="{{medicine.item_id}}">
+                                              <div class="form-group">
+                                                <label for="" class="">Purchase Price</label>
+                                                <input type="Number" step="0.01" min="1" required
+                                                  class="form-control-sm form-control" name="p_udpate_reate"
+                                                  value="{{medicine.purchase_price}}">
+                                              </div>
+                                              <div class="form-group">
+                                                <label for="">Selling Price</label>
+                                                <input type="number" step="0.01" min="1" required
+                                                  class="form-control-sm form-control" name="s_update_rate"
+                                                  value="{{medicine.selling_price}}">
+                                              </div>
+                                              <div class="modal-footer">
+                                                <button type="submit" class="btn btn-success">Update</button>
+                                                <button type="button" class="btn btn-light"
+                                                  data-bs-dismiss="modal">Cancel</button>
+                                              </div>
+                                            </form>
+                                          </div>
+                                        </div>
+
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <!-- Modal Ends -->
+
+
+
+                                  {%endfor%}
+                                </tbody>
+                              </table>
                             </div>
-                            <div class="modal-footer">
-                          <button type="submit" class="btn btn-success">Update</button>
-                          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                          </form>
-                        </div>
-                        </div>
-                        
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Modal Ends -->
+                          </div>
 
-
-
-                              {%endfor%}                             
-                            </tbody>
-                          </table>
                         </div>
                       </div>
-                     
                     </div>
                   </div>
                 </div>
@@ -386,20 +399,18 @@
             </div>
           </div>
         </div>
+
+
+
+
+
+
       </div>
-    </div>
-
-
-    
-
-   
-
-  </div>
-  <!-- content-wrapper ends -->
+      <!-- content-wrapper ends -->
 
 
 
-<!-- 
+      <!-- 
 <script>
   var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
 var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
@@ -407,16 +418,16 @@ var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
 })
 </script> -->
 
-   <script>
-            new DataTable('#item-data', {
-              layout: {
-                  bottomEnd: {
-                      paging: {
-                          type: 'simple'
-                      }
-                  }
+      <script>
+        new DataTable('#item-data', {
+          layout: {
+            bottomEnd: {
+              paging: {
+                type: 'simple'
               }
-          });
-          </script>
+            }
+          }
+        });
+      </script>
 
-  {%endblock%}
+      {%endblock%}
